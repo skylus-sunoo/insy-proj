@@ -1,0 +1,220 @@
+package main.java;
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Random;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+/**
+ *
+ * @author admin
+ */
+public class Main extends javax.swing.JFrame {
+
+    public static String BRANCH_CAMPUS = "Silang";
+    public static String DB_NAME = "db_cvsu_" + BRANCH_CAMPUS.toLowerCase() + "_inventory";
+    public static String TB_USER = "tb_user";
+    public static String TB_ITEM_CATALOG = "tb_item_catalog";
+
+    private static int userSessionID = -1;
+    private static String userSessionEmail;
+
+    public static int getUserSessionID() {
+        return userSessionID;
+    }
+
+    public static void setUserSessionID(int userSessionID) {
+        Main.userSessionID = userSessionID;
+    }
+
+    public static String getUserSessionName() {
+        return userSessionEmail;
+    }
+
+    public static void setUserSessionEmail(String userSessionEmail) {
+        Main.userSessionEmail = userSessionEmail;
+    }
+
+    /**
+     * Creates new form Dashboard
+     */
+    public Main() {
+        initComponents();
+
+        DateFormat df = new SimpleDateFormat("yy");
+        String currentYear = df.format(Calendar.getInstance().getTime());
+
+        Random r = new Random();
+
+        String code = BRANCH_CAMPUS + "-" + currentYear + "-";
+
+        UUID uuid = UUID.randomUUID();
+        String uuidAsString = uuid.toString();
+
+        System.out.println("Your UUID is: " + uuidAsString);
+        System.out.println(code);
+
+        String item_name = "Ball";
+        String item_uom = "UNIT";
+
+//        if (!isAlreadyInColumn(tableProduct, product_name, 3)) {
+//        String query = "INSERT INTO " + Main.TB_ITEM_CATALOG + " (item_name, item_uom) VALUES (?, ?)";
+//
+//        try (Connection conn = Utils.getConnection(Main.DB_NAME);) {
+//            PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+//            pst.setString(1, item_name);
+//            pst.setString(2, item_uom);
+//
+//            pst.executeUpdate();
+//
+//            ResultSet generatedKeys = pst.getGeneratedKeys();
+//            if (generatedKeys.next()) {
+//                int id = generatedKeys.getInt(1);
+//
+////                    Queries.addSupplyHistoryEntry(Queries.EnumHistory.CATALOG_PRODUCT_ADD, "[" + id + "] " + product_full_name + "  -  (Retail: " + product_retail_price + ")");
+//            }
+//
+////                clearProductFields();
+////                refreshTableProduct();
+//            JOptionPane.showMessageDialog(Main.this, "Item Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
+//        } catch (SQLException e) {
+//            Utils.paneDatabaseError(e);
+//        }
+//        } else {
+//            JOptionPane.showMessageDialog(this, "This product already exists!", "Error", JOptionPane.ERROR_MESSAGE);
+//        }
+    }
+
+//    public static void updateUserSession() {
+//        String userSessionIDString = Integer.toString(userSessionID);
+//        labelAccount.setText(userSessionIDString);
+////        System.out.println("employee_ID : " + userSessionID);
+//
+//        if (userSessionID == -1) {
+//            userSessionName = "";
+//            labelAccount.setText("No Account");
+////            System.out.println("No Log : " + userSessionID);
+//        } else {
+////            System.out.println("Log : " + userSessionID);
+//            String query = "SELECT employee_name FROM " + tbName_Employee + " WHERE employee_ID = ?";
+//
+//            try (Connection conn = Queries.getConnection(Main.dbName); PreparedStatement pst = Queries.prepareQueryWithParameters(conn, query, userSessionIDString); ResultSet rs = pst.executeQuery()) {
+//                if (rs.next()) {
+//                    String userName = rs.getString("employee_name");
+//                    userSessionName = userName;
+//                    labelAccount.setText("Welcome, " + userSessionName);
+//                }
+//            } catch (SQLException e) {
+//                MainUtils.paneDatabaseError(e);
+//            }
+//        }
+//    }
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        panelMain = new javax.swing.JPanel();
+        imageBg = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(255, 255, 255));
+        setMaximumSize(new java.awt.Dimension(800, 600));
+        setMinimumSize(new java.awt.Dimension(800, 600));
+        setPreferredSize(new java.awt.Dimension(800, 600));
+        setResizable(false);
+        getContentPane().setLayout(null);
+
+        panelMain.setBackground(new java.awt.Color(255, 255, 255));
+        panelMain.setMinimumSize(new java.awt.Dimension(800, 600));
+        panelMain.setName(""); // NOI18N
+        panelMain.setPreferredSize(new java.awt.Dimension(800, 600));
+        panelMain.setLayout(null);
+
+        imageBg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/main/resources/images/bg.png"))); // NOI18N
+        panelMain.add(imageBg);
+        imageBg.setBounds(-180, 0, 1080, 550);
+
+        getContentPane().add(panelMain);
+        panelMain.setBounds(0, 0, 800, 600);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Main().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel imageBg;
+    private javax.swing.JPanel panelMain;
+    // End of variables declaration//GEN-END:variables
+}
