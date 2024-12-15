@@ -11,5 +11,5 @@ Main Dashboard
    
 ![image](https://github.com/user-attachments/assets/3dcdd52c-63b1-46d9-8504-ad0541e88942)
 
-4. Item History
+3. Item History
 
