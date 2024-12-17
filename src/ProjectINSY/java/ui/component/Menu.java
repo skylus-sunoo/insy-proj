@@ -1,0 +1,249 @@
+package ProjectINSY.java.ui.component;
+
+import ProjectINSY.java.Main;
+import ProjectINSY.java.event.EventMenuSelected;
+import ProjectINSY.java.model.Model_Menu;
+import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.geom.Path2D;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+
+public class Menu extends javax.swing.JPanel {
+
+    private int menuIndex = 0;
+    private final JComponent[] pointers;
+
+    public int getMenuIndex() {
+        return menuIndex;
+    }
+
+    public void setMenuIndex(int menuIndex) {
+        this.menuIndex = menuIndex;
+    }
+
+//    private EventMenuSelected event;
+//    public void addEventMenuSelected(EventMenuSelected event) {
+//        this.event = event;
+//    }
+    private final Main main;
+    public Menu(Main main) {
+        this.main = main;
+        
+        initComponents();
+
+        setTransparentFrame(btnItemStock, btnItemManagement, btnItemHistory);
+
+        pointers = new JComponent[]{pointerItemStock, pointerItemManagement, pointerItemHistory};
+        refreshPointers();
+
+//        setOpaque(false);
+//        listMenu.setOpaque(false);
+    }
+
+    private void refreshPointers() {
+        for (int i = 0; i < pointers.length; i++) {
+            pointers[i].setVisible(i == menuIndex);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        panelBody = new javax.swing.JPanel();
+        imageLogo = new javax.swing.JLabel();
+        separatorLogo = new javax.swing.JSeparator();
+        btnItemStock = new javax.swing.JButton();
+        btnItemManagement = new javax.swing.JButton();
+        btnItemHistory = new javax.swing.JButton();
+        pointerItemStock = new javax.swing.JLabel();
+        pointerItemManagement = new javax.swing.JLabel();
+        pointerItemHistory = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(249, 215, 30));
+
+        panelBody.setBackground(new java.awt.Color(249, 215, 30));
+
+        imageLogo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        imageLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/images/cvsu-silang-logo_alt.png"))); // NOI18N
+
+        separatorLogo.setBackground(new java.awt.Color(0, 0, 0));
+        separatorLogo.setForeground(new java.awt.Color(0, 0, 0));
+
+        btnItemStock.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
+        btnItemStock.setForeground(new java.awt.Color(25, 102, 24));
+        btnItemStock.setText("ITEM STOCK");
+        btnItemStock.setBorder(null);
+        btnItemStock.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnItemStock.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnItemStock.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnItemStockActionPerformed(evt);
+            }
+        });
+
+        btnItemManagement.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
+        btnItemManagement.setForeground(new java.awt.Color(25, 102, 24));
+        btnItemManagement.setText("ITEM MANAGEMENT");
+        btnItemManagement.setBorder(null);
+        btnItemManagement.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnItemManagement.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnItemManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnItemManagementActionPerformed(evt);
+            }
+        });
+
+        btnItemHistory.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
+        btnItemHistory.setForeground(new java.awt.Color(25, 102, 24));
+        btnItemHistory.setText("ITEM HISTORY");
+        btnItemHistory.setBorder(null);
+        btnItemHistory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnItemHistory.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnItemHistory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnItemHistoryActionPerformed(evt);
+            }
+        });
+
+        pointerItemStock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
+
+        pointerItemManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
+
+        pointerItemHistory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
+
+        javax.swing.GroupLayout panelBodyLayout = new javax.swing.GroupLayout(panelBody);
+        panelBody.setLayout(panelBodyLayout);
+        panelBodyLayout.setHorizontalGroup(
+            panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(imageLogo, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+            .addGroup(panelBodyLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(separatorLogo)
+                .addContainerGap())
+            .addGroup(panelBodyLayout.createSequentialGroup()
+                .addGap(28, 28, 28)
+                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelBodyLayout.createSequentialGroup()
+                        .addComponent(btnItemHistory)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pointerItemHistory))
+                    .addGroup(panelBodyLayout.createSequentialGroup()
+                        .addComponent(btnItemManagement)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pointerItemManagement))
+                    .addGroup(panelBodyLayout.createSequentialGroup()
+                        .addComponent(btnItemStock)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pointerItemStock))))
+        );
+        panelBodyLayout.setVerticalGroup(
+            panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBodyLayout.createSequentialGroup()
+                .addComponent(imageLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnItemStock, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                    .addComponent(pointerItemStock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnItemManagement, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pointerItemManagement, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnItemHistory, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                    .addComponent(pointerItemHistory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(207, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(panelBody, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(panelBody, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnItemStockActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnItemStockActionPerformed
+        setMenuIndex(0);
+        main.setItemForm(main.getItemStock());
+        refreshPointers();
+    }//GEN-LAST:event_btnItemStockActionPerformed
+
+    private void btnItemManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnItemManagementActionPerformed
+        setMenuIndex(1);
+        main.setItemForm(main.getItemManagement());
+        refreshPointers();
+    }//GEN-LAST:event_btnItemManagementActionPerformed
+
+    private void btnItemHistoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnItemHistoryActionPerformed
+        setMenuIndex(2);
+        main.setItemForm(main.getItemHistory());
+        refreshPointers();
+    }//GEN-LAST:event_btnItemHistoryActionPerformed
+
+    @Override
+    protected void paintChildren(Graphics grphcs) {
+        Graphics2D g2 = (Graphics2D) grphcs;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        GradientPaint g = new GradientPaint(0, 0, Color.decode("#e74c3c"), 0, getHeight(), Color.decode("#000000"));
+        int height = 140;
+        Path2D.Float f = new Path2D.Float();
+        f.moveTo(0, 0);
+        f.curveTo(0, 0, 0, 70, 100, 70);
+        f.curveTo(100, 70, getWidth(), 70, getWidth(), height);
+        f.lineTo(getWidth(), getHeight());
+        f.lineTo(0, getHeight());
+        g2.setColor(new Color(60, 60, 60));
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.setPaint(g);
+        g2.fill(f);
+        super.paintChildren(grphcs);
+    }
+
+    private int x;
+    private int y;
+
+    public void initMoving(JFrame fram) {
+        imageLogo.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent me) {
+                x = me.getX();
+                y = me.getY();
+            }
+
+        });
+        imageLogo.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent me) {
+                fram.setLocation(me.getXOnScreen() - x, me.getYOnScreen() - y);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnItemHistory;
+    private javax.swing.JButton btnItemManagement;
+    private javax.swing.JButton btnItemStock;
+    private javax.swing.JLabel imageLogo;
+    private javax.swing.JPanel panelBody;
+    private javax.swing.JLabel pointerItemHistory;
+    private javax.swing.JLabel pointerItemManagement;
+    private javax.swing.JLabel pointerItemStock;
+    private javax.swing.JSeparator separatorLogo;
+    // End of variables declaration//GEN-END:variables
+}
