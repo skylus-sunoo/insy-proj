@@ -23,6 +23,7 @@ import static ProjectINSY.java.util.GuiUtil.*;
 import static ProjectINSY.java.util.MessageUtil.*;
 import static ProjectINSY.java.util.SecurityUtil.*;
 import static ProjectINSY.java.util.SessionUtil.*;
+import java.awt.event.KeyEvent;
 
 /**
  *
@@ -182,6 +183,7 @@ public class LogIn extends javax.swing.JPanel {
         imagePasswordBg = new javax.swing.JLabel();
         labelPassword = new javax.swing.JLabel();
         btnSignUp = new javax.swing.JButton();
+        btnAuto = new javax.swing.JButton();
 
         panelLogIn.setBackground(new java.awt.Color(246, 243, 237));
         panelLogIn.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24)));
@@ -196,6 +198,11 @@ public class LogIn extends javax.swing.JPanel {
         btnLogIn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLogInActionPerformed(evt);
+            }
+        });
+        btnLogIn.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                btnLogInKeyPressed(evt);
             }
         });
 
@@ -331,14 +338,23 @@ public class LogIn extends javax.swing.JPanel {
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
+        btnAuto.setText("Auto");
+        btnAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAutoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(473, Short.MAX_VALUE)
+                .addGap(140, 140, 140)
+                .addComponent(btnAuto)
+                .addGap(258, 258, 258)
                 .addComponent(panelLogIn, javax.swing.GroupLayout.PREFERRED_SIZE, 420, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(473, Short.MAX_VALUE))
+                .addContainerGap(476, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -346,6 +362,10 @@ public class LogIn extends javax.swing.JPanel {
                 .addContainerGap(138, Short.MAX_VALUE)
                 .addComponent(panelLogIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(111, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(297, 297, 297)
+                .addComponent(btnAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -401,8 +421,33 @@ public class LogIn extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnSignUpActionPerformed
 
+    private void btnLogInKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_btnLogInKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            String log_email = fieldEmail.getText();
+            String log_password = new String(fieldPassword.getPassword()).trim();
+
+            if (isValidEmail(log_email)) {
+                logInAccount(log_email, log_password);
+            } else {
+                paneInvalidEmail();
+            }
+        }
+    }//GEN-LAST:event_btnLogInKeyPressed
+
+    private void btnAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAutoActionPerformed
+        String log_email = "johnpatrick.skidmore@cvsu.edu.ph";
+        String log_password = "123";
+
+        if (isValidEmail(log_email)) {
+            logInAccount(log_email, log_password);
+        } else {
+            paneInvalidEmail();
+        }
+    }//GEN-LAST:event_btnAutoActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAuto;
     private javax.swing.JButton btnForgotPasword;
     private javax.swing.JButton btnLogIn;
     private javax.swing.JButton btnPasswordViewer;

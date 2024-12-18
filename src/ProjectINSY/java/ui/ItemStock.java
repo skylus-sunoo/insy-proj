@@ -4,6 +4,11 @@
  */
 package ProjectINSY.java.ui;
 
+import static java.awt.image.ImageObserver.ERROR;
+import static java.awt.image.ImageObserver.WIDTH;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+
 
 /**
  *
@@ -17,6 +22,9 @@ public class ItemStock extends javax.swing.JPanel {
     public ItemStock() {
         initComponents();
 
+//        tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tableInventory.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableInventory.isCellEditable(ERROR, WIDTH);
     }
 
     /**
@@ -28,45 +36,96 @@ public class ItemStock extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        panelBlur = new ProjectINSY.java.ui.panel.GradientPanel();
+        panelMain = new javax.swing.JPanel();
+        tableScroll = new javax.swing.JScrollPane();
+        tableInventory = new ProjectINSY.java.swing.Table();
 
+        setMaximumSize(new java.awt.Dimension(1366, 768));
+        setMinimumSize(new java.awt.Dimension(1366, 768));
         setOpaque(false);
+        setPreferredSize(new java.awt.Dimension(1366, 768));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        panelBlur.setColorEnd(new java.awt.Color(241, 239, 241));
+        panelBlur.setColorStart(new java.awt.Color(241, 239, 241));
+        panelBlur.setShadowIntensity(255);
+
+        panelMain.setBackground(new java.awt.Color(255, 255, 255));
+        panelMain.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
+
+        tableScroll.setBorder(null);
+
+        tableInventory.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Category", "Name", "Quantity"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
+        tableScroll.setViewportView(tableInventory);
+
+        javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
+        panelMain.setLayout(panelMainLayout);
+        panelMainLayout.setHorizontalGroup(
+            panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelMainLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1277, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        panelMainLayout.setVerticalGroup(
+            panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
+                .addContainerGap(83, Short.MAX_VALUE)
+                .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 541, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout panelBlurLayout = new javax.swing.GroupLayout(panelBlur);
+        panelBlur.setLayout(panelBlurLayout);
+        panelBlurLayout.setHorizontalGroup(
+            panelBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBlurLayout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(17, Short.MAX_VALUE))
+        );
+        panelBlurLayout.setVerticalGroup(
+            panelBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBlurLayout.createSequentialGroup()
+                .addGap(17, 17, 17)
+                .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(498, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 650, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(218, 218, 218))
+                .addContainerGap(10, Short.MAX_VALUE)
+                .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(227, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(126, 126, 126))
+                .addContainerGap(84, Short.MAX_VALUE)
+                .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(15, 15, 15))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private ProjectINSY.java.ui.panel.GradientPanel panelBlur;
+    private javax.swing.JPanel panelMain;
+    private ProjectINSY.java.swing.Table tableInventory;
+    private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables
 }

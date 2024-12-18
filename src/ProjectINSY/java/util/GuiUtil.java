@@ -8,14 +8,31 @@ package ProjectINSY.java.util;
  *
  * @author admin
  */
+import ProjectINSY.java.Main;
+import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import java.awt.Color;
 import java.awt.Image;
+import java.awt.event.KeyEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
 
 public class GuiUtil {
 
@@ -60,7 +77,7 @@ public class GuiUtil {
 
         button.setIcon(transparentIcon);
     }
-    
+
     public static void setForm(JPanel panel, JComponent com) {
         panel.removeAll();
         panel.add(com);
@@ -73,5 +90,121 @@ public class GuiUtil {
 //            case SearchComboBoxField search -> search.repopulateComboBox(search.selectedSearch);
 //            default -> {}
 //        }
+    }
+    
+    public static void repopulateComboBox(JComboBox comboBox, String columnName, String query) {
+        Set<String> uniqueItems = new HashSet<>();
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = DatabaseUtil.prepareQuery(conn, query); ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                String name = rs.getString(columnName);
+                if (name != null && !name.trim().isEmpty()) {
+                    uniqueItems.add(name);
+                }
+            }
+
+            List<String> sortedItems = new ArrayList<>(uniqueItems);
+            boolean hasNA = sortedItems.contains("N/A");
+            if (hasNA) {
+                sortedItems.remove("N/A");
+            }
+            boolean hasMisc = sortedItems.contains("Miscellaneous");
+            if (hasMisc) {
+                sortedItems.remove("Miscellaneous");
+            }
+            
+            Collections.sort(sortedItems, String.CASE_INSENSITIVE_ORDER);
+            if (hasMisc) {
+                sortedItems.add(0, "Miscellaneous"); // ensures Miscellaneous is index 1
+            }
+            if (hasNA) {
+                sortedItems.add(0, "N/A"); // ensures N/A is index 0
+            }
+
+            comboBox.removeAllItems();
+            for (String item : sortedItems) {
+                comboBox.addItem(item);
+//                System.out.println(item);
+            }
+
+            if (!sortedItems.isEmpty()) {
+                comboBox.setSelectedIndex(0);
+            }
+
+            rs.close();
+            pst.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }
+
+    public static void enforceDigits(KeyEvent evt) {
+        char c = evt.getKeyChar();
+
+        if (!Character.isDigit(c) && c != '.' && c != KeyEvent.VK_BACK_SPACE) {
+            evt.consume();
+        }
+    }
+
+    public static void enforceDigits(DocumentEvent e) {
+        JTextField textField = (JTextField) e.getDocument().getProperty("owner");
+        String text = textField.getText();
+
+        String validText = text.replaceAll("[^0-9.]", "");
+
+        int decimalCount = validText.length() - validText.replace(".", "").length();
+        if (decimalCount > 1) {
+            validText = validText.substring(0, validText.indexOf('.', validText.indexOf('.') + 1));
+        }
+
+        if (!text.equals(validText)) {
+            textField.setText(validText);
+        }
+    }
+
+    public static void clearLabelImage(JLabel label) {
+        label.setIcon(null);
+        clearLabel(label, null);
+    }
+
+    public static void clearLabel(JLabel label, String defaultText) {
+        label.setText(defaultText);
+        label.setForeground(new Color(153, 153, 153));
+    }
+
+    public static void clearFieldDate(JTextField field) {
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedDate = currentDate.format(formatter);
+
+        clearField(field, formattedDate);
+    }
+
+    public static void clearField(JTextField field, String defaultText) {
+        field.setText(defaultText);
+        field.setForeground(new Color(153, 153, 153));
+    }
+
+    public static void clearComboBox(JComboBox... comboBox) {
+        for (JComboBox combo : comboBox) {
+            combo.setSelectedIndex(0);
+        }
+    }
+
+    public static void resetBtnEnability(JComponent component, JButton... buttons) {
+        boolean enable = false;
+        
+        switch (component) {
+            case JTextField jTextField -> enable = !jTextField.getText().equals("");
+            case JLabel jLabel -> enable = !jLabel.getText().equals("");
+            default -> {
+            }
+        }
+
+        for (JButton button : buttons) {
+            button.setEnabled(enable);
+        }
     }
 }

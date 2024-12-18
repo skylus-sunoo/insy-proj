@@ -22,4 +22,9 @@ public class SessionUtil {
         setUserSessionID(id);
         setUserSessionEmail(email);
     }
+
+    public static void removeUserSession() {
+        setUserSessionID(-1);
+        setUserSessionEmail(null);
+    }
 }

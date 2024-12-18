@@ -13,11 +13,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -35,7 +39,7 @@ public class Main extends javax.swing.JFrame {
 
     //<editor-fold defaultstate="collapsed" desc="Instance">
     private static Main instance;
-    
+
     public static Main getInstance() {
         if (instance == null) {
             instance = new Main();
@@ -47,11 +51,13 @@ public class Main extends javax.swing.JFrame {
     public static String BRANCH_CAMPUS = "Silang";
     public static String DB_NAME = "db_cvsu_" + BRANCH_CAMPUS.toLowerCase() + "_inventory";
     public static String TB_USER = "tb_user";
-    public static String TB_ITEM_CATALOG = "tb_item_catalog";
+    public static String TB_CATALOG_CATEGORY = "tb_catalog_category";
+    public static String TB_CATALOG_ITEM = "tb_catalog_item";
+    public static String TB_ITEM_STOCK = "tb_item_stock";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Session">
     private static int userSessionID = -1;
-    private static String userSessionEmail;
+    private static String userSessionEmail = null;
 
     public static int getUserSessionID() {
         return userSessionID;
@@ -75,6 +81,7 @@ public class Main extends javax.swing.JFrame {
     private final LogIn LogIn = new LogIn(this);
     private final ItemStock ItemStock = new ItemStock();
     private final ItemManagement ItemManagement = new ItemManagement();
+    private final ItemCatalog ItemCatalog = new ItemCatalog();
     private final ItemHistory ItemHistory = new ItemHistory();
 
     public LogIn getLogIn() {
@@ -88,12 +95,16 @@ public class Main extends javax.swing.JFrame {
     public ItemManagement getItemManagement() {
         return ItemManagement;
     }
-    
+
+    public ItemCatalog getItemCatalog() {
+        return ItemCatalog;
+    }
+
     public ItemHistory getItemHistory() {
         return ItemHistory;
     }
     //</editor-fold>
-    
+
     private final MigLayout layout;
     private final MenuLayout menu = new MenuLayout(this);
     private final Animator animator;
@@ -107,30 +118,45 @@ public class Main extends javax.swing.JFrame {
     private Main() {
         initComponents();
 
+//        String basePath = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath())
+//                .getParentFile()
+//                .getParent();
+//
+//        File batFile = new File(basePath, "start_xampp.bat");
+//
+//        if (!batFile.exists()) {
+//            System.out.println("Batch file not found: " + batFile.getAbsolutePath());
+//        }
+//
+//        try {
+//            Runtime.getRuntime().exec("cmd /c start /B /MIN " + batFile.getAbsolutePath());
+//        } catch (IOException ex) {
+//            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
 
         layout = new MigLayout("fill", "0[fill]0", "0[fill]0");
         panelMain.setLayer(menu, JLayeredPane.POPUP_LAYER);
         panelMain.setLayout(layout);
-        panelMain.add(menu, "pos -400 70 100% 100%", 0);
+        panelMain.add(menu, "pos -1366 70 100% 100%", 0);
         TimingTarget target = new TimingTargetAdapter() {
             @Override
             public void timingEvent(float fraction) {
-                float x = (fraction * 400);
+                float x = (fraction * 1366);
                 float alpha;
                 if (menu.isShow()) {
                     x = -x;
                     alpha = 0.5f - (fraction / 2);
                 } else {
-                    x -= 400;
+                    x -= 1366;
                     alpha = fraction / 2;
                 }
                 layout.setComponentConstraints(menu, "pos " + (int) x + " 70 100% 100%");
                 if (alpha < 0) {
                     alpha = 0;
                 }
-//                menu.setAlpha(alpha);
+                menu.setAlpha(alpha);
                 panelMain.revalidate();
             }
 
@@ -183,8 +209,26 @@ public class Main extends javax.swing.JFrame {
         setForm(panelForm, ItemStock);
     }
 
+    public void setLogInForm() {
+        setForm(panelForm, LogIn);
+    }
+
     public void setItemForm(JComponent com) {
         setForm(panelForm, com);
+
+        switch (com) {
+            case ItemManagement form -> {
+                form.repopulateNameComboBox();
+                form.refreshTableInventory();
+            }
+            case ItemCatalog form -> {
+                form.refreshTableCategory();
+                form.repopulateCategoryComboBox();
+                form.refreshTableItem();
+            }
+            default -> {
+            }
+        }
     }
 
     /**

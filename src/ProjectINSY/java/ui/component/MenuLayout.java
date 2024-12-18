@@ -68,9 +68,10 @@ public class MenuLayout extends javax.swing.JPanel {
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        setMaximumSize(new java.awt.Dimension(400, 768));
-        setMinimumSize(new java.awt.Dimension(400, 768));
-        setPreferredSize(new java.awt.Dimension(400, 768));
+        setMaximumSize(new java.awt.Dimension(1366, 768));
+        setMinimumSize(new java.awt.Dimension(1366, 768));
+        setPreferredSize(new java.awt.Dimension(1366, 768));
+        setRequestFocusEnabled(false);
         setLayout(null);
         add(menu);
         menu.setBounds(0, 0, 333, 768);
@@ -85,7 +86,7 @@ public class MenuLayout extends javax.swing.JPanel {
         );
         borderPanelLayout.setVerticalGroup(
             borderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 768, Short.MAX_VALUE)
         );
 
         add(borderPanel);

@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -31,6 +32,7 @@ public class Header extends javax.swing.JPanel {
         setTransparentFrame(btnMenu);
 //        btnMenu.setEnabled(false);
         btnMenu.setToolTipText("This action requires logging in!");
+        btnMenu.setMnemonic(KeyEvent.VK_ESCAPE);
     }
 
     /**

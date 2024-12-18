@@ -4,6 +4,7 @@ import ProjectINSY.java.Main;
 import ProjectINSY.java.event.EventMenuSelected;
 import ProjectINSY.java.model.Model_Menu;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
+import static ProjectINSY.java.util.SessionUtil.removeUserSession;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -15,6 +16,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Path2D;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 public class Menu extends javax.swing.JPanel {
 
@@ -33,19 +35,29 @@ public class Menu extends javax.swing.JPanel {
 //    public void addEventMenuSelected(EventMenuSelected event) {
 //        this.event = event;
 //    }
-    private final Main main;
+    private Main main;
+
     public Menu(Main main) {
         this.main = main;
-        
+
         initComponents();
 
-        setTransparentFrame(btnItemStock, btnItemManagement, btnItemHistory);
+        setTransparentFrame(btnItemStock, btnItemManagement, btnItemCatalog, btnItemHistory, btnLogOut);
 
-        pointers = new JComponent[]{pointerItemStock, pointerItemManagement, pointerItemHistory};
+        pointers = new JComponent[]{pointerItemStock, pointerItemManagement, pointerItemCatalog, pointerItemHistory};
         refreshPointers();
 
 //        setOpaque(false);
 //        listMenu.setOpaque(false);
+    }
+
+    public Menu() {
+        initComponents();
+
+        setTransparentFrame(btnItemStock, btnItemManagement, btnItemCatalog, btnItemHistory, btnLogOut);
+
+        pointers = new JComponent[]{pointerItemStock, pointerItemManagement, pointerItemCatalog, pointerItemHistory};
+        refreshPointers();
     }
 
     private void refreshPointers() {
@@ -63,14 +75,18 @@ public class Menu extends javax.swing.JPanel {
         separatorLogo = new javax.swing.JSeparator();
         btnItemStock = new javax.swing.JButton();
         btnItemManagement = new javax.swing.JButton();
+        btnItemCatalog = new javax.swing.JButton();
         btnItemHistory = new javax.swing.JButton();
         pointerItemStock = new javax.swing.JLabel();
         pointerItemManagement = new javax.swing.JLabel();
+        pointerItemCatalog = new javax.swing.JLabel();
         pointerItemHistory = new javax.swing.JLabel();
+        btnLogOut = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(249, 215, 30));
 
         panelBody.setBackground(new java.awt.Color(249, 215, 30));
+        panelBody.setPreferredSize(new java.awt.Dimension(333, 628));
 
         imageLogo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         imageLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/images/cvsu-silang-logo_alt.png"))); // NOI18N
@@ -102,6 +118,18 @@ public class Menu extends javax.swing.JPanel {
             }
         });
 
+        btnItemCatalog.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
+        btnItemCatalog.setForeground(new java.awt.Color(25, 102, 24));
+        btnItemCatalog.setText("ITEM Catalog");
+        btnItemCatalog.setBorder(null);
+        btnItemCatalog.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnItemCatalog.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnItemCatalog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnItemCatalogActionPerformed(evt);
+            }
+        });
+
         btnItemHistory.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
         btnItemHistory.setForeground(new java.awt.Color(25, 102, 24));
         btnItemHistory.setText("ITEM HISTORY");
@@ -118,7 +146,22 @@ public class Menu extends javax.swing.JPanel {
 
         pointerItemManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
 
+        pointerItemCatalog.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
+
         pointerItemHistory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
+
+        btnLogOut.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
+        btnLogOut.setForeground(new java.awt.Color(25, 102, 24));
+        btnLogOut.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLogOut.png"))); // NOI18N
+        btnLogOut.setText("LOG OUT");
+        btnLogOut.setBorder(null);
+        btnLogOut.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnLogOut.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnLogOut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLogOutActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelBodyLayout = new javax.swing.GroupLayout(panelBody);
         panelBody.setLayout(panelBodyLayout);
@@ -133,9 +176,16 @@ public class Menu extends javax.swing.JPanel {
                 .addGap(28, 28, 28)
                 .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelBodyLayout.createSequentialGroup()
+                        .addComponent(btnLogOut, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(panelBodyLayout.createSequentialGroup()
                         .addComponent(btnItemHistory)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(pointerItemHistory))
+                    .addGroup(panelBodyLayout.createSequentialGroup()
+                        .addComponent(btnItemCatalog)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pointerItemCatalog))
                     .addGroup(panelBodyLayout.createSequentialGroup()
                         .addComponent(btnItemManagement)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -161,9 +211,15 @@ public class Menu extends javax.swing.JPanel {
                     .addComponent(pointerItemManagement, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnItemHistory, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
-                    .addComponent(pointerItemHistory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(207, Short.MAX_VALUE))
+                    .addComponent(btnItemCatalog, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                    .addComponent(pointerItemCatalog, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnItemHistory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pointerItemHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(257, 257, 257)
+                .addComponent(btnLogOut, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(66, 66, 66))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -174,7 +230,7 @@ public class Menu extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelBody, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panelBody, javax.swing.GroupLayout.DEFAULT_SIZE, 698, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -190,11 +246,35 @@ public class Menu extends javax.swing.JPanel {
         refreshPointers();
     }//GEN-LAST:event_btnItemManagementActionPerformed
 
-    private void btnItemHistoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnItemHistoryActionPerformed
+    private void btnItemCatalogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnItemCatalogActionPerformed
         setMenuIndex(2);
+        main.setItemForm(main.getItemCatalog());
+        refreshPointers();
+    }//GEN-LAST:event_btnItemCatalogActionPerformed
+
+    private void btnItemHistoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnItemHistoryActionPerformed
+        setMenuIndex(3);
         main.setItemForm(main.getItemHistory());
         refreshPointers();
     }//GEN-LAST:event_btnItemHistoryActionPerformed
+
+    private void btnLogOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogOutActionPerformed
+        int warnUser = JOptionPane.showConfirmDialog(
+                null,
+                "Are you sure you want to log out?",
+                "Log Out Confirmation",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (warnUser == JOptionPane.YES_OPTION) {
+            setMenuIndex(0);
+            refreshPointers();
+            
+            removeUserSession();
+            main.showMenu();
+            main.setLogInForm();
+        }
+    }//GEN-LAST:event_btnLogOutActionPerformed
 
     @Override
     protected void paintChildren(Graphics grphcs) {
@@ -236,11 +316,14 @@ public class Menu extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnItemCatalog;
     private javax.swing.JButton btnItemHistory;
     private javax.swing.JButton btnItemManagement;
     private javax.swing.JButton btnItemStock;
+    private javax.swing.JButton btnLogOut;
     private javax.swing.JLabel imageLogo;
     private javax.swing.JPanel panelBody;
+    private javax.swing.JLabel pointerItemCatalog;
     private javax.swing.JLabel pointerItemHistory;
     private javax.swing.JLabel pointerItemManagement;
     private javax.swing.JLabel pointerItemStock;
