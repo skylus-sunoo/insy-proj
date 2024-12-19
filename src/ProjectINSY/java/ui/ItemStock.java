@@ -4,11 +4,15 @@
  */
 package ProjectINSY.java.ui;
 
+import ProjectINSY.java.Main;
+import ProjectINSY.java.util.TableUtil;
+import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static java.awt.image.ImageObserver.ERROR;
 import static java.awt.image.ImageObserver.WIDTH;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-
+import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  *
@@ -16,15 +20,22 @@ import javax.swing.ListSelectionModel;
  */
 public class ItemStock extends javax.swing.JPanel {
 
+    public String currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM " + Main.TB_ITEM_STOCK + " GROUP BY stock_category, stock_name";
+
     /**
      * Creates new form LogIn
      */
     public ItemStock() {
         initComponents();
 
-//        tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tableInventory.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableInventory.isCellEditable(ERROR, WIDTH);
+        defaultTable(tableInventory);
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+        tableInventory.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
+    }
+
+    public void refreshTableInventory() {
+        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DISTINCT);
     }
 
     /**
@@ -65,8 +76,19 @@ public class ItemStock extends javax.swing.JPanel {
             new String [] {
                 "Category", "Name", "Quantity"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.Integer.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        tableInventory.setEnabled(false);
+        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
+        tableInventory.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableInventory);
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);

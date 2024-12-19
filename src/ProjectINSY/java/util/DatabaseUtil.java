@@ -41,7 +41,7 @@ public class DatabaseUtil {
 
     public static boolean recordExists(Connection conn, String table, String column, String... params) throws SQLException {
         String query = "SELECT COUNT(*) FROM " + table + " WHERE " + column + " = ?";
-        
+
         try (PreparedStatement pst = prepareQueryWithParameters(conn, query, params); ResultSet rs = pst.executeQuery()) {
 //            if (rs.next() && rs.getInt(1) > 0) {
 //                JOptionPane.showMessageDialog(null, "Value already exists: " + params[0], "Error", JOptionPane.ERROR_MESSAGE);
@@ -56,11 +56,32 @@ public class DatabaseUtil {
         }
     }
 
+    public static int generateNewBatch() {
+        String query = "INSERT INTO " + Main.TB_ITEM_BATCH + " () VALUES ()";
+        int newBatchId = 0;
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            pst.executeUpdate();
+
+            try (ResultSet generatedKeys = pst.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    newBatchId = generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Creating batch failed, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+
+        return newBatchId;
+    }
+
     public static String getCategoryByItem(String item_name) {
         String item_category = "";
         String query = "SELECT item_category FROM " + Main.TB_CATALOG_ITEM + " WHERE item_name = ?";
 
-        
         try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, item_name);
             ResultSet rs = ps.executeQuery();

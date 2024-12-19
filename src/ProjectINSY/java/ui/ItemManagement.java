@@ -6,6 +6,8 @@ package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.util.DatabaseUtil;
+import static ProjectINSY.java.util.DatabaseUtil.generateNewBatch;
+import static ProjectINSY.java.util.DatabaseUtil.getConnection;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.enforceDigits;
@@ -44,14 +46,31 @@ import javax.swing.event.ListSelectionEvent;
  */
 public class ItemManagement extends javax.swing.JPanel {
 
-    public String currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK;
+    public String currentSearchQuery = "SELECT stock_id, stock_batch, "
+                    + "stock_category, "
+                    + "stock_name, "
+                    + "stock_desc, "
+                    + "(stock_price * COUNT(*)) AS stock_price, "
+                    + "stock_dod, "
+                    + "stock_user, "
+                    + "CONCAT( "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
+                    + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
+                    + "    CASE "
+                    + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
+                    + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
+                    + "    END "
+                    + ") AS stock_code, "
+                    + "COUNT(*) AS stock_quantity "
+                    + "FROM " + Main.TB_ITEM_STOCK + " "
+                    + "GROUP BY stock_batch ORDER BY stock_id ASC";
 
-    private final String PLACEHOLDER_CATEGORY = "Enter Category";
-    private final String PLACEHOLDER_NAME = "Enter Name";
+    private final String PLACEHOLDER_CODE = "Enter Code (XXXX)";
     private final String PLACEHOLDER_DESC = "Enter Description";
     private final String PLACEHOLDER_PRICE = "Enter Price";
     private final String PLACEHOLDER_DOD = "Enter Delivery Date";
-    private final String PLACEHOLDER_QTY = "Enter Quantity";
+    private final String PLACEHOLDER_QTY = "1";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
 
     /**
@@ -80,17 +99,37 @@ public class ItemManagement extends javax.swing.JPanel {
 
     public void selectTableStock(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableInventory, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldID, null, comboName, fieldDesc, fieldPrice, fieldDOD, fieldHolder);
+        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, fieldQuantity, fieldDOD, fieldHolder);
+
+        Float actual_price = Float.valueOf(fieldPrice.getText());
+        Float quantity = Float.valueOf(fieldQuantity.getText());
+        fieldQuantity.setText("");
+        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+
+        fieldPrice.setText(String.valueOf(actual_price / quantity));
 
         if (fieldDesc.getText().isEmpty()) {
             setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
         }
-        
+
         if (fieldID.getText().contains("-")) {
             String[] parts = fieldID.getText().split("-");
             fieldID.setText(parts[2]);
+            if (parts.length == 4) {
+                fieldID2.setText(parts[3]);
+            } else {
+                fieldID2.setText(parts[2]);
+            }
         }
 
+//        if (isGroupedByBatches()) {
+//            fieldQuantity.setEnabled(false);
+//            fieldQuantity.setText("UNEDITABLE");
+//        } else {
+//            fieldQuantity.setEnabled(true);
+//            fieldQuantity.setText("");
+//            setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+//        }
         setUpdateDeleteEnable();
     }
 
@@ -120,7 +159,6 @@ public class ItemManagement extends javax.swing.JPanel {
             btnAdd.setEnabled(!fieldPrice.getText().trim().isEmpty()
                     && !fieldPrice.getText().trim().equals(PLACEHOLDER_PRICE)
                     && !fieldQuantity.getText().trim().isEmpty()
-                    && !fieldQuantity.getText().trim().equals(PLACEHOLDER_QTY)
                     && !fieldHolder.getText().trim().isEmpty()
                     && !fieldHolder.getText().trim().equals(PLACEHOLDER_HOLDER));
         }
@@ -128,6 +166,19 @@ public class ItemManagement extends javax.swing.JPanel {
 
     public void refreshTableInventory() {
         TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
+
+        String query = "SELECT DISTINCT stock_user FROM " + Main.TB_ITEM_STOCK;
+
+        fieldHolder.clearItemSuggestion();
+        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                fieldHolder.addItemSuggestion(rs.getString("stock_user"));
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
     }
 
     public void setUpdateDeleteEnable() {
@@ -136,18 +187,25 @@ public class ItemManagement extends javax.swing.JPanel {
 
     public void clearFields() {
         GuiUtil.clearField(fieldID, "");
+        GuiUtil.clearField(fieldID2, "");
+        GuiUtil.clearField(fieldCode, PLACEHOLDER_CODE);
         GuiUtil.clearComboBox(comboName);
         GuiUtil.clearField(fieldDesc, PLACEHOLDER_DESC);
         GuiUtil.clearField(fieldPrice, PLACEHOLDER_PRICE);
         GuiUtil.clearField(fieldQuantity, PLACEHOLDER_QTY);
         GuiUtil.clearField(fieldHolder, PLACEHOLDER_HOLDER);
         GuiUtil.clearFieldDate(fieldDOD);
+        fieldDOD.setForeground(Color.BLACK);
         TableUtil.clearSelectedTableRow(tableInventory);
         setUpdateDeleteEnable();
     }
 
     public void repopulateNameComboBox() {
         GuiUtil.repopulateComboBox(comboName, "item_name", "SELECT item_name FROM " + Main.TB_CATALOG_ITEM);
+    }
+
+    public static boolean isGroupedByBatches() {
+        return radioBatches.isSelected();
     }
 
     /**
@@ -160,12 +218,13 @@ public class ItemManagement extends javax.swing.JPanel {
     private void initComponents() {
 
         fieldID = new javax.swing.JTextField();
-        dateDOD = new ProjectINSY.java.date.DateChooser();
+        dateDOD = new ProjectINSY.java.swing.Date.DateChooser();
+        fieldID2 = new javax.swing.JTextField();
         panelBlur = new ProjectINSY.java.ui.panel.GradientPanel();
         panelMain = new javax.swing.JPanel();
         panelFields = new javax.swing.JPanel();
         labelName = new javax.swing.JLabel();
-        comboName = new ProjectINSY.java.combo_suggestion.ComboBoxSuggestion();
+        comboName = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageName = new javax.swing.JLabel();
         labelDesc = new javax.swing.JLabel();
         fieldDesc = new javax.swing.JTextField();
@@ -181,7 +240,7 @@ public class ItemManagement extends javax.swing.JPanel {
         labelQuantity = new javax.swing.JLabel();
         imageQuantity = new javax.swing.JLabel();
         labelHolder = new javax.swing.JLabel();
-        fieldHolder = new javax.swing.JTextField();
+        fieldHolder = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
         imageHolder = new javax.swing.JLabel();
         labelAdd = new javax.swing.JLabel();
         btnAdd = new javax.swing.JButton();
@@ -189,8 +248,14 @@ public class ItemManagement extends javax.swing.JPanel {
         btnUpdate = new javax.swing.JButton();
         labelDelete = new javax.swing.JLabel();
         btnDelete = new javax.swing.JButton();
+        labelCode = new javax.swing.JLabel();
+        fieldCode = new javax.swing.JTextField();
+        imageCode = new javax.swing.JLabel();
+        infoCode = new javax.swing.JLabel();
+        infoCode1 = new javax.swing.JLabel();
         tableScroll = new javax.swing.JScrollPane();
         tableInventory = new ProjectINSY.java.swing.Table();
+        radioBatches = new ProjectINSY.java.swing.RadioButtonCustom();
 
         dateDOD.setForeground(new java.awt.Color(25, 102, 24));
         dateDOD.setDateFormat("yyyy-MM-dd");
@@ -279,14 +344,13 @@ public class ItemManagement extends javax.swing.JPanel {
         imagePrice.setBounds(0, 280, 187, 50);
 
         labelDOD.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
-        labelDOD.setText("Delivery Date");
+        labelDOD.setText("Delivery Date (Y-M-D)");
         panelFields.add(labelDOD);
-        labelDOD.setBounds(190, 250, 173, 30);
+        labelDOD.setBounds(190, 250, 190, 30);
 
+        fieldDOD.setEditable(true);
         fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
-        fieldDOD.setForeground(new java.awt.Color(153, 153, 153));
         fieldDOD.setBorder(null);
-        fieldDOD.setFocusable(false);
         fieldDOD.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldDODFocusGained(evt);
@@ -314,7 +378,7 @@ public class ItemManagement extends javax.swing.JPanel {
 
         fieldQuantity.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         fieldQuantity.setForeground(new java.awt.Color(153, 153, 153));
-        fieldQuantity.setText("Enter Quantity");
+        fieldQuantity.setText("1");
         fieldQuantity.setBorder(null);
         fieldQuantity.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -346,10 +410,10 @@ public class ItemManagement extends javax.swing.JPanel {
         panelFields.add(labelHolder);
         labelHolder.setBounds(190, 330, 173, 30);
 
-        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldHolder.setBorder(null);
         fieldHolder.setForeground(new java.awt.Color(153, 153, 153));
         fieldHolder.setText("Enter Holder");
-        fieldHolder.setBorder(null);
+        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         fieldHolder.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldHolderFocusGained(evt);
@@ -428,6 +492,45 @@ public class ItemManagement extends javax.swing.JPanel {
         panelFields.add(btnDelete);
         btnDelete.setBounds(280, 570, 100, 40);
 
+        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelCode.setText("Custom Code (Silang-YY-XXXX) - Optional");
+        panelFields.add(labelCode);
+        labelCode.setBounds(0, 10, 350, 30);
+
+        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldCode.setForeground(new java.awt.Color(153, 153, 153));
+        fieldCode.setText("Enter Code (XXXX)");
+        fieldCode.setBorder(null);
+        fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                fieldCodeFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                fieldCodeFocusLost(evt);
+            }
+        });
+        fieldCode.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                fieldCodeKeyTyped(evt);
+            }
+        });
+        panelFields.add(fieldCode);
+        fieldCode.setBounds(10, 50, 170, 30);
+
+        imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
+        panelFields.add(imageCode);
+        imageCode.setBounds(0, 40, 187, 50);
+
+        infoCode.setFont(new java.awt.Font("Bahnschrift", 2, 14)); // NOI18N
+        infoCode.setText("'Adding' Stocks");
+        panelFields.add(infoCode);
+        infoCode.setBounds(200, 66, 110, 20);
+
+        infoCode1.setFont(new java.awt.Font("Bahnschrift", 2, 14)); // NOI18N
+        infoCode1.setText("Only works for");
+        panelFields.add(infoCode1);
+        infoCode1.setBounds(200, 48, 110, 20);
+
         tableScroll.setBorder(null);
 
         tableInventory.setModel(new javax.swing.table.DefaultTableModel(
@@ -438,13 +541,24 @@ public class ItemManagement extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "Category", "Name", "Description", "Price", "Delivery Date", "Holder"
+                "", "Name", "Description", "Price", "Quantity", "Delivery Date", "Holder"
             }
         ));
         tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
         tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
         tableInventory.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableInventory);
+
+        radioBatches.setBackground(new java.awt.Color(25, 102, 24));
+        radioBatches.setBorder(null);
+        radioBatches.setSelected(true);
+        radioBatches.setText("Group by Batches");
+        radioBatches.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        radioBatches.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioBatchesActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
@@ -454,7 +568,11 @@ public class ItemManagement extends javax.swing.JPanel {
                 .addGap(17, 17, 17)
                 .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 867, Short.MAX_VALUE)
+                .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 867, Short.MAX_VALUE)
+                    .addGroup(panelMainLayout.createSequentialGroup()
+                        .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelMainLayout.setVerticalGroup(
@@ -463,7 +581,9 @@ public class ItemManagement extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelMainLayout.createSequentialGroup()
-                        .addGap(0, 77, Short.MAX_VALUE)
+                        .addGap(0, 50, Short.MAX_VALUE)
+                        .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 541, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -498,7 +618,7 @@ public class ItemManagement extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(84, Short.MAX_VALUE)
+                .addContainerGap(85, Short.MAX_VALUE)
                 .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(15, 15, 15))
         );
@@ -528,14 +648,6 @@ public class ItemManagement extends javax.swing.JPanel {
         setDefaultField(fieldDOD, PLACEHOLDER_DOD, FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_fieldDODFocusLost
 
-    private void fieldHolderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusGained
-        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldHolderFocusGained
-
-    private void fieldHolderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusLost
-        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldHolderFocusLost
-
     private void fieldPriceKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldPriceKeyTyped
         enforceDigits(evt);
     }//GEN-LAST:event_fieldPriceKeyTyped
@@ -561,32 +673,90 @@ public class ItemManagement extends javax.swing.JPanel {
         String stock_holder = fieldHolder.getText();
 
         String stock_category = DatabaseUtil.getCategoryByItem(stock_name);
+        int stock_batch = generateNewBatch();
 
-        String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_user)\n"
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+        int stock_custom_code = 0;
+        boolean hasCustomCode = false;
+        if (!fieldCode.getText().equals(PLACEHOLDER_CODE)) {
+            stock_custom_code = Integer.parseInt(fieldCode.getText());
+            hasCustomCode = true;
+        }
+        if (fieldCode.getText().equals("0")) {
+            JOptionPane.showMessageDialog(this, "Custom stock code can't be 0!", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-            for (int i = 0; i < stock_quantity; i++) {
-                pst.setString(1, stock_category);
-                pst.setString(2, stock_name);
-                pst.setString(3, stock_desc);
-                pst.setString(4, stock_price);
-                pst.setString(5, stock_deliveryDate);
-                pst.setString(6, stock_holder);
-                pst.executeUpdate();
+            if (hasCustomCode) {
+                String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_id, stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_user, stock_batch)\n"
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+                int stock_custom_codeLoop = stock_custom_code;
+                boolean hasDuplicateCode = false;
+                for (int i = 0; i < stock_quantity; i++) {
+                    String stock_custom_codeString = String.valueOf(stock_custom_codeLoop);
 
-                ResultSet rs = pst.getGeneratedKeys();
-                if (rs.next()) {
-                    int stock_id = rs.getInt(1);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    Date parsedDate = dateFormat.parse(stock_deliveryDate);
+                    if (DatabaseUtil.recordExists(conn, Main.TB_ITEM_STOCK, "stock_id", stock_custom_codeString)) {
+                        JOptionPane.showMessageDialog(this, "(" + stock_custom_codeLoop + ") Custom stock code can't be used. It already exists!", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
+                        hasDuplicateCode = true;
+                        return;
+                    }
+                    stock_custom_codeLoop++;
+                }
+                if (!hasDuplicateCode) {
+                    for (int i = 0; i < stock_quantity; i++) {
+                        pst.setInt(1, stock_custom_code);
+                        pst.setString(2, stock_category);
+                        pst.setString(3, stock_name);
+                        pst.setString(4, stock_desc);
+                        pst.setString(5, stock_price);
+                        pst.setString(6, stock_deliveryDate);
+                        pst.setString(7, stock_holder);
+                        pst.setInt(8, stock_batch);
+                        pst.executeUpdate();
 
-                    String stock_code = "Silang-" + (new SimpleDateFormat("yy").format(parsedDate)) + "-" + stock_id;
-                    PreparedStatement codePst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?");
-                    codePst.setString(1, stock_code);
-                    codePst.setInt(2, stock_id);
-                    codePst.executeUpdate();
+                        ResultSet rs = pst.getGeneratedKeys();
+                        if (rs.next()) {
+                            int stock_id = stock_custom_code;
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                            Date parsedDate = dateFormat.parse(stock_deliveryDate);
+
+                            String stock_code = "Silang-" + (new SimpleDateFormat("yy").format(parsedDate)) + "-" + stock_id;
+                            PreparedStatement codePst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?");
+                            codePst.setString(1, stock_code);
+                            codePst.setInt(2, stock_id);
+                            codePst.executeUpdate();
+                        }
+
+                        stock_custom_code++;
+                    }
+                }
+            } else {
+                String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_user, stock_batch)\n"
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+                for (int i = 0; i < stock_quantity; i++) {
+                    pst.setString(1, stock_category);
+                    pst.setString(2, stock_name);
+                    pst.setString(3, stock_desc);
+                    pst.setString(4, stock_price);
+                    pst.setString(5, stock_deliveryDate);
+                    pst.setString(6, stock_holder);
+                    pst.setInt(7, stock_batch);
+                    pst.executeUpdate();
+
+                    ResultSet rs = pst.getGeneratedKeys();
+                    if (rs.next()) {
+                        int stock_id = rs.getInt(1);
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        Date parsedDate = dateFormat.parse(stock_deliveryDate);
+
+                        String stock_code = "Silang-" + (new SimpleDateFormat("yy").format(parsedDate)) + "-" + stock_id;
+                        PreparedStatement codePst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?");
+                        codePst.setString(1, stock_code);
+                        codePst.setInt(2, stock_id);
+                        codePst.executeUpdate();
+                    }
                 }
             }
             JOptionPane.showMessageDialog(this, "(" + stock_quantity + ") Stock/s Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -605,7 +775,21 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_btnDODActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        if (!fieldQuantity.getText().equals(PLACEHOLDER_QTY)) {
+            fieldQuantity.setText("");
+            setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+            JOptionPane.showMessageDialog(this, "Stock quantity cannot be updated! \n\nPlease just use 'Add' or 'Delete' to update the new stock quantity.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+//        if (!fieldCode.getText().equals(PLACEHOLDER_CODE)) {
+//            fieldCode.setText("");
+//            setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
+//            JOptionPane.showMessageDialog(this, "Stock code are not allowed to be updated.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+//            return;
+//        }
+
         int stock_id = Integer.parseInt(fieldID.getText());
+        int stock_batch_end = Integer.parseInt(fieldID2.getText());
         String stock_name = comboName.getSelectedItem().toString();
         String stock_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
         String stock_price = fieldPrice.getText();
@@ -623,7 +807,7 @@ public class ItemManagement extends javax.swing.JPanel {
             );
 
             if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_category = ?, stock_name = ?, stock_desc = ?, stock_price = ?, stock_dod = ?, stock_user = ? WHERE stock_id = ?";
+                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_category = ?, stock_name = ?, stock_desc = ?, stock_price = ?, stock_dod = ?, stock_user = ? WHERE stock_id >= ? && stock_id <= ?";
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setString(1, stock_category);
                 pst.setString(2, stock_name);
@@ -632,6 +816,7 @@ public class ItemManagement extends javax.swing.JPanel {
                 pst.setString(5, stock_deliveryDate);
                 pst.setString(6, stock_holder);
                 pst.setInt(7, stock_id);
+                pst.setInt(8, stock_batch_end);
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -646,6 +831,7 @@ public class ItemManagement extends javax.swing.JPanel {
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         int stock_id = Integer.parseInt(fieldID.getText());
+        int stock_batch_end = Integer.parseInt(fieldID2.getText());
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
@@ -656,9 +842,10 @@ public class ItemManagement extends javax.swing.JPanel {
             );
 
             if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "DELETE FROM " + Main.TB_ITEM_STOCK + " WHERE stock_id = ?";
+                String query = "DELETE FROM " + Main.TB_ITEM_STOCK + " WHERE stock_id >= ? && stock_id <= ?";
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setInt(1, stock_id);
+                pst.setInt(2, stock_batch_end);
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Stock Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -670,27 +857,85 @@ public class ItemManagement extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
+    private void radioBatchesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchesActionPerformed
+        if (isGroupedByBatches()) {
+            currentSearchQuery = "SELECT stock_id, stock_batch, "
+                    + "stock_category, "
+                    + "stock_name, "
+                    + "stock_desc, "
+                    + "(stock_price * COUNT(*)) AS stock_price, "
+                    + "stock_dod, "
+                    + "stock_user, "
+                    + "CONCAT( "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
+                    + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
+                    + "    CASE "
+                    + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
+                    + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
+                    + "    END "
+                    + ") AS stock_code, "
+                    + "COUNT(*) AS stock_quantity "
+                    + "FROM " + Main.TB_ITEM_STOCK + " "
+                    + "GROUP BY stock_batch ORDER BY stock_id ASC";
+            refreshTableInventory();
+        } else {
+            currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " ORDER BY stock_id ASC";
+            refreshTableInventory();
+
+            fieldQuantity.setEnabled(true);
+            fieldQuantity.setText("");
+            setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+        }
+    }//GEN-LAST:event_radioBatchesActionPerformed
+
+    private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
+        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldCodeFocusGained
+
+    private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
+        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldCodeFocusLost
+
+    private void fieldCodeKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldCodeKeyTyped
+        enforceDigits(evt);
+    }//GEN-LAST:event_fieldCodeKeyTyped
+
+    private void fieldHolderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusGained
+        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldHolderFocusGained
+
+    private void fieldHolderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusLost
+        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldHolderFocusLost
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnDOD;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnUpdate;
-    private ProjectINSY.java.combo_suggestion.ComboBoxSuggestion comboName;
-    private ProjectINSY.java.date.DateChooser dateDOD;
+    private ProjectINSY.java.swing.ComboBoxSuggestion comboName;
+    private ProjectINSY.java.swing.Date.DateChooser dateDOD;
+    private javax.swing.JTextField fieldCode;
     private javax.swing.JTextField fieldDOD;
     private javax.swing.JTextField fieldDesc;
-    private javax.swing.JTextField fieldHolder;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldHolder;
     private javax.swing.JTextField fieldID;
+    private javax.swing.JTextField fieldID2;
     private javax.swing.JTextField fieldPrice;
     private javax.swing.JTextField fieldQuantity;
+    private javax.swing.JLabel imageCode;
     private javax.swing.JLabel imageDOD;
     private javax.swing.JLabel imageDesc;
     private javax.swing.JLabel imageHolder;
     private javax.swing.JLabel imageName;
     private javax.swing.JLabel imagePrice;
     private javax.swing.JLabel imageQuantity;
+    private javax.swing.JLabel infoCode;
+    private javax.swing.JLabel infoCode1;
     private javax.swing.JLabel labelAdd;
+    private javax.swing.JLabel labelCode;
     private javax.swing.JLabel labelDOD;
     private javax.swing.JLabel labelDelete;
     private javax.swing.JLabel labelDesc;
@@ -702,6 +947,7 @@ public class ItemManagement extends javax.swing.JPanel {
     private ProjectINSY.java.ui.panel.GradientPanel panelBlur;
     private javax.swing.JPanel panelFields;
     private javax.swing.JPanel panelMain;
+    private static ProjectINSY.java.swing.RadioButtonCustom radioBatches;
     private ProjectINSY.java.swing.Table tableInventory;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

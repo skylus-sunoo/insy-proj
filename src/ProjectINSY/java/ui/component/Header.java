@@ -4,7 +4,7 @@
  */
 package ProjectINSY.java.ui.component;
 
-import ProjectINSY.java.swing.shadow.ShadowRenderer;
+import ProjectINSY.java.swing.Shadow.ShadowRenderer;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import java.awt.Color;
 import java.awt.Graphics;

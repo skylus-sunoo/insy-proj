@@ -9,6 +9,7 @@ package ProjectINSY.java.util;
  * @author admin
  */
 import ProjectINSY.java.Main;
+import ProjectINSY.java.ui.ItemManagement;
 import com.mysql.cj.jdbc.Blob;
 import java.awt.Color;
 import java.awt.Image;
@@ -19,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.Date;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -75,17 +77,36 @@ public class TableUtil {
                 try {
                     if (null != tableEnum) {
                         switch (tableEnum) {
+                            //<editor-fold defaultstate="collapsed" desc="STOCK DISTINCT">
+                            case STOCK_DISTINCT: {
+                                String category = rs.getString("stock_category");
+                                String name = rs.getString("stock_name");
+                                String quantity = rs.getString("stock_quantity");
+                                model.addRow(new Object[]{
+                                    category, name, quantity
+                                });
+                                break;
+                            }
+                            //</editor-fold>
                             //<editor-fold defaultstate="collapsed" desc="STOCK DELIVERY">
                             case STOCK_DELIVERY: {
                                 String code = rs.getString("stock_code");
-                                String category = rs.getString("stock_category");
+//                                String category = rs.getString("stock_category");
                                 String name = rs.getString("stock_name");
                                 String desc = rs.getString("stock_desc");
+                                int quantity = 1;
                                 float price = rs.getFloat("stock_price");
                                 Date deliveryDate = rs.getDate("stock_dod");
                                 String holder = rs.getString("stock_user");
+
+                                if (ItemManagement.isGroupedByBatches()) {
+                                    String[] parts = code.split("-");
+                                    code = String.join("-", Arrays.copyOfRange(parts, 1, parts.length));
+                                    quantity = rs.getInt("stock_quantity");
+                                }
+
                                 model.addRow(new Object[]{
-                                    code, category, name, desc, price, deliveryDate, holder
+                                    code, name, desc, price, quantity, deliveryDate, holder
                                 });
                                 break;
                             }

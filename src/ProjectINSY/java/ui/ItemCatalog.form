@@ -497,7 +497,7 @@
                     </Constraint>
                   </Constraints>
                 </Component>
-                <Component class="ProjectINSY.java.combo_suggestion.ComboBoxSuggestion" name="comboCategory">
+                <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="comboCategory">
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="null"/>
@@ -727,7 +727,7 @@
                     </Constraint>
                   </Constraints>
                 </Component>
-                <Component class="ProjectINSY.java.combo_suggestion.ComboBoxSuggestion" name="comboUOM">
+                <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="comboUOM">
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="null"/>

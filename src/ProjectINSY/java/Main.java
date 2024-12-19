@@ -53,6 +53,7 @@ public class Main extends javax.swing.JFrame {
     public static String TB_USER = "tb_user";
     public static String TB_CATALOG_CATEGORY = "tb_catalog_category";
     public static String TB_CATALOG_ITEM = "tb_catalog_item";
+    public static String TB_ITEM_BATCH = "tb_item_batch";
     public static String TB_ITEM_STOCK = "tb_item_stock";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Session">
@@ -207,6 +208,7 @@ public class Main extends javax.swing.JFrame {
 
     public void setDefaultForm() {
         setForm(panelForm, ItemStock);
+        ItemStock.refreshTableInventory();
     }
 
     public void setLogInForm() {
@@ -217,6 +219,9 @@ public class Main extends javax.swing.JFrame {
         setForm(panelForm, com);
 
         switch (com) {
+            case ItemStock form -> {
+                form.refreshTableInventory();
+            }
             case ItemManagement form -> {
                 form.repopulateNameComboBox();
                 form.refreshTableInventory();

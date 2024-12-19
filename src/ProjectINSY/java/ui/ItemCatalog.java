@@ -201,7 +201,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         tableItem = new ProjectINSY.java.swing.Table();
         panelItemFields = new javax.swing.JPanel();
         labelCategory = new javax.swing.JLabel();
-        comboCategory = new ProjectINSY.java.combo_suggestion.ComboBoxSuggestion();
+        comboCategory = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageCategory = new javax.swing.JLabel();
         labelName = new javax.swing.JLabel();
         fieldName = new javax.swing.JTextField();
@@ -213,7 +213,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         labelDeleteItem = new javax.swing.JLabel();
         btnDeleteItem = new javax.swing.JButton();
         labelUOM = new javax.swing.JLabel();
-        comboUOM = new ProjectINSY.java.combo_suggestion.ComboBoxSuggestion();
+        comboUOM = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageUOM = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(1366, 768));
@@ -771,8 +771,8 @@ public class ItemCatalog extends javax.swing.JPanel {
     private javax.swing.JButton btnDeleteItem;
     private javax.swing.JButton btnUpdateCategory;
     private javax.swing.JButton btnUpdateItem;
-    private ProjectINSY.java.combo_suggestion.ComboBoxSuggestion comboCategory;
-    private ProjectINSY.java.combo_suggestion.ComboBoxSuggestion comboUOM;
+    private ProjectINSY.java.swing.ComboBoxSuggestion comboCategory;
+    private ProjectINSY.java.swing.ComboBoxSuggestion comboUOM;
     private javax.swing.JTextField fieldCategoryID;
     private javax.swing.JTextField fieldCategoryName;
     private javax.swing.JTextField fieldItemID;
