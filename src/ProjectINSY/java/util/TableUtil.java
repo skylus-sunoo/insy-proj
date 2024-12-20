@@ -12,6 +12,7 @@ import ProjectINSY.java.Main;
 import ProjectINSY.java.ui.ItemManagement;
 import com.mysql.cj.jdbc.Blob;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Image;
 import static java.awt.image.ImageObserver.ERROR;
 import static java.awt.image.ImageObserver.WIDTH;
@@ -20,16 +21,22 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Date;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public class TableUtil {
 
@@ -67,6 +74,62 @@ public class TableUtil {
         tableName.setDefaultEditor(Object.class, null);
         tableName.setAutoCreateRowSorter(true);
         tableName.setFillsViewportHeight(true);
+    }
+
+    public static void fixedColumnAll(JTable tableName) {
+        for (int i = 0; i < tableName.getColumnCount(); i++) {
+            tableName.getColumnModel().getColumn(i).setResizable(false);
+        }
+    }
+
+    public enum EnumAlignment {
+        CENTER, LEFT, RIGHT
+    }
+
+    public static void setColumnHorizontalAligment(JTable tableName, int columnIndex, EnumAlignment enumAlignment) {
+        DefaultTableCellRenderer alignment = new DefaultTableCellRenderer();
+        if (null != enumAlignment) switch (enumAlignment) {
+            case CENTER -> alignment.setHorizontalAlignment(JLabel.CENTER);
+            case LEFT -> alignment.setHorizontalAlignment(JLabel.LEFT);
+            case RIGHT -> alignment.setHorizontalAlignment(JLabel.RIGHT);
+            default -> {
+            }
+        }
+        tableName.getColumnModel().getColumn(columnIndex).setCellRenderer(alignment);
+    }
+
+    public static void sorterNumbers(JTable tableName, int columnIndex) {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(tableName.getModel());
+        tableName.setRowSorter(sorter);
+
+        sorter.setComparator(columnIndex, (String o1, String o2) -> {
+            try {
+                Float float1 = Float.valueOf(o1);
+                Float float2 = Float.valueOf(o2);
+                return Float.compare(float1, float2);
+            } catch (NumberFormatException e) {
+                return o1.compareTo(o2);
+            }
+        });
+    }
+
+    public static void floatFormatDecimal(JTable tableName, int columnIndex) {
+        TableColumn column = tableName.getColumnModel().getColumn(columnIndex);
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+
+        column.setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                if (value instanceof Number number) {
+                    value = df.format(number);
+                }
+
+                setText(value.toString());
+                return comp;
+            }
+        });
     }
 
     public final static void refreshTable(JTable tableName, String query, TableEnum tableEnum) {

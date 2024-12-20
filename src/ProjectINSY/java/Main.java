@@ -208,6 +208,7 @@ public class Main extends javax.swing.JFrame {
 
     public void setDefaultForm() {
         setForm(panelForm, ItemStock);
+        ItemStock.repopulateComboBox();
         ItemStock.refreshTableInventory();
     }
 
@@ -220,6 +221,7 @@ public class Main extends javax.swing.JFrame {
 
         switch (com) {
             case ItemStock form -> {
+                form.repopulateComboBox();
                 form.refreshTableInventory();
             }
             case ItemManagement form -> {

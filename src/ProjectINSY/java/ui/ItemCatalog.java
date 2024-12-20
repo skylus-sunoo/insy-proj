@@ -8,9 +8,9 @@ import ProjectINSY.java.Main;
 import ProjectINSY.java.util.DatabaseUtil;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
-import static ProjectINSY.java.util.GuiUtil.enforceDigits;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
+import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
@@ -19,21 +19,10 @@ import static ProjectINSY.java.util.TableUtil.defaultTable;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import static java.awt.image.ImageObserver.ERROR;
-import static java.awt.image.ImageObserver.WIDTH;
-import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -54,6 +43,8 @@ public class ItemCatalog extends javax.swing.JPanel {
      */
     public ItemCatalog() {
         initComponents();
+        setScrollBarCustom(scrollCategory);
+        setScrollBarCustom(tableScroll);
 
         setTransparentFrame(ItemCatalog.this, fieldCategoryName, fieldName);
         setTransparentFrame(btnAddCategory, btnUpdateCategory, btnDeleteCategory, btnAddItem, btnUpdateItem, btnDeleteItem);
@@ -223,6 +214,8 @@ public class ItemCatalog extends javax.swing.JPanel {
 
         panelBlur.setColorEnd(new java.awt.Color(241, 239, 241));
         panelBlur.setColorStart(new java.awt.Color(241, 239, 241));
+        panelBlur.setMaximumSize(new java.awt.Dimension(1326, 669));
+        panelBlur.setMinimumSize(new java.awt.Dimension(1326, 669));
         panelBlur.setName(""); // NOI18N
         panelBlur.setShadowIntensity(255);
 
@@ -241,6 +234,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         fieldCategoryName.setForeground(new java.awt.Color(153, 153, 153));
         fieldCategoryName.setText("Enter Category");
         fieldCategoryName.setBorder(null);
+        fieldCategoryName.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldCategoryName.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldCategoryNameFocusGained(evt);
@@ -423,6 +417,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         fieldName.setForeground(new java.awt.Color(153, 153, 153));
         fieldName.setText("Enter Name");
         fieldName.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 2));
+        fieldName.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldName.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldNameFocusGained(evt);
@@ -574,7 +569,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(84, Short.MAX_VALUE)
+                .addContainerGap(93, Short.MAX_VALUE)
                 .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(15, 15, 15))
         );

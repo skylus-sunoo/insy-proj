@@ -9,6 +9,7 @@ package ProjectINSY.java.util;
  * @author admin
  */
 import ProjectINSY.java.Main;
+import ProjectINSY.java.swing.ScrollBarCustom;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import java.awt.Color;
 import java.awt.Image;
@@ -30,6 +31,8 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -90,6 +93,13 @@ public class GuiUtil {
 //            case SearchComboBoxField search -> search.repopulateComboBox(search.selectedSearch);
 //            default -> {}
 //        }
+    }
+
+    public static void setScrollBarCustom(JScrollPane tableScroll) {
+        tableScroll.setVerticalScrollBar(new ScrollBarCustom());
+        ScrollBarCustom sp = new ScrollBarCustom();
+        sp.setOrientation(JScrollBar.HORIZONTAL);
+        tableScroll.setHorizontalScrollBar(sp);
     }
     
     public static void repopulateComboBox(JComboBox comboBox, String columnName, String query) {

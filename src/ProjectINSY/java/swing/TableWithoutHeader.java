@@ -44,11 +44,11 @@ public final class TableWithoutHeader extends JPanel {
     private JScrollPane createCustomScrollPane(JTable table) {
         JScrollPane customScrollPane = new JScrollPane(table);
 
-        ScrollbarCustom verticalScrollBar = new ScrollbarCustom();
+        ScrollBarCustom verticalScrollBar = new ScrollBarCustom();
         verticalScrollBar.setPreferredSize(new Dimension(12, 70));
         customScrollPane.setVerticalScrollBar(verticalScrollBar);
 
-        ScrollbarCustom horizontalScrollBar = new ScrollbarCustom();
+        ScrollBarCustom horizontalScrollBar = new ScrollBarCustom();
         horizontalScrollBar.setOrientation(JScrollBar.HORIZONTAL);
         customScrollPane.setHorizontalScrollBar(horizontalScrollBar);
         customScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);

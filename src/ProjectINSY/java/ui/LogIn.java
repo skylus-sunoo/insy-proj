@@ -23,6 +23,7 @@ import static ProjectINSY.java.util.GuiUtil.*;
 import static ProjectINSY.java.util.MessageUtil.*;
 import static ProjectINSY.java.util.SecurityUtil.*;
 import static ProjectINSY.java.util.SessionUtil.*;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 
 /**
@@ -63,6 +64,23 @@ public class LogIn extends javax.swing.JPanel {
 
         fieldEmail.getDocument().addDocumentListener(new FieldChangeListener());
         fieldPassword.getDocument().addDocumentListener(new FieldChangeListener());
+
+//        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher((KeyEvent e) -> {
+//            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_ENTER && panelLogIn.isVisible()) {
+//                if (btnLogIn.isEnabled()) {
+//                    String log_email = fieldEmail.getText();
+//                    String log_password = new String(fieldPassword.getPassword()).trim();
+//
+//                    if (isValidEmail(log_email)) {
+//                        logInAccount(log_email, log_password);
+//                    } else {
+//                        paneInvalidEmail();
+//                    }
+//                }
+//                return true;
+//            }
+//            return false;
+//        });
     }
 
     private class FieldChangeListener implements DocumentListener, ActionListener {

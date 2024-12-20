@@ -18,6 +18,9 @@ import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
 import static ProjectINSY.java.util.TableUtil.defaultTable;
+import static ProjectINSY.java.util.TableUtil.floatFormatDecimal;
+import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
+import static ProjectINSY.java.util.TableUtil.sorterNumbers;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,15 +33,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
+import ProjectINSY.java.swing.ScrollBarCustom;
+import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 
 /**
  *
@@ -47,24 +55,24 @@ import javax.swing.event.ListSelectionEvent;
 public class ItemManagement extends javax.swing.JPanel {
 
     public String currentSearchQuery = "SELECT stock_id, stock_batch, "
-                    + "stock_category, "
-                    + "stock_name, "
-                    + "stock_desc, "
-                    + "(stock_price * COUNT(*)) AS stock_price, "
-                    + "stock_dod, "
-                    + "stock_user, "
-                    + "CONCAT( "
-                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
-                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
-                    + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
-                    + "    CASE "
-                    + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
-                    + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
-                    + "    END "
-                    + ") AS stock_code, "
-                    + "COUNT(*) AS stock_quantity "
-                    + "FROM " + Main.TB_ITEM_STOCK + " "
-                    + "GROUP BY stock_batch ORDER BY stock_id ASC";
+            + "stock_category, "
+            + "stock_name, "
+            + "stock_desc, "
+            + "(stock_price * COUNT(*)) AS stock_price, "
+            + "stock_dod, "
+            + "stock_user, "
+            + "CONCAT( "
+            + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
+            + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
+            + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
+            + "    CASE "
+            + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
+            + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
+            + "    END "
+            + ") AS stock_code, "
+            + "COUNT(*) AS stock_quantity "
+            + "FROM " + Main.TB_ITEM_STOCK + " "
+            + "GROUP BY stock_batch ORDER BY stock_id ASC";
 
     private final String PLACEHOLDER_CODE = "Enter Code (XXXX)";
     private final String PLACEHOLDER_DESC = "Enter Description";
@@ -73,11 +81,15 @@ public class ItemManagement extends javax.swing.JPanel {
     private final String PLACEHOLDER_QTY = "1";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
 
+    private final String validDatePattern = "^(\\d{4})-(\\d{2})-(\\d{2})$";
+
     /**
      * Creates new form LogIn
      */
     public ItemManagement() {
         initComponents();
+
+        setScrollBarCustom(tableScroll);
 
         setTransparentFrame(ItemManagement.this, fieldDesc, fieldPrice, fieldDOD, fieldQuantity, fieldHolder);
         setTransparentFrame(btnAdd, btnUpdate, btnDelete, btnDOD);
@@ -95,6 +107,12 @@ public class ItemManagement extends javax.swing.JPanel {
                 }
             }
         });
+
+        setColumnHorizontalAligment(tableInventory, 3, TableUtil.EnumAlignment.LEFT);
+        floatFormatDecimal(tableInventory, 3);
+        setColumnHorizontalAligment(tableInventory, 4, TableUtil.EnumAlignment.LEFT);
+//        sorterNumbers(tableInventory, 3);
+//        sorterNumbers(tableInventory, 4);
     }
 
     public void selectTableStock(int selectedRow) {
@@ -106,7 +124,7 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldQuantity.setText("");
         setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
 
-        fieldPrice.setText(String.valueOf(actual_price / quantity));
+        fieldPrice.setText(String.valueOf(actual_price / quantity) + "0");
 
         if (fieldDesc.getText().isEmpty()) {
             setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
@@ -249,13 +267,14 @@ public class ItemManagement extends javax.swing.JPanel {
         labelDelete = new javax.swing.JLabel();
         btnDelete = new javax.swing.JButton();
         labelCode = new javax.swing.JLabel();
-        fieldCode = new javax.swing.JTextField();
+        fieldCode = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
         imageCode = new javax.swing.JLabel();
         infoCode = new javax.swing.JLabel();
         infoCode1 = new javax.swing.JLabel();
         tableScroll = new javax.swing.JScrollPane();
         tableInventory = new ProjectINSY.java.swing.Table();
         radioBatches = new ProjectINSY.java.swing.RadioButtonCustom();
+        btnFilter = new javax.swing.JButton();
 
         dateDOD.setForeground(new java.awt.Color(25, 102, 24));
         dateDOD.setDateFormat("yyyy-MM-dd");
@@ -268,6 +287,9 @@ public class ItemManagement extends javax.swing.JPanel {
 
         panelBlur.setColorEnd(new java.awt.Color(241, 239, 241));
         panelBlur.setColorStart(new java.awt.Color(241, 239, 241));
+        panelBlur.setMaximumSize(new java.awt.Dimension(1326, 669));
+        panelBlur.setMinimumSize(new java.awt.Dimension(1326, 669));
+        panelBlur.setPreferredSize(new java.awt.Dimension(1326, 669));
         panelBlur.setShadowIntensity(255);
 
         panelMain.setBackground(new java.awt.Color(255, 255, 255));
@@ -299,6 +321,7 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldDesc.setForeground(new java.awt.Color(153, 153, 153));
         fieldDesc.setText("Enter Description");
         fieldDesc.setBorder(null);
+        fieldDesc.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldDesc.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldDescFocusGained(evt);
@@ -323,6 +346,7 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldPrice.setForeground(new java.awt.Color(153, 153, 153));
         fieldPrice.setText("Enter Price");
         fieldPrice.setBorder(null);
+        fieldPrice.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldPrice.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldPriceFocusGained(evt);
@@ -344,13 +368,14 @@ public class ItemManagement extends javax.swing.JPanel {
         imagePrice.setBounds(0, 280, 187, 50);
 
         labelDOD.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
-        labelDOD.setText("Delivery Date (Y-M-D)");
+        labelDOD.setText("Delivery Date");
         panelFields.add(labelDOD);
         labelDOD.setBounds(190, 250, 190, 30);
 
         fieldDOD.setEditable(true);
         fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         fieldDOD.setBorder(null);
+        fieldDOD.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldDOD.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldDODFocusGained(evt);
@@ -380,6 +405,7 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldQuantity.setForeground(new java.awt.Color(153, 153, 153));
         fieldQuantity.setText("1");
         fieldQuantity.setBorder(null);
+        fieldQuantity.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldQuantity.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldQuantityFocusGained(evt);
@@ -497,10 +523,10 @@ public class ItemManagement extends javax.swing.JPanel {
         panelFields.add(labelCode);
         labelCode.setBounds(0, 10, 350, 30);
 
-        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldCode.setBorder(null);
         fieldCode.setForeground(new java.awt.Color(153, 153, 153));
         fieldCode.setText("Enter Code (XXXX)");
-        fieldCode.setBorder(null);
+        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldCodeFocusGained(evt);
@@ -515,7 +541,7 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldCode);
-        fieldCode.setBounds(10, 50, 170, 30);
+        fieldCode.setBounds(9, 50, 170, 30);
 
         imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelFields.add(imageCode);
@@ -543,7 +569,15 @@ public class ItemManagement extends javax.swing.JPanel {
             new String [] {
                 "", "Name", "Description", "Price", "Quantity", "Delivery Date", "Holder"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Float.class, java.lang.Float.class, java.lang.Object.class, java.lang.Object.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
         tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
         tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
         tableInventory.setSelectionBackground(new java.awt.Color(25, 102, 24));
@@ -560,6 +594,17 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
 
+        btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch.png"))); // NOI18N
+        btnFilter.setToolTipText("");
+        btnFilter.setBorder(null);
+        btnFilter.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnFilter.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch_pressed.png"))); // NOI18N
+        btnFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFilterActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
@@ -571,6 +616,9 @@ public class ItemManagement extends javax.swing.JPanel {
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 867, Short.MAX_VALUE)
                     .addGroup(panelMainLayout.createSequentialGroup()
+                        .addGap(163, 163, 163)
+                        .addComponent(btnFilter)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -581,10 +629,11 @@ public class ItemManagement extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelMainLayout.createSequentialGroup()
-                        .addGap(0, 50, Short.MAX_VALUE)
-                        .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(radioBatches, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 541, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE))
                     .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -603,7 +652,7 @@ public class ItemManagement extends javax.swing.JPanel {
             .addGroup(panelBlurLayout.createSequentialGroup()
                 .addGap(17, 17, 17)
                 .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -618,7 +667,7 @@ public class ItemManagement extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(85, Short.MAX_VALUE)
+                .addContainerGap(84, Short.MAX_VALUE)
                 .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(15, 15, 15))
         );
@@ -683,6 +732,18 @@ public class ItemManagement extends javax.swing.JPanel {
         }
         if (fieldCode.getText().equals("0")) {
             JOptionPane.showMessageDialog(this, "Custom stock code can't be 0!", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (stock_deliveryDate.matches(validDatePattern)) {
+            try {
+                LocalDate.parse(stock_deliveryDate);
+                System.out.println("Valid date: " + stock_deliveryDate);
+            } catch (DateTimeParseException e) {
+                JOptionPane.showMessageDialog(this, "Invalid date. The date is not valid.", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid date format. Please use YYYY-MM-DD.", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -889,6 +950,14 @@ public class ItemManagement extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_radioBatchesActionPerformed
 
+    private void fieldHolderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusGained
+        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldHolderFocusGained
+
+    private void fieldHolderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusLost
+        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldHolderFocusLost
+
     private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
         setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusGained
@@ -901,23 +970,24 @@ public class ItemManagement extends javax.swing.JPanel {
         enforceDigits(evt);
     }//GEN-LAST:event_fieldCodeKeyTyped
 
-    private void fieldHolderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusGained
-        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldHolderFocusGained
+    private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
+        new FilterFrame(this).setVisible(true);
+        showFilterFrame(false);
+    }//GEN-LAST:event_btnFilterActionPerformed
 
-    private void fieldHolderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusLost
-        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldHolderFocusLost
-
+    public void showFilterFrame(boolean bool){
+        btnFilter.setEnabled(bool);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnDOD;
     private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnFilter;
     private javax.swing.JButton btnUpdate;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboName;
     private ProjectINSY.java.swing.Date.DateChooser dateDOD;
-    private javax.swing.JTextField fieldCode;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldCode;
     private javax.swing.JTextField fieldDOD;
     private javax.swing.JTextField fieldDesc;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldHolder;

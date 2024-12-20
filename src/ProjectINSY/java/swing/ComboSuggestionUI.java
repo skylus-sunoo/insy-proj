@@ -25,7 +25,7 @@ import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
-import ProjectINSY.java.swing.ScrollbarCustom;
+import ProjectINSY.java.swing.ScrollBarCustom;
 
 public class ComboSuggestionUI extends BasicComboBoxUI {
 
@@ -116,10 +116,10 @@ public class ComboSuggestionUI extends BasicComboBoxUI {
         protected JScrollPane createScroller() {
             JScrollPane scroll = super.createScroller();
             list.setBackground(Color.WHITE);
-            ScrollbarCustom sb = new ScrollbarCustom();
+            ScrollBarCustom sb = new ScrollBarCustom();
             sb.setPreferredSize(new Dimension(12, 70));
             scroll.setVerticalScrollBar(sb);
-            ScrollbarCustom sbH = new ScrollbarCustom();
+            ScrollBarCustom sbH = new ScrollBarCustom();
             sbH.setOrientation(JScrollBar.HORIZONTAL);
             scroll.setHorizontalScrollBar(sbH);
             scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
