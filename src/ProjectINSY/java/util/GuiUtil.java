@@ -101,7 +101,7 @@ public class GuiUtil {
         sp.setOrientation(JScrollBar.HORIZONTAL);
         tableScroll.setHorizontalScrollBar(sp);
     }
-    
+
     public static void repopulateComboBox(JComboBox comboBox, String columnName, String query) {
         Set<String> uniqueItems = new HashSet<>();
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = DatabaseUtil.prepareQuery(conn, query); ResultSet rs = pst.executeQuery()) {
@@ -122,7 +122,7 @@ public class GuiUtil {
             if (hasMisc) {
                 sortedItems.remove("Miscellaneous");
             }
-            
+
             Collections.sort(sortedItems, String.CASE_INSENSITIVE_ORDER);
             if (hasMisc) {
                 sortedItems.add(0, "Miscellaneous"); // ensures Miscellaneous is index 1
@@ -205,10 +205,12 @@ public class GuiUtil {
 
     public static void resetBtnEnability(JComponent component, JButton... buttons) {
         boolean enable = false;
-        
+
         switch (component) {
-            case JTextField jTextField -> enable = !jTextField.getText().equals("");
-            case JLabel jLabel -> enable = !jLabel.getText().equals("");
+            case JTextField jTextField ->
+                enable = !jTextField.getText().equals("");
+            case JLabel jLabel ->
+                enable = !jLabel.getText().equals("");
             default -> {
             }
         }
@@ -216,5 +218,25 @@ public class GuiUtil {
         for (JButton button : buttons) {
             button.setEnabled(enable);
         }
+    }
+
+    public static String cleanSpaces(String input) {
+        StringBuilder result = new StringBuilder();
+
+        boolean previousIsSpace = false;
+
+        for (char c : input.toCharArray()) {
+            if (c == ' ') {
+                if (!previousIsSpace) {
+                    result.append(c);
+                    previousIsSpace = true;
+                }
+            } else {
+                result.append(c);
+                previousIsSpace = false;
+            }
+        }
+
+        return result.toString();
     }
 }

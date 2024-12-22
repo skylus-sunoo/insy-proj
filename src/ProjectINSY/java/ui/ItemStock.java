@@ -5,8 +5,12 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.model.Filter;
+import ProjectINSY.java.model.Filter.FilterComparator;
+import ProjectINSY.java.model.Filter.FilterOrder;
 import ProjectINSY.java.util.GuiUtil;
 import static ProjectINSY.java.util.GuiUtil.enforceDigits;
+import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import ProjectINSY.java.util.TableUtil;
 import ProjectINSY.java.util.TableUtil.EnumAlignment;
@@ -14,13 +18,7 @@ import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.TableUtil.fixedColumnAll;
 import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
 import static ProjectINSY.java.util.TableUtil.sorterNumbers;
-import java.util.Comparator;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
+import java.awt.Color;
 
 /**
  *
@@ -28,39 +26,23 @@ import javax.swing.table.TableRowSorter;
  */
 public class ItemStock extends javax.swing.JPanel {
 
-    private class Filter {
-
-        private String value;
-
-        public Filter(String initialValue) {
-            this.value = initialValue;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
-    private final Filter filterCategory = new Filter("stock_category IS NOT NULL ");
-    private final Filter filterName = new Filter("&& stock_name IS NOT NULL");
-    private final Filter filterQuantityStart = new Filter("stock_quantity >= 1 ");
-    private final Filter filterQuantityEnd = new Filter("&& stock_quantity <= 9999 ");
+    private final Filter filterCategory = new Filter(FilterOrder.START, "stock_category", FilterComparator.EQUAL, "- - Select Category - -");
+    private final Filter filterName = new Filter(FilterOrder.NOT_START, "stock_name", FilterComparator.EQUAL, "- - Select Name - -");
+    private final Filter filterQuantityStart = new Filter(FilterOrder.START, "stock_quantity", FilterComparator.GREATER_THAN, null);
+    private final Filter filterQuantityEnd = new Filter(FilterOrder.NOT_START, "stock_quantity", FilterComparator.LESSER_THAN, null);
 
     public String currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
             + Main.TB_ITEM_STOCK + " WHERE "
-            + filterCategory.getValue() + filterName.getValue()
+            + filterCategory.getFilterSQL() + filterName.getFilterSQL()
             + "GROUP BY stock_category, stock_name HAVING "
-            + filterQuantityStart.getValue() + filterQuantityEnd.getValue();
+            + filterQuantityStart.getFilterSQL() + filterQuantityEnd.getFilterSQL();
 
     /**
      * Creates new form LogIn
      */
     public ItemStock() {
         initComponents();
+
         btnSearch.setVisible(false);
         setScrollBarCustom(tableScroll);
 
@@ -85,71 +67,20 @@ public class ItemStock extends javax.swing.JPanel {
 
     public void repopulateComboBox() {
         GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        searchCategory.insertItemAt("- - Select Category - -", 0);
+        searchCategory.insertItemAt(filterCategory.getDefaultString(), 0);
         searchCategory.setSelectedIndex(0);
 
         GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        searchName.insertItemAt("- - Select Name - -", 0);
+        searchName.insertItemAt(filterName.getDefaultString(), 0);
         searchName.setSelectedIndex(0);
     }
 
     private void resetSearchQuery() {
         currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
                 + Main.TB_ITEM_STOCK + " WHERE "
-                + filterCategory.getValue() + filterName.getValue()
+                + filterCategory.getFilterSQL() + filterName.getFilterSQL()
                 + "GROUP BY stock_category, stock_name HAVING "
-                + filterQuantityStart.getValue() + filterQuantityEnd.getValue();
-    }
-
-    private enum EnumFilterType {
-        EQUAL, EQUAL_OR_GREATER, EQUAL_OR_LESSER
-    }
-
-    private void createFilter(Object inputComponent, String defaultString, String column, Filter filter, EnumFilterType filterType) {
-        String selectedValue = null;
-
-        if (inputComponent instanceof JComboBox) {
-            JComboBox<?> comboBox = (JComboBox<?>) inputComponent;
-            Object selectedItem = comboBox.getSelectedItem();
-            if (selectedItem != null) {
-                selectedValue = selectedItem.toString();
-            }
-        } else if (inputComponent instanceof JTextField textField) {
-            selectedValue = textField.getText();
-        } else {
-            throw new IllegalArgumentException("Unsupported input component type. Must be JComboBox or JTextField.");
-        }
-
-        String type = "=";
-
-        if (filterType != null) {
-            switch (filterType) {
-                case EQUAL ->
-                    type = "=";
-                case EQUAL_OR_GREATER ->
-                    type = ">=";
-                case EQUAL_OR_LESSER ->
-                    type = "<=";
-                default -> {
-                }
-            }
-        }
-
-        if (selectedValue == null || selectedValue.trim().isEmpty() || selectedValue.equals(defaultString)) {
-            if (filter == filterCategory || filter == filterQuantityStart) {
-                filter.setValue(column + " IS NOT NULL ");
-            } else {
-                filter.setValue("&& " + column + " IS NOT NULL ");
-            }
-        } else {
-            if (filter == filterCategory || filter == filterQuantityStart) {
-                filter.setValue(column + " " + type + " '" + selectedValue + "' ");
-            } else {
-                filter.setValue("&& " + column + " " + type + " '" + selectedValue + "' ");
-            }
-        }
-        resetSearchQuery();
-        refreshTableInventory();
+                + filterQuantityStart.getFilterSQL() + filterQuantityEnd.getFilterSQL();
     }
 
     /**
@@ -264,9 +195,13 @@ public class ItemStock extends javax.swing.JPanel {
         labelFilterQuantity.setText("Quantity Range");
 
         searchQuantityStart.setBorder(null);
-        searchQuantityStart.setText("0");
+        searchQuantityStart.setForeground(new java.awt.Color(153, 153, 153));
+        searchQuantityStart.setText("1");
         searchQuantityStart.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         searchQuantityStart.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                searchQuantityStartFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 searchQuantityStartFocusLost(evt);
             }
@@ -281,9 +216,13 @@ public class ItemStock extends javax.swing.JPanel {
         });
 
         searchQuantityEnd.setBorder(null);
-        searchQuantityEnd.setText("9999");
+        searchQuantityEnd.setForeground(new java.awt.Color(153, 153, 153));
+        searchQuantityEnd.setText("999999999");
         searchQuantityEnd.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         searchQuantityEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                searchQuantityEndFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 searchQuantityEndFocusLost(evt);
             }
@@ -343,7 +282,7 @@ public class ItemStock extends javax.swing.JPanel {
                     .addGroup(panelSearchLayout.createSequentialGroup()
                         .addComponent(labelFilterCategory)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(searchCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -423,33 +362,41 @@ public class ItemStock extends javax.swing.JPanel {
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
-        createFilter(searchName, "- - Select Name - -", "stock_name", filterName, EnumFilterType.EQUAL);
+        filterName.createFilter(searchName);
+        resetSearchQuery();
+        refreshTableInventory();
     }//GEN-LAST:event_searchNameActionPerformed
 
     private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
         Object selectedItem = searchCategory.getSelectedItem();
         if (selectedItem != null && selectedItem.toString() != null) {
             String selectedCategory = searchCategory.getSelectedItem().toString();
-            
-            if (selectedCategory.equals("- - Select Category - -")) {
+
+            if (selectedCategory.equals(filterCategory.getDefaultString())) {
                 GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
             } else {
                 GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
             }
 
-            searchName.insertItemAt("- - Select Name - -", 0);
+            searchName.insertItemAt(filterName.getDefaultString(), 0);
             searchName.setSelectedIndex(0);
 
-            createFilter(searchCategory, "- - Select Category - -", "stock_category", filterCategory, EnumFilterType.EQUAL);
+            filterCategory.createFilter(searchCategory);
+            resetSearchQuery();
+            refreshTableInventory();
         }
     }//GEN-LAST:event_searchCategoryActionPerformed
 
     private void searchQuantityStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyReleased
-        createFilter(searchQuantityStart, null, "stock_quantity", filterQuantityStart, EnumFilterType.EQUAL_OR_GREATER);
+        filterQuantityStart.createFilter(searchQuantityStart);
+        resetSearchQuery();
+        refreshTableInventory();
     }//GEN-LAST:event_searchQuantityStartKeyReleased
 
     private void searchQuantityEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyReleased
-        createFilter(searchQuantityEnd, null, "stock_quantity", filterQuantityEnd, EnumFilterType.EQUAL_OR_LESSER);
+        filterQuantityEnd.createFilter(searchQuantityEnd);
+        resetSearchQuery();
+        refreshTableInventory();
     }//GEN-LAST:event_searchQuantityEndKeyReleased
 
     private void searchQuantityStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyTyped
@@ -461,16 +408,20 @@ public class ItemStock extends javax.swing.JPanel {
     }//GEN-LAST:event_searchQuantityEndKeyTyped
 
     private void searchQuantityStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusLost
-        if (searchQuantityStart.getText().isEmpty()) {
-            searchQuantityStart.setText("1");
-        }
+        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_searchQuantityStartFocusLost
 
     private void searchQuantityEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusLost
-        if (searchQuantityEnd.getText().isEmpty()) {
-            searchQuantityEnd.setText("9999");
-        }
+        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_searchQuantityEndFocusLost
+
+    private void searchQuantityStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusGained
+        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_searchQuantityStartFocusGained
+
+    private void searchQuantityEndFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusGained
+        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_searchQuantityEndFocusGained
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

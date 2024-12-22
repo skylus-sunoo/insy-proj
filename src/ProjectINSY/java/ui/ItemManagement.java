@@ -10,6 +10,7 @@ import static ProjectINSY.java.util.DatabaseUtil.generateNewBatch;
 import static ProjectINSY.java.util.DatabaseUtil.getConnection;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
+import static ProjectINSY.java.util.GuiUtil.cleanSpaces;
 import static ProjectINSY.java.util.GuiUtil.enforceDigits;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
@@ -20,13 +21,9 @@ import ProjectINSY.java.util.TableUtil;
 import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.TableUtil.floatFormatDecimal;
 import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
-import static ProjectINSY.java.util.TableUtil.sorterNumbers;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import static java.awt.image.ImageObserver.ERROR;
-import static java.awt.image.ImageObserver.WIDTH;
-import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,13 +36,9 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollBar;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
-import ProjectINSY.java.swing.ScrollBarCustom;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 
 /**
@@ -81,7 +74,6 @@ public class ItemManagement extends javax.swing.JPanel {
     private final String PLACEHOLDER_QTY = "1";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
 
-    private final String validDatePattern = "^(\\d{4})-(\\d{2})-(\\d{2})$";
 
     /**
      * Creates new form LogIn
@@ -183,7 +175,9 @@ public class ItemManagement extends javax.swing.JPanel {
     }
 
     public void refreshTableInventory() {
+        currentSearchQuery = cleanSpaces(currentSearchQuery);
         TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
+//        System.out.println(currentSearchQuery);
 
         String query = "SELECT DISTINCT stock_user FROM " + Main.TB_ITEM_STOCK;
 
@@ -372,7 +366,6 @@ public class ItemManagement extends javax.swing.JPanel {
         panelFields.add(labelDOD);
         labelDOD.setBounds(190, 250, 190, 30);
 
-        fieldDOD.setEditable(true);
         fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         fieldDOD.setBorder(null);
         fieldDOD.setSelectionColor(new java.awt.Color(25, 102, 24));
@@ -616,7 +609,6 @@ public class ItemManagement extends javax.swing.JPanel {
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 867, Short.MAX_VALUE)
                     .addGroup(panelMainLayout.createSequentialGroup()
-                        .addGap(163, 163, 163)
                         .addComponent(btnFilter)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -734,7 +726,7 @@ public class ItemManagement extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Custom stock code can't be 0!", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if (stock_deliveryDate.matches(validDatePattern)) {
+        if (stock_deliveryDate.matches(Main.validDatePattern)) {
             try {
                 LocalDate.parse(stock_deliveryDate);
                 System.out.println("Valid date: " + stock_deliveryDate);
@@ -919,29 +911,59 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void radioBatchesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchesActionPerformed
+        // also edit 'FilterFrame.resetSearchQuery' 
+        // when editing this method
         if (isGroupedByBatches()) {
-            currentSearchQuery = "SELECT stock_id, stock_batch, "
-                    + "stock_category, "
-                    + "stock_name, "
-                    + "stock_desc, "
-                    + "(stock_price * COUNT(*)) AS stock_price, "
-                    + "stock_dod, "
-                    + "stock_user, "
-                    + "CONCAT( "
-                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
-                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
-                    + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
-                    + "    CASE "
-                    + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
-                    + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
-                    + "    END "
-                    + ") AS stock_code, "
-                    + "COUNT(*) AS stock_quantity "
+            currentSearchQuery
+                    = "SELECT "
+                    + "    stock_id, "
+                    + "    stock_batch, "
+                    + "    stock_category, "
+                    + "    stock_name, "
+                    + "    stock_desc, "
+                    + "    (stock_price * COUNT(*)) AS stock_price, "
+                    + "    stock_dod, "
+                    + "    stock_user, "
+                    + "    CONCAT( "
+                    + "        SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
+                    + "        SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
+                    + "        RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
+                    + "        CASE "
+                    + "            WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
+                    + "            ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
+                    + "        END "
+                    + "    ) AS stock_code, "
+                    + "    COUNT(*) AS stock_quantity, "
+                    + "    COUNT(stock_name) AS name_count "
                     + "FROM " + Main.TB_ITEM_STOCK + " "
-                    + "GROUP BY stock_batch ORDER BY stock_id ASC";
+                    + "WHERE "
+                    + FilterFrame.filterCategory.getFilterSQL()
+                    + FilterFrame.filterName.getFilterSQL()
+                    + FilterFrame.filterDesc.getFilterSQL()
+                    + FilterFrame.filterDateStart.getFilterSQL()
+                    + FilterFrame.filterDateEnd.getFilterSQL()
+                    + " GROUP BY stock_batch"
+                    + " HAVING "
+                    + FilterFrame.filterQuantityStart.getFilterSQL()
+                    + FilterFrame.filterQuantityEnd.getFilterSQL()
+                    + FilterFrame.filterPriceStart.getFilterSQL()
+                    + FilterFrame.filterPriceEnd.getFilterSQL()
+                    + " ORDER BY stock_id ASC";
             refreshTableInventory();
         } else {
-            currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " ORDER BY stock_id ASC";
+            currentSearchQuery = "SELECT *, 1 AS stock_quantity FROM " + Main.TB_ITEM_STOCK
+                    + " WHERE "
+                    + FilterFrame.filterCategory.getFilterSQL()
+                    + FilterFrame.filterName.getFilterSQL()
+                    + FilterFrame.filterDesc.getFilterSQL()
+                    + FilterFrame.filterDateStart.getFilterSQL()
+                    + FilterFrame.filterDateEnd.getFilterSQL()
+                    + " HAVING "
+                    + FilterFrame.filterQuantityStart.getFilterSQL()
+                    + FilterFrame.filterQuantityEnd.getFilterSQL()
+                    + FilterFrame.filterPriceStart.getFilterSQL()
+                    + FilterFrame.filterPriceEnd.getFilterSQL()
+                    + " ORDER BY stock_id ASC";
             refreshTableInventory();
 
             fieldQuantity.setEnabled(true);
@@ -975,7 +997,7 @@ public class ItemManagement extends javax.swing.JPanel {
         showFilterFrame(false);
     }//GEN-LAST:event_btnFilterActionPerformed
 
-    public void showFilterFrame(boolean bool){
+    public void showFilterFrame(boolean bool) {
         btnFilter.setEnabled(bool);
     }
 
@@ -1017,7 +1039,7 @@ public class ItemManagement extends javax.swing.JPanel {
     private ProjectINSY.java.ui.panel.GradientPanel panelBlur;
     private javax.swing.JPanel panelFields;
     private javax.swing.JPanel panelMain;
-    private static ProjectINSY.java.swing.RadioButtonCustom radioBatches;
+    public static ProjectINSY.java.swing.RadioButtonCustom radioBatches;
     private ProjectINSY.java.swing.Table tableInventory;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

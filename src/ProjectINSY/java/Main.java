@@ -7,21 +7,11 @@ package ProjectINSY.java;
 import ProjectINSY.java.ui.*;
 import ProjectINSY.java.ui.component.MenuLayout;
 import static ProjectINSY.java.util.GuiUtil.setForm;
-import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.SessionUtil.isLoggedIn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Random;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -105,6 +95,12 @@ public class Main extends javax.swing.JFrame {
         return ItemHistory;
     }
     //</editor-fold>
+
+    public static String filterMaxNumber = "999999999";
+    public static String filterMinNumber = "1";
+    public static String filterMaxDate = "2100-01-01";
+    public static String filterMinDate = "2006-04-18";
+    public final static String validDatePattern = "^(\\d{4})-(\\d{2})-(\\d{2})$";
 
     private final MigLayout layout;
     private final MenuLayout menu = new MenuLayout(this);
