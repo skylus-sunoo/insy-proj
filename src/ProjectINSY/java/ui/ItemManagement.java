@@ -5,6 +5,8 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.util.BarcodeUtil;
+import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.generateNewBatch;
 import static ProjectINSY.java.util.DatabaseUtil.getConnection;
@@ -40,6 +42,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -73,7 +81,10 @@ public class ItemManagement extends javax.swing.JPanel {
     private final String PLACEHOLDER_DOD = "Enter Delivery Date";
     private final String PLACEHOLDER_QTY = "1";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
+    private String current_barcode = null;
+    private ImageIcon barcodeIcon;
 
+    public static boolean groupByBatches = true;
 
     /**
      * Creates new form LogIn
@@ -84,7 +95,7 @@ public class ItemManagement extends javax.swing.JPanel {
         setScrollBarCustom(tableScroll);
 
         setTransparentFrame(ItemManagement.this, fieldDesc, fieldPrice, fieldDOD, fieldQuantity, fieldHolder);
-        setTransparentFrame(btnAdd, btnUpdate, btnDelete, btnDOD);
+        setTransparentFrame(btnDOD, btnAdd, btnUpdate, btnClear, btnDelete);
 
 //        tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         fieldPrice.getDocument().addDocumentListener(new ItemManagement.FieldChangeListener());
@@ -118,6 +129,10 @@ public class ItemManagement extends javax.swing.JPanel {
 
         fieldPrice.setText(String.valueOf(actual_price / quantity) + "0");
 
+        current_barcode = validateBarcode(fieldID.getText());
+        barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
+        imgBarcode.setIcon(barcodeIcon);
+
         if (fieldDesc.getText().isEmpty()) {
             setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
         }
@@ -131,15 +146,6 @@ public class ItemManagement extends javax.swing.JPanel {
                 fieldID2.setText(parts[2]);
             }
         }
-
-//        if (isGroupedByBatches()) {
-//            fieldQuantity.setEnabled(false);
-//            fieldQuantity.setText("UNEDITABLE");
-//        } else {
-//            fieldQuantity.setEnabled(true);
-//            fieldQuantity.setText("");
-//            setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
-//        }
         setUpdateDeleteEnable();
     }
 
@@ -198,6 +204,10 @@ public class ItemManagement extends javax.swing.JPanel {
     }
 
     public void clearFields() {
+        current_barcode = null;
+        barcodeIcon = null;
+        GuiUtil.resetIcon(imgBarcode);
+
         GuiUtil.clearField(fieldID, "");
         GuiUtil.clearField(fieldID2, "");
         GuiUtil.clearField(fieldCode, PLACEHOLDER_CODE);
@@ -217,7 +227,7 @@ public class ItemManagement extends javax.swing.JPanel {
     }
 
     public static boolean isGroupedByBatches() {
-        return radioBatches.isSelected();
+        return groupByBatches;
     }
 
     /**
@@ -232,7 +242,6 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldID = new javax.swing.JTextField();
         dateDOD = new ProjectINSY.java.swing.Date.DateChooser();
         fieldID2 = new javax.swing.JTextField();
-        panelBlur = new ProjectINSY.java.ui.panel.GradientPanel();
         panelMain = new javax.swing.JPanel();
         panelFields = new javax.swing.JPanel();
         labelName = new javax.swing.JLabel();
@@ -258,6 +267,8 @@ public class ItemManagement extends javax.swing.JPanel {
         btnAdd = new javax.swing.JButton();
         labelUpdate = new javax.swing.JLabel();
         btnUpdate = new javax.swing.JButton();
+        labelClear = new javax.swing.JLabel();
+        btnClear = new javax.swing.JButton();
         labelDelete = new javax.swing.JLabel();
         btnDelete = new javax.swing.JButton();
         labelCode = new javax.swing.JLabel();
@@ -265,26 +276,22 @@ public class ItemManagement extends javax.swing.JPanel {
         imageCode = new javax.swing.JLabel();
         infoCode = new javax.swing.JLabel();
         infoCode1 = new javax.swing.JLabel();
+        panelBarcode = new javax.swing.JPanel();
+        imgBarcode = new javax.swing.JLabel();
+        labelPrint = new javax.swing.JLabel();
+        btnPrint = new javax.swing.JButton();
         tableScroll = new javax.swing.JScrollPane();
         tableInventory = new ProjectINSY.java.swing.Table();
-        radioBatches = new ProjectINSY.java.swing.RadioButtonCustom();
         btnFilter = new javax.swing.JButton();
 
         dateDOD.setForeground(new java.awt.Color(25, 102, 24));
         dateDOD.setDateFormat("yyyy-MM-dd");
         dateDOD.setTextRefernce(fieldDOD);
 
-        setMaximumSize(new java.awt.Dimension(1366, 768));
-        setMinimumSize(new java.awt.Dimension(1366, 768));
+        setMaximumSize(new java.awt.Dimension(1840, 900));
+        setMinimumSize(new java.awt.Dimension(1840, 900));
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(1366, 768));
-
-        panelBlur.setColorEnd(new java.awt.Color(241, 239, 241));
-        panelBlur.setColorStart(new java.awt.Color(241, 239, 241));
-        panelBlur.setMaximumSize(new java.awt.Dimension(1326, 669));
-        panelBlur.setMinimumSize(new java.awt.Dimension(1326, 669));
-        panelBlur.setPreferredSize(new java.awt.Dimension(1326, 669));
-        panelBlur.setShadowIntensity(255);
+        setPreferredSize(new java.awt.Dimension(1840, 900));
 
         panelMain.setBackground(new java.awt.Color(255, 255, 255));
         panelMain.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
@@ -292,26 +299,26 @@ public class ItemManagement extends javax.swing.JPanel {
         panelFields.setBackground(new java.awt.Color(255, 255, 255));
         panelFields.setLayout(null);
 
-        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelName.setText("Name");
         panelFields.add(labelName);
-        labelName.setBounds(0, 90, 173, 20);
+        labelName.setBounds(0, 110, 173, 30);
 
         comboName.setBorder(null);
-        comboName.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        comboName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         panelFields.add(comboName);
-        comboName.setBounds(10, 134, 360, 20);
+        comboName.setBounds(10, 150, 520, 40);
 
         imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelFields.add(imageName);
-        imageName.setBounds(0, 120, 377, 40);
+        imageName.setBounds(0, 140, 540, 60);
 
-        labelDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelDesc.setText("Description");
         panelFields.add(labelDesc);
-        labelDesc.setBounds(0, 170, 173, 30);
+        labelDesc.setBounds(0, 220, 173, 30);
 
-        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldDesc.setForeground(new java.awt.Color(153, 153, 153));
         fieldDesc.setText("Enter Description");
         fieldDesc.setBorder(null);
@@ -325,18 +332,18 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldDesc);
-        fieldDesc.setBounds(10, 210, 360, 30);
+        fieldDesc.setBounds(10, 260, 520, 40);
 
         imageDesc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelFields.add(imageDesc);
-        imageDesc.setBounds(0, 200, 377, 50);
+        imageDesc.setBounds(0, 250, 540, 60);
 
-        labelPrice.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelPrice.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelPrice.setText("Price");
         panelFields.add(labelPrice);
-        labelPrice.setBounds(0, 250, 173, 30);
+        labelPrice.setBounds(0, 330, 173, 30);
 
-        fieldPrice.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldPrice.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldPrice.setForeground(new java.awt.Color(153, 153, 153));
         fieldPrice.setText("Enter Price");
         fieldPrice.setBorder(null);
@@ -355,18 +362,18 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldPrice);
-        fieldPrice.setBounds(10, 290, 170, 30);
+        fieldPrice.setBounds(10, 370, 230, 40);
 
         imagePrice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelFields.add(imagePrice);
-        imagePrice.setBounds(0, 280, 187, 50);
+        imagePrice.setBounds(0, 360, 250, 60);
 
-        labelDOD.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelDOD.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelDOD.setText("Delivery Date");
         panelFields.add(labelDOD);
-        labelDOD.setBounds(190, 250, 190, 30);
+        labelDOD.setBounds(290, 330, 190, 30);
 
-        fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldDOD.setBorder(null);
         fieldDOD.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldDOD.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -378,7 +385,7 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldDOD);
-        fieldDOD.setBounds(200, 290, 130, 30);
+        fieldDOD.setBounds(300, 370, 190, 40);
 
         btnDOD.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnDateSelect.png"))); // NOI18N
         btnDOD.setBorder(null);
@@ -388,13 +395,13 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(btnDOD);
-        btnDOD.setBounds(340, 290, 30, 30);
+        btnDOD.setBounds(500, 370, 30, 40);
 
         imageDOD.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelFields.add(imageDOD);
-        imageDOD.setBounds(190, 280, 187, 50);
+        imageDOD.setBounds(290, 360, 250, 60);
 
-        fieldQuantity.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldQuantity.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldQuantity.setForeground(new java.awt.Color(153, 153, 153));
         fieldQuantity.setText("1");
         fieldQuantity.setBorder(null);
@@ -413,26 +420,26 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldQuantity);
-        fieldQuantity.setBounds(10, 370, 170, 30);
+        fieldQuantity.setBounds(10, 480, 230, 40);
 
-        labelQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelQuantity.setText("Quantity");
         panelFields.add(labelQuantity);
-        labelQuantity.setBounds(0, 330, 173, 30);
+        labelQuantity.setBounds(0, 440, 173, 30);
 
         imageQuantity.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelFields.add(imageQuantity);
-        imageQuantity.setBounds(0, 360, 187, 50);
+        imageQuantity.setBounds(0, 470, 250, 60);
 
-        labelHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelHolder.setText("Holder");
         panelFields.add(labelHolder);
-        labelHolder.setBounds(190, 330, 173, 30);
+        labelHolder.setBounds(290, 440, 173, 30);
 
         fieldHolder.setBorder(null);
         fieldHolder.setForeground(new java.awt.Color(153, 153, 153));
         fieldHolder.setText("Enter Holder");
-        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldHolder.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldHolderFocusGained(evt);
@@ -442,18 +449,18 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldHolder);
-        fieldHolder.setBounds(200, 370, 170, 30);
+        fieldHolder.setBounds(300, 480, 230, 40);
 
         imageHolder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelFields.add(imageHolder);
-        imageHolder.setBounds(190, 360, 187, 50);
+        imageHolder.setBounds(290, 470, 250, 60);
 
         labelAdd.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelAdd.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelAdd.setText("Add");
         labelAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelFields.add(labelAdd);
-        labelAdd.setBounds(10, 580, 80, 23);
+        labelAdd.setBounds(10, 850, 80, 23);
 
         btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnAdd.setBorder(null);
@@ -467,14 +474,14 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(btnAdd);
-        btnAdd.setBounds(0, 570, 100, 40);
+        btnAdd.setBounds(0, 840, 100, 40);
 
         labelUpdate.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelUpdate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelUpdate.setText("Update");
         labelUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelFields.add(labelUpdate);
-        labelUpdate.setBounds(150, 580, 80, 23);
+        labelUpdate.setBounds(160, 850, 80, 23);
 
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnUpdate.setBorder(null);
@@ -488,14 +495,34 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(btnUpdate);
-        btnUpdate.setBounds(140, 570, 100, 40);
+        btnUpdate.setBounds(150, 840, 100, 40);
+
+        labelClear.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelClear.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelClear.setText("Clear");
+        labelClear.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelFields.add(labelClear);
+        labelClear.setBounds(300, 850, 80, 23);
+
+        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
+        btnClear.setBorder(null);
+        btnClear.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnClear.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
+        btnClear.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
+        panelFields.add(btnClear);
+        btnClear.setBounds(290, 840, 100, 40);
 
         labelDelete.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelDelete.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelDelete.setText("Delete");
         labelDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelFields.add(labelDelete);
-        labelDelete.setBounds(290, 580, 80, 23);
+        labelDelete.setBounds(450, 850, 80, 23);
 
         btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red.png"))); // NOI18N
         btnDelete.setBorder(null);
@@ -509,17 +536,17 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(btnDelete);
-        btnDelete.setBounds(280, 570, 100, 40);
+        btnDelete.setBounds(440, 840, 100, 40);
 
-        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelCode.setText("Custom Code (Silang-YY-XXXX) - Optional");
         panelFields.add(labelCode);
-        labelCode.setBounds(0, 10, 350, 30);
+        labelCode.setBounds(0, 10, 540, 30);
 
         fieldCode.setBorder(null);
         fieldCode.setForeground(new java.awt.Color(153, 153, 153));
         fieldCode.setText("Enter Code (XXXX)");
-        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldCodeFocusGained(evt);
@@ -534,21 +561,51 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldCode);
-        fieldCode.setBounds(9, 50, 170, 30);
+        fieldCode.setBounds(9, 50, 230, 40);
 
         imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelFields.add(imageCode);
-        imageCode.setBounds(0, 40, 187, 50);
+        imageCode.setBounds(0, 40, 250, 60);
 
         infoCode.setFont(new java.awt.Font("Bahnschrift", 2, 14)); // NOI18N
         infoCode.setText("'Adding' Stocks");
         panelFields.add(infoCode);
-        infoCode.setBounds(200, 66, 110, 20);
+        infoCode.setBounds(260, 70, 110, 20);
 
         infoCode1.setFont(new java.awt.Font("Bahnschrift", 2, 14)); // NOI18N
         infoCode1.setText("Only works for");
         panelFields.add(infoCode1);
-        infoCode1.setBounds(200, 48, 110, 20);
+        infoCode1.setBounds(260, 50, 110, 20);
+
+        panelBarcode.setBackground(new java.awt.Color(255, 255, 255));
+        panelBarcode.setLayout(null);
+
+        imgBarcode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        panelBarcode.add(imgBarcode);
+        imgBarcode.setBounds(0, 0, 250, 190);
+
+        labelPrint.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelPrint.setForeground(new java.awt.Color(255, 255, 255));
+        labelPrint.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconPrint.png"))); // NOI18N
+        labelPrint.setText("Print");
+        labelPrint.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelBarcode.add(labelPrint);
+        labelPrint.setBounds(340, 50, 150, 50);
+
+        btnPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint.png"))); // NOI18N
+        btnPrint.setBorder(null);
+        btnPrint.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnPrint.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrintActionPerformed(evt);
+            }
+        });
+        panelBarcode.add(btnPrint);
+        btnPrint.setBounds(340, 50, 150, 50);
+
+        panelFields.add(panelBarcode);
+        panelBarcode.setBounds(0, 540, 540, 190);
 
         tableScroll.setBorder(null);
 
@@ -571,21 +628,10 @@ public class ItemManagement extends javax.swing.JPanel {
                 return types [columnIndex];
             }
         });
-        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
+        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
         tableInventory.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableInventory);
-
-        radioBatches.setBackground(new java.awt.Color(25, 102, 24));
-        radioBatches.setBorder(null);
-        radioBatches.setSelected(true);
-        radioBatches.setText("Group by Batches");
-        radioBatches.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
-        radioBatches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                radioBatchesActionPerformed(evt);
-            }
-        });
 
         btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch.png"))); // NOI18N
         btnFilter.setToolTipText("");
@@ -604,16 +650,11 @@ public class ItemManagement extends javax.swing.JPanel {
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
                 .addGap(17, 17, 17)
-                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 545, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 867, Short.MAX_VALUE)
-                    .addGroup(panelMainLayout.createSequentialGroup()
-                        .addComponent(btnFilter)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .addComponent(btnFilter)
+                    .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 1262, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -621,47 +662,22 @@ public class ItemManagement extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelMainLayout.createSequentialGroup()
-                        .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(radioBatches, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnFilter)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE))
+                        .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 853, Short.MAX_VALUE))
                     .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-        );
-
-        javax.swing.GroupLayout panelBlurLayout = new javax.swing.GroupLayout(panelBlur);
-        panelBlur.setLayout(panelBlurLayout);
-        panelBlurLayout.setHorizontalGroup(
-            panelBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelBlurLayout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(17, Short.MAX_VALUE))
-        );
-        panelBlurLayout.setVerticalGroup(
-            panelBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelBlurLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(10, Short.MAX_VALUE)
-                .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30))
+            .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(84, Short.MAX_VALUE)
-                .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(15, 15, 15))
+            .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -910,68 +926,6 @@ public class ItemManagement extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
-    private void radioBatchesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchesActionPerformed
-        // also edit 'FilterFrame.resetSearchQuery' 
-        // when editing this method
-        if (isGroupedByBatches()) {
-            currentSearchQuery
-                    = "SELECT "
-                    + "    stock_id, "
-                    + "    stock_batch, "
-                    + "    stock_category, "
-                    + "    stock_name, "
-                    + "    stock_desc, "
-                    + "    (stock_price * COUNT(*)) AS stock_price, "
-                    + "    stock_dod, "
-                    + "    stock_user, "
-                    + "    CONCAT( "
-                    + "        SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
-                    + "        SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
-                    + "        RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
-                    + "        CASE "
-                    + "            WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
-                    + "            ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
-                    + "        END "
-                    + "    ) AS stock_code, "
-                    + "    COUNT(*) AS stock_quantity, "
-                    + "    COUNT(stock_name) AS name_count "
-                    + "FROM " + Main.TB_ITEM_STOCK + " "
-                    + "WHERE "
-                    + FilterFrame.filterCategory.getFilterSQL()
-                    + FilterFrame.filterName.getFilterSQL()
-                    + FilterFrame.filterDesc.getFilterSQL()
-                    + FilterFrame.filterDateStart.getFilterSQL()
-                    + FilterFrame.filterDateEnd.getFilterSQL()
-                    + " GROUP BY stock_batch"
-                    + " HAVING "
-                    + FilterFrame.filterQuantityStart.getFilterSQL()
-                    + FilterFrame.filterQuantityEnd.getFilterSQL()
-                    + FilterFrame.filterPriceStart.getFilterSQL()
-                    + FilterFrame.filterPriceEnd.getFilterSQL()
-                    + " ORDER BY stock_id ASC";
-            refreshTableInventory();
-        } else {
-            currentSearchQuery = "SELECT *, 1 AS stock_quantity FROM " + Main.TB_ITEM_STOCK
-                    + " WHERE "
-                    + FilterFrame.filterCategory.getFilterSQL()
-                    + FilterFrame.filterName.getFilterSQL()
-                    + FilterFrame.filterDesc.getFilterSQL()
-                    + FilterFrame.filterDateStart.getFilterSQL()
-                    + FilterFrame.filterDateEnd.getFilterSQL()
-                    + " HAVING "
-                    + FilterFrame.filterQuantityStart.getFilterSQL()
-                    + FilterFrame.filterQuantityEnd.getFilterSQL()
-                    + FilterFrame.filterPriceStart.getFilterSQL()
-                    + FilterFrame.filterPriceEnd.getFilterSQL()
-                    + " ORDER BY stock_id ASC";
-            refreshTableInventory();
-
-            fieldQuantity.setEnabled(true);
-            fieldQuantity.setText("");
-            setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
-        }
-    }//GEN-LAST:event_radioBatchesActionPerformed
-
     private void fieldHolderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusGained
         setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldHolderFocusGained
@@ -997,15 +951,34 @@ public class ItemManagement extends javax.swing.JPanel {
         showFilterFrame(false);
     }//GEN-LAST:event_btnFilterActionPerformed
 
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        clearFields();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintActionPerformed
+        if (current_barcode != null) {
+            try {
+                BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+
+                ImageIO.write(bufferedImage, "PNG", new File(current_barcode + ".png"));
+            } catch (IOException e) {
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnPrintActionPerformed
+
     public void showFilterFrame(boolean bool) {
         btnFilter.setEnabled(bool);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDOD;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnFilter;
+    private javax.swing.JButton btnPrint;
     private javax.swing.JButton btnUpdate;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboName;
     private ProjectINSY.java.swing.Date.DateChooser dateDOD;
@@ -1024,9 +997,11 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JLabel imageName;
     private javax.swing.JLabel imagePrice;
     private javax.swing.JLabel imageQuantity;
+    private javax.swing.JLabel imgBarcode;
     private javax.swing.JLabel infoCode;
     private javax.swing.JLabel infoCode1;
     private javax.swing.JLabel labelAdd;
+    private javax.swing.JLabel labelClear;
     private javax.swing.JLabel labelCode;
     private javax.swing.JLabel labelDOD;
     private javax.swing.JLabel labelDelete;
@@ -1034,12 +1009,12 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JLabel labelHolder;
     private javax.swing.JLabel labelName;
     private javax.swing.JLabel labelPrice;
+    private javax.swing.JLabel labelPrint;
     private javax.swing.JLabel labelQuantity;
     private javax.swing.JLabel labelUpdate;
-    private ProjectINSY.java.ui.panel.GradientPanel panelBlur;
+    private javax.swing.JPanel panelBarcode;
     private javax.swing.JPanel panelFields;
     private javax.swing.JPanel panelMain;
-    public static ProjectINSY.java.swing.RadioButtonCustom radioBatches;
     private ProjectINSY.java.swing.Table tableInventory;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

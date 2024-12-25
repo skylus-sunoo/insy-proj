@@ -47,7 +47,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         setScrollBarCustom(tableScroll);
 
         setTransparentFrame(ItemCatalog.this, fieldCategoryName, fieldName);
-        setTransparentFrame(btnAddCategory, btnUpdateCategory, btnDeleteCategory, btnAddItem, btnUpdateItem, btnDeleteItem);
+        setTransparentFrame(btnAddCategory, btnUpdateCategory, btnClearCategory, btnDeleteCategory, btnAddItem, btnUpdateItem, btnClearItem, btnDeleteItem);
 
         fieldCategoryName.getDocument().addDocumentListener(new ItemCatalog.FieldChangeListener());
         defaultTable(tableCategory);
@@ -171,7 +171,6 @@ public class ItemCatalog extends javax.swing.JPanel {
 
         fieldCategoryID = new javax.swing.JTextField();
         fieldItemID = new javax.swing.JTextField();
-        panelBlur = new ProjectINSY.java.ui.panel.GradientPanel();
         panelCategory = new javax.swing.JPanel();
         panelFields = new javax.swing.JPanel();
         labelCategoryName = new javax.swing.JLabel();
@@ -181,6 +180,8 @@ public class ItemCatalog extends javax.swing.JPanel {
         btnAddCategory = new javax.swing.JButton();
         labelUpdateCategory = new javax.swing.JLabel();
         btnUpdateCategory = new javax.swing.JButton();
+        labelClearCategory = new javax.swing.JLabel();
+        btnClearCategory = new javax.swing.JButton();
         labelDeleteCategory = new javax.swing.JLabel();
         btnDeleteCategory = new javax.swing.JButton();
         scrollCategory = new javax.swing.JScrollPane();
@@ -201,23 +202,18 @@ public class ItemCatalog extends javax.swing.JPanel {
         btnAddItem = new javax.swing.JButton();
         labelUpdateItem = new javax.swing.JLabel();
         btnUpdateItem = new javax.swing.JButton();
+        labelClearItem = new javax.swing.JLabel();
+        btnClearItem = new javax.swing.JButton();
         labelDeleteItem = new javax.swing.JLabel();
         btnDeleteItem = new javax.swing.JButton();
         labelUOM = new javax.swing.JLabel();
         comboUOM = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageUOM = new javax.swing.JLabel();
 
-        setMaximumSize(new java.awt.Dimension(1366, 768));
-        setMinimumSize(new java.awt.Dimension(1366, 768));
+        setMaximumSize(new java.awt.Dimension(1840, 900));
+        setMinimumSize(new java.awt.Dimension(1840, 900));
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(1366, 768));
-
-        panelBlur.setColorEnd(new java.awt.Color(241, 239, 241));
-        panelBlur.setColorStart(new java.awt.Color(241, 239, 241));
-        panelBlur.setMaximumSize(new java.awt.Dimension(1326, 669));
-        panelBlur.setMinimumSize(new java.awt.Dimension(1326, 669));
-        panelBlur.setName(""); // NOI18N
-        panelBlur.setShadowIntensity(255);
+        setPreferredSize(new java.awt.Dimension(1840, 900));
 
         panelCategory.setBackground(new java.awt.Color(255, 255, 255));
         panelCategory.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
@@ -225,12 +221,12 @@ public class ItemCatalog extends javax.swing.JPanel {
         panelFields.setBackground(new java.awt.Color(255, 255, 255));
         panelFields.setLayout(null);
 
-        labelCategoryName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelCategoryName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelCategoryName.setText("Category");
         panelFields.add(labelCategoryName);
         labelCategoryName.setBounds(0, 0, 173, 30);
 
-        fieldCategoryName.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldCategoryName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldCategoryName.setForeground(new java.awt.Color(153, 153, 153));
         fieldCategoryName.setText("Enter Category");
         fieldCategoryName.setBorder(null);
@@ -244,18 +240,18 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelFields.add(fieldCategoryName);
-        fieldCategoryName.setBounds(10, 40, 360, 20);
+        fieldCategoryName.setBounds(10, 40, 520, 40);
 
         imageCategoryName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelFields.add(imageCategoryName);
-        imageCategoryName.setBounds(0, 30, 377, 40);
+        imageCategoryName.setBounds(0, 30, 540, 60);
 
         labelAddCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelAddCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelAddCategory.setText("Add");
         labelAddCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelFields.add(labelAddCategory);
-        labelAddCategory.setBounds(10, 110, 80, 23);
+        labelAddCategory.setBounds(10, 150, 80, 23);
 
         btnAddCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnAddCategory.setBorder(null);
@@ -269,14 +265,14 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelFields.add(btnAddCategory);
-        btnAddCategory.setBounds(0, 100, 100, 40);
+        btnAddCategory.setBounds(0, 140, 100, 40);
 
         labelUpdateCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelUpdateCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelUpdateCategory.setText("Update");
         labelUpdateCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelFields.add(labelUpdateCategory);
-        labelUpdateCategory.setBounds(150, 110, 80, 23);
+        labelUpdateCategory.setBounds(160, 150, 80, 23);
 
         btnUpdateCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnUpdateCategory.setBorder(null);
@@ -290,14 +286,34 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelFields.add(btnUpdateCategory);
-        btnUpdateCategory.setBounds(140, 100, 100, 40);
+        btnUpdateCategory.setBounds(150, 140, 100, 40);
+
+        labelClearCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelClearCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelClearCategory.setText("Clear");
+        labelClearCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelFields.add(labelClearCategory);
+        labelClearCategory.setBounds(300, 150, 80, 23);
+
+        btnClearCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
+        btnClearCategory.setBorder(null);
+        btnClearCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnClearCategory.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
+        btnClearCategory.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
+        btnClearCategory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearCategoryActionPerformed(evt);
+            }
+        });
+        panelFields.add(btnClearCategory);
+        btnClearCategory.setBounds(290, 140, 100, 40);
 
         labelDeleteCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelDeleteCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelDeleteCategory.setText("Delete");
         labelDeleteCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelFields.add(labelDeleteCategory);
-        labelDeleteCategory.setBounds(290, 110, 80, 23);
+        labelDeleteCategory.setBounds(450, 150, 80, 23);
 
         btnDeleteCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red.png"))); // NOI18N
         btnDeleteCategory.setBorder(null);
@@ -311,7 +327,7 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelFields.add(btnDeleteCategory);
-        btnDeleteCategory.setBounds(280, 100, 100, 40);
+        btnDeleteCategory.setBounds(440, 140, 100, 40);
 
         scrollCategory.setBorder(null);
 
@@ -331,7 +347,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         scrollCategory.setViewportView(tableCategory);
 
         labelCatalogCategory.setBackground(new java.awt.Color(25, 102, 24));
-        labelCatalogCategory.setFont(new java.awt.Font("Bebas", 0, 48)); // NOI18N
+        labelCatalogCategory.setFont(new java.awt.Font("Bebas", 0, 64)); // NOI18N
         labelCatalogCategory.setForeground(new java.awt.Color(255, 255, 255));
         labelCatalogCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelCatalogCategory.setText("CATEGORIES CATALOG");
@@ -342,14 +358,14 @@ public class ItemCatalog extends javax.swing.JPanel {
         panelCategoryLayout.setHorizontalGroup(
             panelCategoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelCategoryLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(15, Short.MAX_VALUE))
-            .addGroup(panelCategoryLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(scrollCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(scrollCategory)
                 .addContainerGap())
             .addComponent(labelCatalogCategory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(panelCategoryLayout.createSequentialGroup()
+                .addGap(17, 17, 17)
+                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 542, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(17, Short.MAX_VALUE))
         );
         panelCategoryLayout.setVerticalGroup(
             panelCategoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -357,9 +373,9 @@ public class ItemCatalog extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(labelCatalogCategory)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(scrollCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 606, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -367,7 +383,7 @@ public class ItemCatalog extends javax.swing.JPanel {
         panelItem.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
 
         labelCatalogItem.setBackground(new java.awt.Color(25, 102, 24));
-        labelCatalogItem.setFont(new java.awt.Font("Bebas", 0, 48)); // NOI18N
+        labelCatalogItem.setFont(new java.awt.Font("Bebas", 0, 64)); // NOI18N
         labelCatalogItem.setForeground(new java.awt.Color(255, 255, 255));
         labelCatalogItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelCatalogItem.setText("ITEMS CATALOG");
@@ -386,7 +402,7 @@ public class ItemCatalog extends javax.swing.JPanel {
                 "Item", "Category", "Unit of Measure"
             }
         ));
-        tableItem.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
+        tableItem.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
         tableItem.setGridColor(new java.awt.Color(255, 255, 255));
         tableItem.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableItem);
@@ -394,26 +410,26 @@ public class ItemCatalog extends javax.swing.JPanel {
         panelItemFields.setBackground(new java.awt.Color(255, 255, 255));
         panelItemFields.setLayout(null);
 
-        labelCategory.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelCategory.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelCategory.setText("Category");
         panelItemFields.add(labelCategory);
-        labelCategory.setBounds(0, 70, 173, 30);
+        labelCategory.setBounds(0, 100, 173, 30);
 
         comboCategory.setBorder(null);
-        comboCategory.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        comboCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         panelItemFields.add(comboCategory);
-        comboCategory.setBounds(10, 110, 360, 24);
+        comboCategory.setBounds(10, 140, 520, 40);
 
         imageCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelItemFields.add(imageCategory);
-        imageCategory.setBounds(0, 100, 377, 40);
+        imageCategory.setBounds(0, 130, 540, 60);
 
-        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelName.setText("Name");
         panelItemFields.add(labelName);
         labelName.setBounds(0, 0, 173, 30);
 
-        fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldName.setForeground(new java.awt.Color(153, 153, 153));
         fieldName.setText("Enter Name");
         fieldName.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 2));
@@ -427,18 +443,18 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelItemFields.add(fieldName);
-        fieldName.setBounds(10, 40, 360, 20);
+        fieldName.setBounds(10, 40, 520, 40);
 
         imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelItemFields.add(imageName);
-        imageName.setBounds(0, 30, 377, 40);
+        imageName.setBounds(0, 30, 540, 60);
 
         labelAddItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelAddItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelAddItem.setText("Add");
         labelAddItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelItemFields.add(labelAddItem);
-        labelAddItem.setBounds(450, 110, 80, 23);
+        labelAddItem.setBounds(650, 150, 80, 23);
 
         btnAddItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnAddItem.setBorder(null);
@@ -452,14 +468,14 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelItemFields.add(btnAddItem);
-        btnAddItem.setBounds(440, 100, 100, 40);
+        btnAddItem.setBounds(640, 140, 100, 40);
 
         labelUpdateItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelUpdateItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelUpdateItem.setText("Update");
         labelUpdateItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelItemFields.add(labelUpdateItem);
-        labelUpdateItem.setBounds(590, 110, 80, 23);
+        labelUpdateItem.setBounds(800, 150, 80, 23);
 
         btnUpdateItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnUpdateItem.setBorder(null);
@@ -473,14 +489,34 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelItemFields.add(btnUpdateItem);
-        btnUpdateItem.setBounds(580, 100, 100, 40);
+        btnUpdateItem.setBounds(790, 140, 100, 40);
+
+        labelClearItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelClearItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelClearItem.setText("Clear");
+        labelClearItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelItemFields.add(labelClearItem);
+        labelClearItem.setBounds(940, 150, 80, 23);
+
+        btnClearItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
+        btnClearItem.setBorder(null);
+        btnClearItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnClearItem.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
+        btnClearItem.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
+        btnClearItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearItemActionPerformed(evt);
+            }
+        });
+        panelItemFields.add(btnClearItem);
+        btnClearItem.setBounds(930, 140, 100, 40);
 
         labelDeleteItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelDeleteItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelDeleteItem.setText("Delete");
         labelDeleteItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelItemFields.add(labelDeleteItem);
-        labelDeleteItem.setBounds(730, 110, 80, 23);
+        labelDeleteItem.setBounds(1090, 150, 80, 23);
 
         btnDeleteItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red.png"))); // NOI18N
         btnDeleteItem.setBorder(null);
@@ -494,35 +530,36 @@ public class ItemCatalog extends javax.swing.JPanel {
             }
         });
         panelItemFields.add(btnDeleteItem);
-        btnDeleteItem.setBounds(720, 100, 100, 40);
+        btnDeleteItem.setBounds(1080, 140, 100, 40);
 
-        labelUOM.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelUOM.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelUOM.setText("Unit of Measure");
         panelItemFields.add(labelUOM);
-        labelUOM.setBounds(440, 0, 173, 30);
+        labelUOM.setBounds(630, 0, 173, 30);
 
         comboUOM.setBorder(null);
-        comboUOM.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        comboUOM.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         panelItemFields.add(comboUOM);
-        comboUOM.setBounds(450, 40, 360, 24);
+        comboUOM.setBounds(640, 40, 520, 40);
 
         imageUOM.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelItemFields.add(imageUOM);
-        imageUOM.setBounds(440, 30, 377, 40);
+        imageUOM.setBounds(630, 30, 540, 60);
 
         javax.swing.GroupLayout panelItemLayout = new javax.swing.GroupLayout(panelItem);
         panelItem.setLayout(panelItemLayout);
         panelItemLayout.setHorizontalGroup(
             panelItemLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelItemLayout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(panelItemFields, javax.swing.GroupLayout.PREFERRED_SIZE, 819, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelItemLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tableScroll)
-                .addContainerGap())
             .addComponent(labelCatalogItem, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(panelItemLayout.createSequentialGroup()
+                .addGroup(panelItemLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelItemLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1238, Short.MAX_VALUE))
+                    .addGroup(panelItemLayout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(panelItemFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         panelItemLayout.setVerticalGroup(
             panelItemLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -530,31 +567,10 @@ public class ItemCatalog extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(labelCatalogItem)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelItemFields, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelItemFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 606, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-        );
-
-        javax.swing.GroupLayout panelBlurLayout = new javax.swing.GroupLayout(panelBlur);
-        panelBlur.setLayout(panelBlurLayout);
-        panelBlurLayout.setHorizontalGroup(
-            panelBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelBlurLayout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addComponent(panelCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelItem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(17, Short.MAX_VALUE))
-        );
-        panelBlurLayout.setVerticalGroup(
-            panelBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelBlurLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addGroup(panelBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(panelCategory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panelItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -562,16 +578,14 @@ public class ItemCatalog extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(873, Short.MAX_VALUE)
-                .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30))
+                .addComponent(panelCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(93, Short.MAX_VALUE)
-                .addComponent(panelBlur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(15, 15, 15))
+            .addComponent(panelCategory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panelItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -758,10 +772,20 @@ public class ItemCatalog extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnDeleteItemActionPerformed
 
+    private void btnClearCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearCategoryActionPerformed
+        clearCategoryFields();
+    }//GEN-LAST:event_btnClearCategoryActionPerformed
+
+    private void btnClearItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearItemActionPerformed
+        clearItemFields();
+    }//GEN-LAST:event_btnClearItemActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddCategory;
     private javax.swing.JButton btnAddItem;
+    private javax.swing.JButton btnClearCategory;
+    private javax.swing.JButton btnClearItem;
     private javax.swing.JButton btnDeleteCategory;
     private javax.swing.JButton btnDeleteItem;
     private javax.swing.JButton btnUpdateCategory;
@@ -782,13 +806,14 @@ public class ItemCatalog extends javax.swing.JPanel {
     private javax.swing.JLabel labelCatalogItem;
     private javax.swing.JLabel labelCategory;
     private javax.swing.JLabel labelCategoryName;
+    private javax.swing.JLabel labelClearCategory;
+    private javax.swing.JLabel labelClearItem;
     private javax.swing.JLabel labelDeleteCategory;
     private javax.swing.JLabel labelDeleteItem;
     private javax.swing.JLabel labelName;
     private javax.swing.JLabel labelUOM;
     private javax.swing.JLabel labelUpdateCategory;
     private javax.swing.JLabel labelUpdateItem;
-    private ProjectINSY.java.ui.panel.GradientPanel panelBlur;
     private javax.swing.JPanel panelCategory;
     private javax.swing.JPanel panelFields;
     private javax.swing.JPanel panelItem;

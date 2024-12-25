@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -45,6 +44,7 @@ public final class FilterFrame extends javax.swing.JFrame {
     public final static Filter filterPriceEnd = new Filter(Filter.FilterOrder.NOT_START, "stock_price", Filter.FilterComparator.LESSER_THAN, null);
     public final static Filter filterDateStart = new Filter(Filter.FilterOrder.NOT_START, "stock_dod", Filter.FilterComparator.GREATER_THAN_DATE, null);
     public final static Filter filterDateEnd = new Filter(Filter.FilterOrder.NOT_START, "stock_dod", Filter.FilterComparator.LESSER_THAN_DATE, null);
+    public final static Filter filterHolder = new Filter(Filter.FilterOrder.NOT_START, "stock_user", Filter.FilterComparator.EQUAL, "- - Select Holder - -");
 
     public static ItemManagement ItemManagement;
 
@@ -76,6 +76,8 @@ public final class FilterFrame extends javax.swing.JFrame {
         } catch (ParseException ex) {
             Logger.getLogger(FilterFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        refreshTableInventory();
 
         searchDateStart.getDocument().addDocumentListener(new FieldChangeListener());
         searchDateEnd.getDocument().addDocumentListener(new FieldChangeListener());
@@ -137,7 +139,7 @@ public final class FilterFrame extends javax.swing.JFrame {
         resetSearchQuery();
         ItemManagement.refreshTableInventory();
 
-        System.out.println(ItemManagement.currentSearchQuery);
+//        System.out.println(ItemManagement.currentSearchQuery);
     }
 
     public void repopulateComboBox() {
@@ -152,12 +154,18 @@ public final class FilterFrame extends javax.swing.JFrame {
         GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
         searchDesc.insertItemAt(filterDesc.getDefaultString(), 0);
         searchDesc.setSelectedIndex(0);
+
+        GuiUtil.repopulateComboBox(searchHolder, "stock_user", "SELECT stock_user FROM " + Main.TB_ITEM_STOCK);
+        searchHolder.insertItemAt(filterHolder.getDefaultString(), 0);
+        searchHolder.setSelectedIndex(0);
     }
 
     private void resetSearchQuery() {
+        
         // also edit 'ItemManagement.radioBatchesActionPerformed' 
         // when editing this method
-        if (ItemManagement.radioBatches.isSelected()) {
+        if (radioBatches.isSelected()) {
+            ItemManagement.groupByBatches = true;
             ItemManagement.currentSearchQuery
                     = "SELECT "
                     + "    stock_id, "
@@ -186,6 +194,7 @@ public final class FilterFrame extends javax.swing.JFrame {
                     + filterDesc.getFilterSQL()
                     + filterDateStart.getFilterSQL()
                     + filterDateEnd.getFilterSQL()
+                    + filterHolder.getFilterSQL()
                     + " GROUP BY stock_batch"
                     + " HAVING "
                     + filterQuantityStart.getFilterSQL()
@@ -194,6 +203,7 @@ public final class FilterFrame extends javax.swing.JFrame {
                     + filterPriceEnd.getFilterSQL()
                     + " ORDER BY stock_id ASC";
         } else {
+            ItemManagement.groupByBatches = false;
             ItemManagement.currentSearchQuery = "SELECT *, 1 AS stock_quantity FROM " + Main.TB_ITEM_STOCK
                     + " WHERE "
                     + filterCategory.getFilterSQL()
@@ -201,6 +211,7 @@ public final class FilterFrame extends javax.swing.JFrame {
                     + filterDesc.getFilterSQL()
                     + filterDateStart.getFilterSQL()
                     + filterDateEnd.getFilterSQL()
+                    + filterHolder.getFilterSQL()
                     + " HAVING "
                     + filterQuantityStart.getFilterSQL()
                     + filterQuantityEnd.getFilterSQL()
@@ -254,6 +265,7 @@ public final class FilterFrame extends javax.swing.JFrame {
         labelFilterDateTo = new javax.swing.JLabel();
         searchDateEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
         jSeparator6 = new javax.swing.JSeparator();
+        radioBatches = new ProjectINSY.java.swing.RadioButtonCustom();
 
         dateStart.setForeground(new java.awt.Color(25, 102, 24));
         dateStart.setDateFormat("yyyy-MM-dd");
@@ -264,9 +276,7 @@ public final class FilterFrame extends javax.swing.JFrame {
         dateEnd.setTextRefernce(searchDateEnd);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setMaximumSize(new java.awt.Dimension(1000, 1000));
         setUndecorated(true);
-        setPreferredSize(new java.awt.Dimension(700, 364));
 
         panelBody.setBackground(new java.awt.Color(255, 255, 255));
         panelBody.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
@@ -409,10 +419,15 @@ public final class FilterFrame extends javax.swing.JFrame {
         });
 
         labelFilterHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
-        labelFilterHolder.setText("Name");
+        labelFilterHolder.setText("Holder");
 
         searchHolder.setBorder(null);
         searchHolder.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        searchHolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchHolderActionPerformed(evt);
+            }
+        });
 
         labelFilterTitle.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelFilterTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -444,6 +459,17 @@ public final class FilterFrame extends javax.swing.JFrame {
         searchDateEnd.setEditable(true);
         searchDateEnd.setBorder(null);
         searchDateEnd.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+
+        radioBatches.setBackground(new java.awt.Color(25, 102, 24));
+        radioBatches.setBorder(null);
+        radioBatches.setSelected(true);
+        radioBatches.setText("Group by Batches");
+        radioBatches.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        radioBatches.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioBatchesActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelBodyLayout = new javax.swing.GroupLayout(panelBody);
         panelBody.setLayout(panelBodyLayout);
@@ -509,7 +535,9 @@ public final class FilterFrame extends javax.swing.JFrame {
                                         .addComponent(jSeparator7)))))
                         .addContainerGap())
                     .addGroup(panelBodyLayout.createSequentialGroup()
-                        .addComponent(labelFilterTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(labelFilterTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                        .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnClose))))
         );
@@ -520,7 +548,9 @@ public final class FilterFrame extends javax.swing.JFrame {
                     .addComponent(btnClose)
                     .addGroup(panelBodyLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(labelFilterTitle)))
+                        .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(labelFilterTitle)
+                            .addComponent(radioBatches, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelBodyLayout.createSequentialGroup()
@@ -735,6 +765,17 @@ public final class FilterFrame extends javax.swing.JFrame {
         enforceDigits(evt);
     }//GEN-LAST:event_searchPriceEndKeyTyped
 
+    private void searchHolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchHolderActionPerformed
+        filterHolder.createFilter(searchHolder);
+        resetSearchQuery();
+        refreshTableInventory();
+    }//GEN-LAST:event_searchHolderActionPerformed
+
+    private void radioBatchesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchesActionPerformed
+        resetSearchQuery();
+        refreshTableInventory();
+    }//GEN-LAST:event_radioBatchesActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -827,6 +868,7 @@ public final class FilterFrame extends javax.swing.JFrame {
     private javax.swing.JLabel labelFilterQuantityTo;
     private javax.swing.JLabel labelFilterTitle;
     private javax.swing.JPanel panelBody;
+    public static ProjectINSY.java.swing.RadioButtonCustom radioBatches;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateEnd;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateStart;

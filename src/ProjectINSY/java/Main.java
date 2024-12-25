@@ -7,6 +7,7 @@ package ProjectINSY.java;
 import ProjectINSY.java.ui.*;
 import ProjectINSY.java.ui.component.MenuLayout;
 import static ProjectINSY.java.util.GuiUtil.setForm;
+import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.SessionUtil.isLoggedIn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -136,20 +137,20 @@ public class Main extends javax.swing.JFrame {
         layout = new MigLayout("fill", "0[fill]0", "0[fill]0");
         panelMain.setLayer(menu, JLayeredPane.POPUP_LAYER);
         panelMain.setLayout(layout);
-        panelMain.add(menu, "pos -1366 70 100% 100%", 0);
+        panelMain.add(menu, "pos -1920 100 100% 100%", 0);
         TimingTarget target = new TimingTargetAdapter() {
             @Override
             public void timingEvent(float fraction) {
-                float x = (fraction * 1366);
+                float x = (fraction * 1920);
                 float alpha;
                 if (menu.isShow()) {
                     x = -x;
                     alpha = 0.5f - (fraction / 2);
                 } else {
-                    x -= 1366;
+                    x -= 1920;
                     alpha = fraction / 2;
                 }
-                layout.setComponentConstraints(menu, "pos " + (int) x + " 70 100% 100%");
+                layout.setComponentConstraints(menu, "pos " + (int) x + " 100 100% 100%");
                 if (alpha < 0) {
                     alpha = 0;
                 }
@@ -190,7 +191,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        setForm(panelForm, LogIn);
+        setLogInForm();
     }
 
     public void showMenu() {
@@ -203,17 +204,17 @@ public class Main extends javax.swing.JFrame {
     }
 
     public void setDefaultForm() {
-        setForm(panelForm, ItemStock);
-        ItemStock.repopulateComboBox();
-        ItemStock.refreshTableInventory();
+        setItemForm(ItemStock);
     }
 
     public void setLogInForm() {
         setForm(panelForm, LogIn);
+        panelFormBlur.setVisible(false);
     }
 
     public void setItemForm(JComponent com) {
         setForm(panelForm, com);
+        panelFormBlur.setVisible(true);
 
         switch (com) {
             case ItemStock form -> {
@@ -247,41 +248,65 @@ public class Main extends javax.swing.JFrame {
         panelBody = new javax.swing.JPanel();
         header = new ProjectINSY.java.ui.component.Header();
         panelForm = new javax.swing.JPanel();
+        panelFormBlur = new ProjectINSY.java.ui.panel.GradientPanel();
         imageBg = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cavite State University Inventory System");
         setBackground(new java.awt.Color(255, 255, 255));
-        setMaximumSize(new java.awt.Dimension(1366, 768));
-        setMinimumSize(new java.awt.Dimension(1366, 768));
+        setMinimumSize(new java.awt.Dimension(1920, 1080));
         setUndecorated(true);
-        setPreferredSize(new java.awt.Dimension(1366, 768));
         setResizable(false);
         getContentPane().setLayout(null);
 
+        panelMain.setMaximumSize(new java.awt.Dimension(1920, 1080));
+        panelMain.setMinimumSize(new java.awt.Dimension(1920, 1080));
+
         panelBody.setBackground(new java.awt.Color(255, 255, 255));
-        panelBody.setMinimumSize(new java.awt.Dimension(800, 600));
+        panelBody.setMaximumSize(new java.awt.Dimension(1920, 1080));
+        panelBody.setMinimumSize(new java.awt.Dimension(1920, 1080));
         panelBody.setName(""); // NOI18N
         panelBody.setOpaque(false);
-        panelBody.setPreferredSize(new java.awt.Dimension(800, 600));
+        panelBody.setPreferredSize(new java.awt.Dimension(1920, 1080));
         panelBody.setLayout(null);
         panelBody.add(header);
-        header.setBounds(0, 0, 1370, 90);
+        header.setBounds(0, 0, 1920, 120);
 
-        panelForm.setOpaque(false);
+        panelForm.setBackground(new java.awt.Color(241, 239, 241));
+        panelForm.setMaximumSize(new java.awt.Dimension(1840, 900));
+        panelForm.setMinimumSize(new java.awt.Dimension(1840, 900));
+        panelForm.setPreferredSize(new java.awt.Dimension(1840, 900));
         panelForm.setLayout(new java.awt.BorderLayout());
         panelBody.add(panelForm);
-        panelForm.setBounds(0, 0, 1370, 770);
+        panelForm.setBounds(40, 140, 1840, 900);
+
+        panelFormBlur.setColorEnd(new java.awt.Color(241, 239, 241));
+        panelFormBlur.setColorStart(new java.awt.Color(241, 239, 241));
+        panelFormBlur.setShadowIntensity(255);
+
+        javax.swing.GroupLayout panelFormBlurLayout = new javax.swing.GroupLayout(panelFormBlur);
+        panelFormBlur.setLayout(panelFormBlurLayout);
+        panelFormBlurLayout.setHorizontalGroup(
+            panelFormBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1880, Short.MAX_VALUE)
+        );
+        panelFormBlurLayout.setVerticalGroup(
+            panelFormBlurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 940, Short.MAX_VALUE)
+        );
+
+        panelBody.add(panelFormBlur);
+        panelFormBlur.setBounds(20, 120, 1880, 940);
 
         imageBg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/images/bg.png"))); // NOI18N
         panelBody.add(imageBg);
-        imageBg.setBounds(0, 0, 1370, 770);
+        imageBg.setBounds(0, 0, 1920, 1080);
 
         panelMain.add(panelBody);
-        panelBody.setBounds(0, 0, 1370, 720);
+        panelBody.setBounds(0, 0, 1920, 1080);
 
         getContentPane().add(panelMain);
-        panelMain.setBounds(0, 0, 1370, 770);
+        panelMain.setBounds(0, 0, 1920, 1080);
 
         pack();
         setLocationRelativeTo(null);
@@ -340,6 +365,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel imageBg;
     private javax.swing.JPanel panelBody;
     private javax.swing.JPanel panelForm;
+    private ProjectINSY.java.ui.panel.GradientPanel panelFormBlur;
     private javax.swing.JLayeredPane panelMain;
     // End of variables declaration//GEN-END:variables
 

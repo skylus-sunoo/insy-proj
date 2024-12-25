@@ -68,13 +68,13 @@ public class MenuLayout extends javax.swing.JPanel {
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        setMaximumSize(new java.awt.Dimension(1366, 768));
-        setMinimumSize(new java.awt.Dimension(1366, 768));
-        setPreferredSize(new java.awt.Dimension(1366, 768));
+        setMaximumSize(new java.awt.Dimension(1920, 1080));
+        setMinimumSize(new java.awt.Dimension(1920, 1080));
+        setPreferredSize(new java.awt.Dimension(1920, 1080));
         setRequestFocusEnabled(false);
         setLayout(null);
         add(menu);
-        menu.setBounds(0, 0, 333, 768);
+        menu.setBounds(0, 0, 333, 1080);
 
         borderPanel.setBackground(new java.awt.Color(62, 53, 22));
 
@@ -86,11 +86,11 @@ public class MenuLayout extends javax.swing.JPanel {
         );
         borderPanelLayout.setVerticalGroup(
             borderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 768, Short.MAX_VALUE)
+            .addGap(0, 1080, Short.MAX_VALUE)
         );
 
         add(borderPanel);
-        borderPanel.setBounds(329, 0, 10, 768);
+        borderPanel.setBounds(329, 0, 10, 1080);
 
         blur.setShadowIntensity(255);
 
@@ -102,11 +102,11 @@ public class MenuLayout extends javax.swing.JPanel {
         );
         blurLayout.setVerticalGroup(
             blurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 820, Short.MAX_VALUE)
+            .addGap(0, 1130, Short.MAX_VALUE)
         );
 
         add(blur);
-        blur.setBounds(-1, -21, 350, 820);
+        blur.setBounds(-1, -21, 350, 1130);
     }// </editor-fold>//GEN-END:initComponents
 
     @Override

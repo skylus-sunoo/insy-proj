@@ -5,7 +5,6 @@
 package ProjectINSY.java.model;
 
 import ProjectINSY.java.Main;
-import ProjectINSY.java.ui.ItemStock;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
@@ -100,6 +99,8 @@ public class Filter {
             default -> {
             }
         }
+        
+//        System.out.println(filterSQL);
     }
 
     public void createFilter(Object inputComponent) {

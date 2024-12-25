@@ -4,17 +4,12 @@
  */
 package ProjectINSY.java.ui.component;
 
-import ProjectINSY.java.swing.Shadow.ShadowRenderer;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 
 /**
@@ -46,8 +41,8 @@ public class Header extends javax.swing.JPanel {
 
         btnMenu = new javax.swing.JButton();
         labelHeader = new javax.swing.JLabel();
-        imageLogo = new javax.swing.JLabel();
         blur = new ProjectINSY.java.ui.panel.GradientPanel();
+        imageLogo = new javax.swing.JLabel();
 
         setOpaque(false);
         setLayout(null);
@@ -58,35 +53,39 @@ public class Header extends javax.swing.JPanel {
         btnMenu.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnMenu_active.png"))); // NOI18N
         btnMenu.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnMenu_active.png"))); // NOI18N
         add(btnMenu);
-        btnMenu.setBounds(20, 20, 49, 30);
+        btnMenu.setBounds(20, 10, 49, 80);
 
         labelHeader.setFont(new java.awt.Font("Bebas", 0, 30)); // NOI18N
         labelHeader.setForeground(new java.awt.Color(255, 255, 255));
         labelHeader.setText("CAVITE STATE UNIVERSITY INVENTORY SYSTEM");
         add(labelHeader);
-        labelHeader.setBounds(80, 10, 600, 50);
-
-        imageLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/images/cvsu-logo.png"))); // NOI18N
-        add(imageLogo);
-        imageLogo.setBounds(1280, 0, 70, 70);
+        labelHeader.setBounds(80, 10, 600, 80);
 
         blur.setColorEnd(new java.awt.Color(25, 102, 24));
         blur.setColorStart(new java.awt.Color(25, 102, 24));
         blur.setShadowIntensity(255);
 
+        imageLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/images/cvsu-logo.png"))); // NOI18N
+
         javax.swing.GroupLayout blurLayout = new javax.swing.GroupLayout(blur);
         blur.setLayout(blurLayout);
         blurLayout.setHorizontalGroup(
             blurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1420, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, blurLayout.createSequentialGroup()
+                .addContainerGap(1831, Short.MAX_VALUE)
+                .addComponent(imageLogo)
+                .addGap(29, 29, 29))
         );
         blurLayout.setVerticalGroup(
             blurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, blurLayout.createSequentialGroup()
+                .addContainerGap(26, Short.MAX_VALUE)
+                .addComponent(imageLogo)
+                .addGap(15, 15, 15))
         );
 
         add(blur);
-        blur.setBounds(-20, -20, 1420, 100);
+        blur.setBounds(-20, -20, 1960, 130);
     }// </editor-fold>//GEN-END:initComponents
 
     private int x;

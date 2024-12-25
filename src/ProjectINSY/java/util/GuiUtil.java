@@ -81,6 +81,12 @@ public class GuiUtil {
         button.setIcon(transparentIcon);
     }
 
+    public static void resetIcon(JLabel label) {
+        ImageIcon transparentIcon = new ImageIcon(new ImageIcon(new byte[]{}).getImage().getScaledInstance(1, 1, Image.SCALE_DEFAULT));
+
+        label.setIcon(transparentIcon);
+    }
+
     public static void setForm(JPanel panel, JComponent com) {
         panel.removeAll();
         panel.add(com);
