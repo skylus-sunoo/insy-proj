@@ -74,7 +74,7 @@ public class Main extends javax.swing.JFrame {
     private final ItemStock ItemStock = new ItemStock();
     private final ItemManagement ItemManagement = new ItemManagement();
     private final ItemCatalog ItemCatalog = new ItemCatalog();
-    private final ItemHistory ItemHistory = new ItemHistory();
+    private final ItemTracker ItemTracker = new ItemTracker();
 
     public LogIn getLogIn() {
         return LogIn;
@@ -92,8 +92,8 @@ public class Main extends javax.swing.JFrame {
         return ItemCatalog;
     }
 
-    public ItemHistory getItemHistory() {
-        return ItemHistory;
+    public ItemTracker getItemTracker() {
+        return ItemTracker;
     }
     //</editor-fold>
 
@@ -229,6 +229,9 @@ public class Main extends javax.swing.JFrame {
                 form.refreshTableCategory();
                 form.repopulateCategoryComboBox();
                 form.refreshTableItem();
+            }
+            case ItemTracker form -> {
+                form.repopulateSuggestions();
             }
             default -> {
             }

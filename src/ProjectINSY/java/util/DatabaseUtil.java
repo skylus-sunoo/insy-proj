@@ -77,23 +77,42 @@ public class DatabaseUtil {
         return newBatchId;
     }
 
-    public static String getCategoryByItem(String item_name) {
-        String item_category = "";
-        String query = "SELECT item_category FROM " + Main.TB_CATALOG_ITEM + " WHERE item_name = ?";
+    public static String getColumnValueByString(String table_name, String column_name_to_get, String column_name_to_search, String id) {
+        String column_value = "";
+        String query = "SELECT " + column_name_to_get + " FROM " + table_name + " WHERE " + column_name_to_search + " = ?";
 
         try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, item_name);
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                item_category = rs.getString("item_category");
+                column_value = rs.getString(column_name_to_get);
             }
 
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
 
-        return item_category;
+        return column_value;
+    }
+
+    public static String getColumnValueByInt(String table_name, String column_name_to_get, String column_name_to_search, int id) {
+        String column_value = "";
+        String query = "SELECT " + column_name_to_get + " FROM " + table_name + " WHERE " + column_name_to_search + " = ?";
+
+        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                column_value = rs.getString(column_name_to_get);
+            }
+
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+
+        return column_value;
     }
 }
 

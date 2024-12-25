@@ -9,6 +9,7 @@ import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.generateNewBatch;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
 import static ProjectINSY.java.util.DatabaseUtil.getConnection;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
@@ -43,7 +44,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -83,6 +83,7 @@ public class ItemManagement extends javax.swing.JPanel {
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
     private String current_barcode = null;
     private ImageIcon barcodeIcon;
+    private int batchQuantity = -1;
 
     public static boolean groupByBatches = true;
 
@@ -122,9 +123,11 @@ public class ItemManagement extends javax.swing.JPanel {
         String[] tableRow = TableUtil.selectTableRow(tableInventory, selectedRow);
         TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, fieldQuantity, fieldDOD, fieldHolder);
 
+        batchQuantity = Integer.parseInt(fieldQuantity.getText());
+
         Float actual_price = Float.valueOf(fieldPrice.getText());
         Float quantity = Float.valueOf(fieldQuantity.getText());
-        fieldQuantity.setText("");
+//        fieldQuantity.setText("");
         setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
 
         fieldPrice.setText(String.valueOf(actual_price / quantity) + "0");
@@ -206,6 +209,7 @@ public class ItemManagement extends javax.swing.JPanel {
     public void clearFields() {
         current_barcode = null;
         barcodeIcon = null;
+        batchQuantity = -1;
         GuiUtil.resetIcon(imgBarcode);
 
         GuiUtil.clearField(fieldID, "");
@@ -596,6 +600,7 @@ public class ItemManagement extends javax.swing.JPanel {
         btnPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint.png"))); // NOI18N
         btnPrint.setBorder(null);
         btnPrint.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnPrint.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint_pressed.png"))); // NOI18N
         btnPrint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPrintActionPerformed(evt);
@@ -729,7 +734,7 @@ public class ItemManagement extends javax.swing.JPanel {
         String stock_deliveryDate = fieldDOD.getText();
         String stock_holder = fieldHolder.getText();
 
-        String stock_category = DatabaseUtil.getCategoryByItem(stock_name);
+        String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
         int stock_batch = generateNewBatch();
 
         int stock_custom_code = 0;
@@ -745,7 +750,6 @@ public class ItemManagement extends javax.swing.JPanel {
         if (stock_deliveryDate.matches(Main.validDatePattern)) {
             try {
                 LocalDate.parse(stock_deliveryDate);
-                System.out.println("Valid date: " + stock_deliveryDate);
             } catch (DateTimeParseException e) {
                 JOptionPane.showMessageDialog(this, "Invalid date. The date is not valid.", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -865,7 +869,7 @@ public class ItemManagement extends javax.swing.JPanel {
         String stock_deliveryDate = fieldDOD.getText();
         String stock_holder = fieldHolder.getText();
 
-        String stock_category = DatabaseUtil.getCategoryByItem(stock_name);
+        String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
@@ -956,15 +960,45 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintActionPerformed
-        if (current_barcode != null) {
-            try {
-                BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+        int warnUser = JOptionPane.showConfirmDialog(
+                null,
+                "This item is part of a batch. Do you wish to print barcodes for the entire batch?",
+                "Warning: Batch Print",
+                JOptionPane.YES_NO_OPTION
+        );
 
-                ImageIO.write(bufferedImage, "PNG", new File(current_barcode + ".png"));
-            } catch (IOException e) {
+        if (warnUser == JOptionPane.NO_OPTION) {
+            if (current_barcode != null) {
+                try {
+                    BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+
+                    ImageIO.write(bufferedImage, "PNG", new File("barcodes/" + current_barcode + ".png"));
+                } catch (IOException e) {
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
+        } else if (warnUser == JOptionPane.YES_OPTION) {
+            int stock_id = Integer.parseInt(fieldID.getText());
+
+            for (int i = 0; i < batchQuantity; i++) {
+                String code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
+                current_barcode = validateBarcode(code);
+                barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
+
+                if (current_barcode != null) {
+                    try {
+                        BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+
+                        ImageIO.write(bufferedImage, "PNG", new File("barcodes/" + current_barcode + ".png"));
+                    } catch (IOException e) {
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
+                }
+
+                stock_id++;
+            }
         }
     }//GEN-LAST:event_btnPrintActionPerformed
 

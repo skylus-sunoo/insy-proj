@@ -10,6 +10,7 @@ package ProjectINSY.java.util;
  */
 import ProjectINSY.java.Main;
 import ProjectINSY.java.swing.ScrollBarCustom;
+import ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import java.awt.Color;
 import java.awt.Image;
@@ -156,10 +157,55 @@ public class GuiUtil {
         }
     }
 
+    public static void repopulateSuggestions(TextFieldSuggestion field, String columnName, String query) {
+        Set<String> uniqueItems = new HashSet<>();
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = DatabaseUtil.prepareQuery(conn, query); ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                String name = rs.getString(columnName);
+                if (name != null && !name.trim().isEmpty()) {
+                    uniqueItems.add(name);
+                }
+            }
+
+            List<String> sortedItems = new ArrayList<>(uniqueItems);
+            boolean hasSupplyRoom = sortedItems.contains("Supply Room");
+            if (hasSupplyRoom) {
+                sortedItems.remove("Supply Room");
+            }
+
+            Collections.sort(sortedItems, String.CASE_INSENSITIVE_ORDER);
+            if (hasSupplyRoom) {
+                sortedItems.add(0, "Supply Room");
+            }
+
+            field.clearItemSuggestion();
+            for (String item : sortedItems) {
+                field.addItemSuggestion(item);
+            }
+
+            rs.close();
+            pst.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }
+
     public static void enforceDigits(KeyEvent evt) {
         char c = evt.getKeyChar();
 
         if (!Character.isDigit(c) && c != '.' && c != KeyEvent.VK_BACK_SPACE) {
+            evt.consume();
+        }
+    }
+    
+    public static void enforceCharacterAmount(KeyEvent evt, int amount) {
+        char c = evt.getKeyChar();
+        
+        String currentText = ((javax.swing.JTextField) evt.getSource()).getText();
+        if (currentText.length() >= amount && c != KeyEvent.VK_BACK_SPACE) {
             evt.consume();
         }
     }
