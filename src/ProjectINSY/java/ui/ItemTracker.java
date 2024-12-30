@@ -271,6 +271,10 @@ public class ItemTracker extends javax.swing.JPanel implements Runnable, ThreadF
                     }
 
                     searchItem();
+
+                    if (radioAutoclose.isSelected()) {
+                        stopWebcam();
+                    }
                 }
             }
         }

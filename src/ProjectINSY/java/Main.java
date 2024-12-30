@@ -9,6 +9,7 @@ import ProjectINSY.java.ui.component.MenuLayout;
 import static ProjectINSY.java.util.GuiUtil.setForm;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.SessionUtil.isLoggedIn;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -115,22 +116,8 @@ public class Main extends javax.swing.JFrame {
      */
     private Main() {
         initComponents();
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("icon.png")));
 
-//        String basePath = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-//                .getParentFile()
-//                .getParent();
-//
-//        File batFile = new File(basePath, "start_xampp.bat");
-//
-//        if (!batFile.exists()) {
-//            System.out.println("Batch file not found: " + batFile.getAbsolutePath());
-//        }
-//
-//        try {
-//            Runtime.getRuntime().exec("cmd /c start /B /MIN " + batFile.getAbsolutePath());
-//        } catch (IOException ex) {
-//            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-//        }
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
 
