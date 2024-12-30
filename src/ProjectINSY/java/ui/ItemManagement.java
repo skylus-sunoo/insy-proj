@@ -6,6 +6,7 @@ package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.util.BarcodeUtil;
+import static ProjectINSY.java.util.BarcodeUtil.generatePDFFromBarcode;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.generateNewBatch;
@@ -44,9 +45,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import javax.imageio.ImageIO;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 
 /**
@@ -960,46 +961,44 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintActionPerformed
-        int warnUser = JOptionPane.showConfirmDialog(
-                null,
-                "This item is part of a batch. Do you wish to print barcodes for the entire batch?",
-                "Warning: Batch Print",
-                JOptionPane.YES_NO_OPTION
-        );
+        if (current_barcode != null) {
+            int warnUser = JOptionPane.showConfirmDialog(
+                    null,
+                    "This item is part of a batch. Do you wish to print barcodes for the entire batch?",
+                    "Warning: Batch Print",
+                    JOptionPane.YES_NO_OPTION
+            );
+            List<BufferedImage> barcodeImages = new ArrayList<>();
+            String outputPdfPath = "barcodes/output.pdf";
 
-        if (warnUser == JOptionPane.NO_OPTION) {
-            if (current_barcode != null) {
-                try {
+            if (warnUser == JOptionPane.NO_OPTION) {
+                BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+                barcodeImages.add(bufferedImage);
+            } else if (warnUser == JOptionPane.YES_OPTION) {
+                int stock_id = Integer.parseInt(fieldID.getText());
+
+                for (int i = 0; i < batchQuantity; i++) {
+                    String code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
+                    current_barcode = validateBarcode(code);
+                    barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
+
                     BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+                    barcodeImages.add(bufferedImage);
 
-                    ImageIO.write(bufferedImage, "PNG", new File("barcodes/" + current_barcode + ".png"));
-                } catch (IOException e) {
+                    stock_id++;
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
             }
-        } else if (warnUser == JOptionPane.YES_OPTION) {
-            int stock_id = Integer.parseInt(fieldID.getText());
 
-            for (int i = 0; i < batchQuantity; i++) {
-                String code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
-                current_barcode = validateBarcode(code);
-                barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
-
-                if (current_barcode != null) {
-                    try {
-                        BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
-
-                        ImageIO.write(bufferedImage, "PNG", new File("barcodes/" + current_barcode + ".png"));
-                    } catch (IOException e) {
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
-                }
-
-                stock_id++;
+            try {
+                generatePDFFromBarcode(barcodeImages, outputPdfPath);
+                JOptionPane.showMessageDialog(this, "PDF created successfully: " + outputPdfPath, "Print Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Failed to create PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
+        } else {
+            JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
         }
+
     }//GEN-LAST:event_btnPrintActionPerformed
 
     public void showFilterFrame(boolean bool) {

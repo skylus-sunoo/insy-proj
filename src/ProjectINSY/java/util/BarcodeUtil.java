@@ -13,13 +13,22 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -44,28 +53,28 @@ public class BarcodeUtil {
 
             BitMatrix bitMatrix = new MultiFormatWriter().encode(barcodeValue, BarcodeFormat.CODE_128, barcodeWidth, barcodeHeight, hints);
 
-            int totalHeight = barcodeHeight + 20; 
+            int totalHeight = barcodeHeight + 20;
 
             BufferedImage combinedImage = new BufferedImage(barcodeWidth, totalHeight, BufferedImage.TYPE_INT_RGB);
             Graphics2D g2d = combinedImage.createGraphics();
 
             g2d.setBackground(Color.WHITE);
-            g2d.clearRect(0, 0, barcodeWidth, totalHeight);  
+            g2d.clearRect(0, 0, barcodeWidth, totalHeight);
 
             for (int x = 0; x < barcodeWidth; x++) {
                 for (int y = 0; y < barcodeHeight; y++) {
-                    combinedImage.setRGB(x, y, bitMatrix.get(x, y) ? 0x000000 : 0xFFFFFF); 
+                    combinedImage.setRGB(x, y, bitMatrix.get(x, y) ? 0x000000 : 0xFFFFFF);
                 }
             }
 
-            g2d.setColor(Color.BLACK); 
-            g2d.setFont(new Font("Arial", Font.PLAIN, 14)); 
+            g2d.setColor(Color.BLACK);
+            g2d.setFont(new Font("Arial", Font.PLAIN, 14));
 
             FontMetrics fontMetrics = g2d.getFontMetrics();
-            int labelWidth = fontMetrics.stringWidth(barcodeValue); 
-            int xPosition = (barcodeWidth - labelWidth) / 2; 
+            int labelWidth = fontMetrics.stringWidth(barcodeValue);
+            int xPosition = (barcodeWidth - labelWidth) / 2;
 
-            g2d.drawString(barcodeValue, xPosition, barcodeHeight + 15); 
+            g2d.drawString(barcodeValue, xPosition, barcodeHeight + 15);
 
             g2d.dispose();
 
@@ -74,6 +83,38 @@ public class BarcodeUtil {
         } catch (WriterException e) {
             return null;
         }
+    }
+
+    public static void generatePDFFromBarcode(List<BufferedImage> bufferedImages, String pdfFilePath) throws IOException {
+        PdfWriter writer = new PdfWriter(pdfFilePath);
+
+        PdfDocument pdf = new PdfDocument(writer);
+
+        try (Document document = new Document(pdf, PageSize.A4)) {
+            float x = 50;  
+            float y = 750; 
+            for (BufferedImage bufferedImage : bufferedImages) {
+                ImageData imageData = ImageDataFactory.create(bufferedImage, null);
+                Image image = new Image(imageData);
+
+                image.scaleToFit(150, 150);  
+
+                image.setFixedPosition(x, y);
+
+                document.add(image);
+
+                y -= 77; 
+
+                if (y < 50) { 
+                    y = 750;
+                    x += 180; 
+                    if (x > 500) { 
+                        pdf.addNewPage();  
+                        x = 50;  
+                    }
+                }
+            }
+        } 
     }
 
 //    public static ImageIcon generateBarcode(String barcodeValue) {
