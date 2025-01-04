@@ -635,7 +635,7 @@ public final class FilterFrame extends javax.swing.JFrame {
         ItemManagement.showFilterFrame(true);
 //        refreshTableInventory();
 //        System.out.println(ItemManagement.currentSearchQuery);
-        dispose();
+        setVisible(false);
     }//GEN-LAST:event_btnCloseActionPerformed
 
     private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
@@ -730,7 +730,7 @@ public final class FilterFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_searchQuantityEndFocusGained
 
     private void searchPriceStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceStartFocusGained
-        setDefaultField(searchPriceStart, Main.filterMaxNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+        setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_searchPriceStartFocusGained
 
     private void searchPriceStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceStartFocusLost
@@ -752,7 +752,7 @@ public final class FilterFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_searchPriceEndFocusGained
 
     private void searchPriceEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceEndFocusLost
-        setDefaultField(searchPriceEnd, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        setDefaultField(searchPriceEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_searchPriceEndFocusLost
 
     private void searchPriceEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceEndKeyReleased

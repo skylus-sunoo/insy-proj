@@ -21,11 +21,13 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -112,6 +114,14 @@ public class BarcodeUtil {
                         pdf.addNewPage();  
                         x = 50;  
                     }
+                }
+            }
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                File pdfFile = new File(pdfFilePath);
+                if (pdfFile.exists()) {
+                    desktop.open(pdfFile);
                 }
             }
         } 

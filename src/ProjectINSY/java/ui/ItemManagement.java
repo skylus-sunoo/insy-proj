@@ -85,6 +85,8 @@ public class ItemManagement extends javax.swing.JPanel {
     private String current_barcode = null;
     private ImageIcon barcodeIcon;
     private int batchQuantity = -1;
+    
+    private FilterFrame FilterFrame;
 
     public static boolean groupByBatches = true;
 
@@ -93,6 +95,8 @@ public class ItemManagement extends javax.swing.JPanel {
      */
     public ItemManagement() {
         initComponents();
+        
+        FilterFrame = new FilterFrame(this);
 
         setScrollBarCustom(tableScroll);
 
@@ -952,7 +956,7 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_fieldCodeKeyTyped
 
     private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
-        new FilterFrame(this).setVisible(true);
+        FilterFrame.setVisible(true);
         showFilterFrame(false);
     }//GEN-LAST:event_btnFilterActionPerformed
 

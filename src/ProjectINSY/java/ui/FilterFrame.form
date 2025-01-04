@@ -524,7 +524,6 @@
         </Component>
         <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="searchDateStart">
           <Properties>
-            <Property name="editable" type="boolean" value="true"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
             </Property>
@@ -551,7 +550,6 @@
         </Component>
         <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="searchDateEnd">
           <Properties>
-            <Property name="editable" type="boolean" value="true"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
             </Property>
