@@ -552,12 +552,12 @@
                             </Constraint>
                           </Constraints>
                         </Component>
-                        <Component class="javax.swing.JLabel" name="labelHolder">
+                        <Component class="javax.swing.JLabel" name="labelBenefactor">
                           <Properties>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                               <Font name="Aaux ProThin OSF" size="36" style="1"/>
                             </Property>
-                            <Property name="text" type="java.lang.String" value="Holder"/>
+                            <Property name="text" type="java.lang.String" value="Benefactor"/>
                           </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
@@ -565,7 +565,7 @@
                             </Constraint>
                           </Constraints>
                         </Component>
-                        <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="fieldHolder">
+                        <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="fieldBenefactor">
                           <Properties>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="null"/>
@@ -573,14 +573,14 @@
                             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="99" green="99" red="99" type="rgb"/>
                             </Property>
-                            <Property name="text" type="java.lang.String" value="Enter Holder"/>
+                            <Property name="text" type="java.lang.String" value="Enter Benefactor"/>
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                               <Font name="Bahnschrift" size="24" style="0"/>
                             </Property>
                           </Properties>
                           <Events>
-                            <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fieldHolderFocusGained"/>
-                            <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fieldHolderFocusLost"/>
+                            <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fieldBenefactorFocusGained"/>
+                            <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fieldBenefactorFocusLost"/>
                           </Events>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
@@ -588,7 +588,7 @@
                             </Constraint>
                           </Constraints>
                         </Component>
-                        <Component class="javax.swing.JLabel" name="imageHolder">
+                        <Component class="javax.swing.JLabel" name="imageBenefactor">
                           <Properties>
                             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                               <Image iconType="3" name="/ProjectINSY/resources/interface/fieldHalf.png"/>
@@ -898,7 +898,7 @@
                             <Column editable="true" title="Unit Price / Total Price" type="java.lang.Float"/>
                             <Column editable="true" title="Quantity" type="java.lang.Float"/>
                             <Column editable="true" title="Delivery Date" type="java.lang.Object"/>
-                            <Column editable="true" title="Holder" type="java.lang.Object"/>
+                            <Column editable="true" title="Benefactor" type="java.lang.Object"/>
                           </Table>
                         </Property>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -1251,12 +1251,12 @@
                         </Constraint>
                       </Constraints>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="labelFilterHolder">
+                    <Component class="javax.swing.JLabel" name="labelFilterBenefactor">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Aaux ProThin OSF" size="24" style="1"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Holder"/>
+                        <Property name="text" type="java.lang.String" value="Benefactor"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
@@ -1264,7 +1264,7 @@
                         </Constraint>
                       </Constraints>
                     </Component>
-                    <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="searchHolder">
+                    <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="searchBenefactor">
                       <Properties>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="null"/>
@@ -1274,7 +1274,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchHolderActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchBenefactorActionPerformed"/>
                       </Events>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">

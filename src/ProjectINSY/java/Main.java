@@ -80,6 +80,7 @@ public class Main extends javax.swing.JFrame {
     private final ItemManagement ItemManagement = new ItemManagement();
     private final ItemCatalog ItemCatalog = new ItemCatalog();
     private final ItemTracker ItemTracker = new ItemTracker();
+    private final ItemHistory ItemHistory = new ItemHistory();
 
     public LogIn getLogIn() {
         return LogIn;
@@ -100,6 +101,11 @@ public class Main extends javax.swing.JFrame {
     public ItemTracker getItemTracker() {
         return ItemTracker;
     }
+
+    public ItemHistory getItemHistory() {
+        return ItemHistory;
+    }
+    
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Color Scheme">
     public static Color accentGreen = new Color(25, 102, 24);
@@ -232,7 +238,10 @@ public class Main extends javax.swing.JFrame {
                 form.refreshTableItem();
             }
             case ItemTracker form -> {
-                form.repopulateSuggestions();
+//                form.ItemTrackerScan.repopulateSuggestions();
+//                form.ItemTrackerLocation.refreshTableInventory();
+            }
+            case ItemHistory form -> {
             }
             default -> {
             }

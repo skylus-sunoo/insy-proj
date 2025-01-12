@@ -146,7 +146,7 @@ public class ItemStock extends javax.swing.JPanel {
                 return canEdit [columnIndex];
             }
         });
-        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
         tableInventory.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableInventory);

@@ -72,7 +72,7 @@ public class ItemManagement extends javax.swing.JPanel {
             + "stock_price, "
             + "(stock_price * COUNT(*)) AS stock_price_batch, "
             + "stock_dod, "
-            + "stock_user, "
+            + "stock_benefactor, "
             + "CONCAT( "
             + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
             + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
@@ -96,7 +96,7 @@ public class ItemManagement extends javax.swing.JPanel {
     private final String PLACEHOLDER_PRICE = "Enter Price";
     private final String PLACEHOLDER_DOD = "Enter Delivery Date";
     private final String PLACEHOLDER_QTY = "1";
-    private final String PLACEHOLDER_HOLDER = "Enter Holder";
+    private final String PLACEHOLDER_BENEFACTOR = "Enter Benefactor";
     private String current_barcode = null;
     private ImageIcon barcodeIcon;
     private int batchQuantity = -1;
@@ -110,7 +110,7 @@ public class ItemManagement extends javax.swing.JPanel {
         setScrollBarCustom(tableScroll);
         setScrollBarCustom(scrollMain);
 
-        setTransparentFrame(ItemManagement.this, fieldDesc, fieldPrice, fieldDOD, fieldQuantity, fieldHolder);
+        setTransparentFrame(ItemManagement.this, fieldDesc, fieldPrice, fieldDOD, fieldQuantity, fieldBenefactor);
         setTransparentFrame(btnDOD, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
 
         tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -125,7 +125,7 @@ public class ItemManagement extends javax.swing.JPanel {
         
         fieldPrice.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
-        fieldHolder.getDocument().addDocumentListener(new FieldChangeListener());
+        fieldBenefactor.getDocument().addDocumentListener(new FieldChangeListener());
         searchDateStart.getDocument().addDocumentListener(new FieldChangeListener());
         searchDateEnd.getDocument().addDocumentListener(new FieldChangeListener());
         defaultTable(tableInventory);
@@ -149,7 +149,7 @@ public class ItemManagement extends javax.swing.JPanel {
 
     public void selectTableStock(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableInventory, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, null, fieldDOD, fieldHolder);
+        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, null, fieldDOD, fieldBenefactor);
 
         batchQuantity = Integer.parseInt(fieldQuantity.getText());
         Float actual_price;
@@ -209,8 +209,8 @@ public class ItemManagement extends javax.swing.JPanel {
             btnAdd.setEnabled(!fieldPrice.getText().trim().isEmpty()
                     && !fieldPrice.getText().trim().equals(PLACEHOLDER_PRICE)
                     && !fieldQuantity.getText().trim().isEmpty()
-                    && !fieldHolder.getText().trim().isEmpty()
-                    && !fieldHolder.getText().trim().equals(PLACEHOLDER_HOLDER));
+                    && !fieldBenefactor.getText().trim().isEmpty()
+                    && !fieldBenefactor.getText().trim().equals(PLACEHOLDER_BENEFACTOR));
             if (!fieldID2.getText().isEmpty()) {
                 btnUpdate.setEnabled(fieldQuantity.getText().equals(PLACEHOLDER_QTY));
             }
@@ -234,8 +234,8 @@ public class ItemManagement extends javax.swing.JPanel {
         if (!isDefaultComboItem(searchDesc)) {
             filterWHERE += "AND stock_desc = '" + getComboSelected(searchDesc) + "' ";
         }
-        if (!isDefaultComboItem(searchHolder)) {
-            filterWHERE += "AND stock_user = '" + getComboSelected(searchHolder) + "' ";
+        if (!isDefaultComboItem(searchBenefactor)) {
+            filterWHERE += "AND stock_benefactor = '" + getComboSelected(searchBenefactor) + "' ";
         }
         if (fieldHasValue(searchDateStart)) {
             filterWHERE += "AND stock_dod >= '" + getFieldString(searchDateStart) + "' ";
@@ -270,7 +270,7 @@ public class ItemManagement extends javax.swing.JPanel {
                     + "stock_price, "
                     + "(stock_price * COUNT(*)) AS stock_price_batch, "
                     + "stock_dod, "
-                    + "stock_user, "
+                    + "stock_benefactor, "
                     + "CONCAT( "
                     + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
                     + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
@@ -309,8 +309,8 @@ public class ItemManagement extends javax.swing.JPanel {
         GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
         resetDefaultComboItem(searchDesc);
 
-        GuiUtil.repopulateComboBox(searchHolder, "stock_user", "SELECT stock_user FROM " + Main.TB_ITEM_STOCK);
-        resetDefaultComboItem(searchHolder);
+        GuiUtil.repopulateComboBox(searchBenefactor, "stock_benefactor", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchBenefactor);
     }
 
     public void refreshTableFromDate() {
@@ -340,14 +340,14 @@ public class ItemManagement extends javax.swing.JPanel {
         TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
 //        System.out.println(currentSearchQuery);
 
-        String query = "SELECT DISTINCT stock_user FROM " + Main.TB_ITEM_STOCK;
+        String query = "SELECT DISTINCT stock_benefactor FROM " + Main.TB_ITEM_STOCK;
 
-        fieldHolder.clearItemSuggestion();
+        fieldBenefactor.clearItemSuggestion();
         try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                fieldHolder.addItemSuggestion(rs.getString("stock_user"));
+                fieldBenefactor.addItemSuggestion(rs.getString("stock_benefactor"));
             }
         } catch (SQLException e) {
             paneDatabaseError(e);
@@ -371,7 +371,7 @@ public class ItemManagement extends javax.swing.JPanel {
         GuiUtil.clearField(fieldDesc, PLACEHOLDER_DESC);
         GuiUtil.clearField(fieldPrice, PLACEHOLDER_PRICE);
         GuiUtil.clearField(fieldQuantity, PLACEHOLDER_QTY);
-        GuiUtil.clearField(fieldHolder, PLACEHOLDER_HOLDER);
+        GuiUtil.clearField(fieldBenefactor, PLACEHOLDER_BENEFACTOR);
         GuiUtil.clearFieldDate(fieldDOD);
         fieldDOD.setForeground(Color.BLACK);
         TableUtil.clearSelectedTableRow(tableInventory);
@@ -427,9 +427,9 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldQuantity = new javax.swing.JTextField();
         labelQuantity = new javax.swing.JLabel();
         imageQuantity = new javax.swing.JLabel();
-        labelHolder = new javax.swing.JLabel();
-        fieldHolder = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        imageHolder = new javax.swing.JLabel();
+        labelBenefactor = new javax.swing.JLabel();
+        fieldBenefactor = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        imageBenefactor = new javax.swing.JLabel();
         panelBarcode = new javax.swing.JPanel();
         imgBarcode = new javax.swing.JLabel();
         labelPrint = new javax.swing.JLabel();
@@ -464,8 +464,8 @@ public class ItemManagement extends javax.swing.JPanel {
         searchQuantityStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
         labelFilterQuantityTo = new javax.swing.JLabel();
         searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        labelFilterHolder = new javax.swing.JLabel();
-        searchHolder = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterBenefactor = new javax.swing.JLabel();
+        searchBenefactor = new ProjectINSY.java.swing.ComboBoxSuggestion();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
         jSeparator3 = new javax.swing.JSeparator();
@@ -692,29 +692,29 @@ public class ItemManagement extends javax.swing.JPanel {
         panelInformation.add(imageQuantity);
         imageQuantity.setBounds(970, 140, 333, 70);
 
-        labelHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
-        labelHolder.setText("Holder");
-        panelInformation.add(labelHolder);
-        labelHolder.setBounds(1450, 90, 173, 50);
+        labelBenefactor.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
+        labelBenefactor.setText("Benefactor");
+        panelInformation.add(labelBenefactor);
+        labelBenefactor.setBounds(1450, 90, 173, 50);
 
-        fieldHolder.setBorder(null);
-        fieldHolder.setForeground(new java.awt.Color(153, 153, 153));
-        fieldHolder.setText("Enter Holder");
-        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        fieldHolder.addFocusListener(new java.awt.event.FocusAdapter() {
+        fieldBenefactor.setBorder(null);
+        fieldBenefactor.setForeground(new java.awt.Color(153, 153, 153));
+        fieldBenefactor.setText("Enter Benefactor");
+        fieldBenefactor.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldBenefactor.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldHolderFocusGained(evt);
+                fieldBenefactorFocusGained(evt);
             }
             public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldHolderFocusLost(evt);
+                fieldBenefactorFocusLost(evt);
             }
         });
-        panelInformation.add(fieldHolder);
-        fieldHolder.setBounds(1460, 150, 310, 50);
+        panelInformation.add(fieldBenefactor);
+        fieldBenefactor.setBounds(1460, 150, 310, 50);
 
-        imageHolder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelInformation.add(imageHolder);
-        imageHolder.setBounds(1450, 140, 340, 70);
+        imageBenefactor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
+        panelInformation.add(imageBenefactor);
+        imageBenefactor.setBounds(1450, 140, 340, 70);
 
         panelFields.add(panelInformation);
         panelInformation.setBounds(10, 120, 1790, 210);
@@ -849,7 +849,7 @@ public class ItemManagement extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "Name", "Description", "Unit Price / Total Price", "Quantity", "Delivery Date", "Holder"
+                "", "Name", "Description", "Unit Price / Total Price", "Quantity", "Delivery Date", "Benefactor"
             }
         ) {
             Class[] types = new Class [] {
@@ -1061,20 +1061,20 @@ public class ItemManagement extends javax.swing.JPanel {
         panelFilters.add(searchQuantityEnd);
         searchQuantityEnd.setBounds(187, 476, 121, 18);
 
-        labelFilterHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelFilterHolder.setText("Holder");
-        panelFilters.add(labelFilterHolder);
-        labelFilterHolder.setBounds(8, 603, 300, 30);
+        labelFilterBenefactor.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterBenefactor.setText("Benefactor");
+        panelFilters.add(labelFilterBenefactor);
+        labelFilterBenefactor.setBounds(8, 603, 300, 30);
 
-        searchHolder.setBorder(null);
-        searchHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchHolder.addActionListener(new java.awt.event.ActionListener() {
+        searchBenefactor.setBorder(null);
+        searchBenefactor.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchBenefactor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchHolderActionPerformed(evt);
+                searchBenefactorActionPerformed(evt);
             }
         });
-        panelFilters.add(searchHolder);
-        searchHolder.setBounds(8, 639, 300, 29);
+        panelFilters.add(searchBenefactor);
+        searchBenefactor.setBounds(8, 639, 300, 29);
         panelFilters.add(jSeparator1);
         jSeparator1.setBounds(8, 165, 300, 10);
         panelFilters.add(jSeparator2);
@@ -1307,7 +1307,7 @@ public class ItemManagement extends javax.swing.JPanel {
         String stock_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
         String stock_price = fieldPrice.getText();
         String stock_deliveryDate = fieldDOD.getText();
-        String stock_holder = fieldHolder.getText();
+        String stock_benefactor = fieldBenefactor.getText();
 
         String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
 
@@ -1320,14 +1320,14 @@ public class ItemManagement extends javax.swing.JPanel {
             );
 
             if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_category = ?, stock_name = ?, stock_desc = ?, stock_price = ?, stock_dod = ?, stock_user = ? WHERE stock_id >= ? && stock_id <= ?";
+                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_category = ?, stock_name = ?, stock_desc = ?, stock_price = ?, stock_dod = ?, stock_benefactor = ? WHERE stock_id >= ? && stock_id <= ?";
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setString(1, stock_category);
                 pst.setString(2, stock_name);
                 pst.setString(3, stock_desc);
                 pst.setString(4, stock_price);
                 pst.setString(5, stock_deliveryDate);
-                pst.setString(6, stock_holder);
+                pst.setString(6, stock_benefactor);
                 pst.setInt(7, stock_id);
                 pst.setInt(8, stock_batch_end);
                 pst.executeUpdate();
@@ -1348,7 +1348,7 @@ public class ItemManagement extends javax.swing.JPanel {
         String stock_price = fieldPrice.getText();
         int stock_quantity = Integer.parseInt(fieldQuantity.getText());
         String stock_deliveryDate = fieldDOD.getText();
-        String stock_holder = fieldHolder.getText();
+        String stock_benefactor = fieldBenefactor.getText();
 
         String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
         int stock_batch = generateNewBatch();
@@ -1377,7 +1377,7 @@ public class ItemManagement extends javax.swing.JPanel {
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             if (hasCustomCode) {
-                String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_id, stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_user, stock_batch)\n"
+                String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_id, stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_benefactor, stock_batch)\n"
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
                 int stock_custom_codeLoop = stock_custom_code;
@@ -1400,7 +1400,7 @@ public class ItemManagement extends javax.swing.JPanel {
                         pst.setString(4, stock_desc);
                         pst.setString(5, stock_price);
                         pst.setString(6, stock_deliveryDate);
-                        pst.setString(7, stock_holder);
+                        pst.setString(7, stock_benefactor);
                         pst.setInt(8, stock_batch);
                         pst.executeUpdate();
 
@@ -1421,7 +1421,7 @@ public class ItemManagement extends javax.swing.JPanel {
                     }
                 }
             } else {
-                String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_user, stock_batch)\n"
+                String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_benefactor, stock_batch)\n"
                         + "VALUES (?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
                 for (int i = 0; i < stock_quantity; i++) {
@@ -1430,7 +1430,7 @@ public class ItemManagement extends javax.swing.JPanel {
                     pst.setString(3, stock_desc);
                     pst.setString(4, stock_price);
                     pst.setString(5, stock_deliveryDate);
-                    pst.setString(6, stock_holder);
+                    pst.setString(6, stock_benefactor);
                     pst.setInt(7, stock_batch);
                     pst.executeUpdate();
 
@@ -1459,13 +1459,13 @@ public class ItemManagement extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
-    private void fieldHolderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusLost
-        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldHolderFocusLost
+    private void fieldBenefactorFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldBenefactorFocusLost
+        setDefaultField(fieldBenefactor, PLACEHOLDER_BENEFACTOR, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldBenefactorFocusLost
 
-    private void fieldHolderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusGained
-        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldHolderFocusGained
+    private void fieldBenefactorFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldBenefactorFocusGained
+        setDefaultField(fieldBenefactor, PLACEHOLDER_BENEFACTOR, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldBenefactorFocusGained
 
     private void fieldQuantityKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldQuantityKeyTyped
         enforceDigits(evt);
@@ -1618,9 +1618,9 @@ public class ItemManagement extends javax.swing.JPanel {
         enforceDigits(evt);
     }//GEN-LAST:event_searchQuantityEndKeyTyped
 
-    private void searchHolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchHolderActionPerformed
+    private void searchBenefactorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBenefactorActionPerformed
         resetFilter();
-    }//GEN-LAST:event_searchHolderActionPerformed
+    }//GEN-LAST:event_searchBenefactorActionPerformed
 
     private void radioBatchesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchesActionPerformed
         refreshTableInventory();
@@ -1636,7 +1636,7 @@ public class ItemManagement extends javax.swing.JPanel {
         searchCategory.setSelectedIndex(0);        
         searchName.setSelectedIndex(0);      
         searchDesc.setSelectedIndex(0);      
-        searchHolder.setSelectedIndex(0);
+        searchBenefactor.setSelectedIndex(0);
         
         searchPriceStart.setText("");
         setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
@@ -1668,18 +1668,18 @@ public class ItemManagement extends javax.swing.JPanel {
     private ProjectINSY.java.swing.Date.DateChooser dateDOD;
     private ProjectINSY.java.swing.Date.DateChooser dateEnd;
     private ProjectINSY.java.swing.Date.DateChooser dateStart;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldBenefactor;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldCode;
     private javax.swing.JTextField fieldDOD;
     private javax.swing.JTextField fieldDesc;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldHolder;
     private javax.swing.JTextField fieldID;
     private javax.swing.JTextField fieldID2;
     private javax.swing.JTextField fieldPrice;
     private javax.swing.JTextField fieldQuantity;
+    private javax.swing.JLabel imageBenefactor;
     private javax.swing.JLabel imageCode;
     private javax.swing.JLabel imageDOD;
     private javax.swing.JLabel imageDesc;
-    private javax.swing.JLabel imageHolder;
     private javax.swing.JLabel imageName;
     private javax.swing.JLabel imagePrice;
     private javax.swing.JLabel imageQuantity;
@@ -1694,18 +1694,19 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JLabel labelAdd;
+    private javax.swing.JLabel labelBenefactor;
     private javax.swing.JLabel labelCleaFilter;
     private javax.swing.JLabel labelClear;
     private javax.swing.JLabel labelCode;
     private javax.swing.JLabel labelDOD;
     private javax.swing.JLabel labelDelete;
     private javax.swing.JLabel labelDesc;
+    private javax.swing.JLabel labelFilterBenefactor;
     private javax.swing.JLabel labelFilterCategory;
     private javax.swing.JLabel labelFilterDate;
     private javax.swing.JLabel labelFilterDateFrom;
     private javax.swing.JLabel labelFilterDateTo;
     private javax.swing.JLabel labelFilterDesc;
-    private javax.swing.JLabel labelFilterHolder;
     private javax.swing.JLabel labelFilterName;
     private javax.swing.JLabel labelFilterPrice;
     private javax.swing.JLabel labelFilterPriceFrom;
@@ -1714,7 +1715,6 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JLabel labelFilterQuantityFrom;
     private javax.swing.JLabel labelFilterQuantityTo;
     private javax.swing.JLabel labelFilterTitle;
-    private javax.swing.JLabel labelHolder;
     private javax.swing.JLabel labelName;
     private javax.swing.JLabel labelPrice;
     private javax.swing.JLabel labelPrint;
@@ -1731,11 +1731,11 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JPanel panelMain;
     public static ProjectINSY.java.swing.RadioButtonCustom radioBatches;
     private javax.swing.JScrollPane scrollMain;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchBenefactor;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateEnd;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateStart;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchDesc;
-    private ProjectINSY.java.swing.ComboBoxSuggestion searchHolder;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchPriceEnd;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchPriceStart;

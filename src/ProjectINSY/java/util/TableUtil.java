@@ -41,6 +41,7 @@ public class TableUtil {
     public enum TableEnum {
         STOCK_DISTINCT,
         STOCK_DELIVERY,
+        STOCK_LOCATION,
         CATALOG_CATEGORY,
         CATALOG_ITEM,
         SUPPLY_HISTORY,
@@ -168,7 +169,7 @@ public class TableUtil {
                                     }
                                 }
                                 Date deliveryDate = rs.getDate("stock_dod");
-                                String holder = rs.getString("stock_user");
+                                String benefactor = rs.getString("stock_benefactor");
 
                                 if (ItemManagement.isGroupedByBatches()) {
                                     String[] parts = code.split("-");
@@ -177,7 +178,21 @@ public class TableUtil {
                                 }
 
                                 model.addRow(new Object[]{
-                                    code, name, desc, price, quantity, deliveryDate, holder
+                                    code, name, desc, price, quantity, deliveryDate, benefactor
+                                });
+                                break;
+                            }
+                            //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="STOCK LOCATION">
+                            case STOCK_LOCATION: {
+                                String code = rs.getString("stock_code");
+                                String name = rs.getString("stock_name");
+                                String desc = rs.getString("stock_desc");
+                                String location = rs.getString("stock_location");
+                                String holder = rs.getString("stock_holder");
+
+                                model.addRow(new Object[]{
+                                    code, name, desc, location, holder
                                 });
                                 break;
                             }
