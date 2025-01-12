@@ -9,11 +9,15 @@ import ProjectINSY.java.ui.component.MenuLayout;
 import static ProjectINSY.java.util.GuiUtil.setForm;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.SessionUtil.isLoggedIn;
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -97,10 +101,16 @@ public class Main extends javax.swing.JFrame {
         return ItemTracker;
     }
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Color Scheme">
+    public static Color accentGreen = new Color(25, 102, 24);
+    public static Color accentViolet = new Color(84,34,102);
+    //</editor-fold>
 
     public static String filterMaxNumber = "999999999";
     public static String filterMinNumber = "1";
-    public static String filterMaxDate = "2100-01-01";
+    public final static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    public final static Date date = new Date();
+    public static String filterMaxDate = dateFormat.format(date);
     public static String filterMinDate = "2006-04-18";
     public final static String validDatePattern = "^(\\d{4})-(\\d{2})-(\\d{2})$";
 
@@ -188,6 +198,10 @@ public class Main extends javax.swing.JFrame {
             }
             animator.start();
         }
+    }
+    
+    public void showHeaderMenu(boolean show) {
+        header.showHeaderMenu(show);
     }
 
     public void setDefaultForm() {

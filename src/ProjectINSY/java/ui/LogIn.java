@@ -177,6 +177,7 @@ public class LogIn extends javax.swing.JPanel {
                 setDefaultField(fieldPassword, PLACEHOLDER_PASSWORD, FieldFocus.LOST, Color.BLACK);
 
                 main.showMenu();
+                main.showHeaderMenu(true);
                 main.setDefaultForm();
             } else {
                 JOptionPane.showMessageDialog(this, "Wrong Email or Password!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -196,9 +197,10 @@ public class LogIn extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnSignUp = new javax.swing.JButton();
+        btnForgotPasword = new javax.swing.JButton();
         panelLogIn = new javax.swing.JPanel();
         btnLogIn = new javax.swing.JButton();
-        btnForgotPasword = new javax.swing.JButton();
         imageSilang = new javax.swing.JLabel();
         labelInventorySystem = new javax.swing.JLabel();
         panelLogInFields = new javax.swing.JPanel();
@@ -209,18 +211,38 @@ public class LogIn extends javax.swing.JPanel {
         imageEmailBg = new javax.swing.JLabel();
         imagePasswordBg = new javax.swing.JLabel();
         labelPassword = new javax.swing.JLabel();
-        btnSignUp = new javax.swing.JButton();
         panelQuit = new javax.swing.JPanel();
         labelQuit = new javax.swing.JLabel();
         btnQuit = new javax.swing.JButton();
         btnAuto = new javax.swing.JButton();
+
+        btnSignUp.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
+        btnSignUp.setText("Don't have an account yet? Sign up now.");
+        btnSignUp.setBorder(null);
+        btnSignUp.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSignUp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSignUpActionPerformed(evt);
+            }
+        });
+
+        btnForgotPasword.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        btnForgotPasword.setForeground(new java.awt.Color(255, 102, 102));
+        btnForgotPasword.setText("FORGOT PASSWORD?");
+        btnForgotPasword.setBorder(null);
+        btnForgotPasword.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnForgotPasword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnForgotPaswordActionPerformed(evt);
+            }
+        });
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
         setPreferredSize(new java.awt.Dimension(1840, 900));
 
         panelLogIn.setBackground(new java.awt.Color(246, 243, 237));
-        panelLogIn.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24)));
+        panelLogIn.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(84, 34, 102)));
         panelLogIn.setMaximumSize(new java.awt.Dimension(427, 500));
         panelLogIn.setMinimumSize(new java.awt.Dimension(427, 500));
 
@@ -240,21 +262,10 @@ public class LogIn extends javax.swing.JPanel {
             }
         });
 
-        btnForgotPasword.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        btnForgotPasword.setForeground(new java.awt.Color(255, 102, 102));
-        btnForgotPasword.setText("FORGOT PASSWORD?");
-        btnForgotPasword.setBorder(null);
-        btnForgotPasword.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnForgotPasword.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnForgotPaswordActionPerformed(evt);
-            }
-        });
-
         imageSilang.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         imageSilang.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/images/cvsu-silang-logo.png"))); // NOI18N
 
-        labelInventorySystem.setBackground(new java.awt.Color(25, 102, 24));
+        labelInventorySystem.setBackground(new java.awt.Color(84, 34, 102));
         labelInventorySystem.setFont(new java.awt.Font("Bebas", 0, 64)); // NOI18N
         labelInventorySystem.setForeground(new java.awt.Color(255, 255, 255));
         labelInventorySystem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -324,16 +335,6 @@ public class LogIn extends javax.swing.JPanel {
         panelLogInFields.add(labelPassword);
         labelPassword.setBounds(0, 130, 540, 30);
 
-        btnSignUp.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
-        btnSignUp.setText("Don't have an account yet? Sign up now.");
-        btnSignUp.setBorder(null);
-        btnSignUp.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnSignUp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSignUpActionPerformed(evt);
-            }
-        });
-
         panelQuit.setLayout(null);
 
         labelQuit.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
@@ -347,6 +348,8 @@ public class LogIn extends javax.swing.JPanel {
         btnQuit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red.png"))); // NOI18N
         btnQuit.setBorder(null);
         btnQuit.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnQuit.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red_pressed.png"))); // NOI18N
+        btnQuit.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red_pressed.png"))); // NOI18N
         btnQuit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnQuitActionPerformed(evt);
@@ -361,27 +364,19 @@ public class LogIn extends javax.swing.JPanel {
             panelLogInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(imageSilang, javax.swing.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE)
             .addComponent(labelInventorySystem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(panelLogInLayout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addGroup(panelLogInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelLogInFields, javax.swing.GroupLayout.PREFERRED_SIZE, 540, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(panelLogInLayout.createSequentialGroup()
-                        .addGap(0, 157, Short.MAX_VALUE)
-                        .addGroup(panelLogInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelLogInLayout.createSequentialGroup()
-                                .addComponent(btnForgotPasword)
-                                .addGap(205, 205, 205))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelLogInLayout.createSequentialGroup()
-                                .addComponent(btnSignUp, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(181, 181, 181))))))
-            .addGroup(panelLogInLayout.createSequentialGroup()
-                .addGap(146, 146, 146)
-                .addComponent(btnLogIn)
-                .addGap(28, 146, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelLogInLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(panelQuit, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addGroup(panelLogInLayout.createSequentialGroup()
+                .addGroup(panelLogInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelLogInLayout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(panelLogInFields, javax.swing.GroupLayout.PREFERRED_SIZE, 540, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(panelLogInLayout.createSequentialGroup()
+                        .addGap(146, 146, 146)
+                        .addComponent(btnLogIn)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelLogInLayout.setVerticalGroup(
             panelLogInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -393,11 +388,7 @@ public class LogIn extends javax.swing.JPanel {
                 .addComponent(panelLogInFields, javax.swing.GroupLayout.PREFERRED_SIZE, 249, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(33, 33, 33)
                 .addComponent(btnLogIn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnForgotPasword, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSignUp)
-                .addGap(9, 9, 9)
+                .addGap(67, 67, 67)
                 .addComponent(panelQuit, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -416,24 +407,26 @@ public class LogIn extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(246, Short.MAX_VALUE)
-                .addComponent(btnAuto)
-                .addGap(68, 68, 68)
+                .addContainerGap(620, Short.MAX_VALUE)
                 .addComponent(panelLogIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(620, 620, 620))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(295, Short.MAX_VALUE)
+                    .addComponent(btnAuto, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(1267, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(75, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(panelLogIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(75, 75, 75))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(102, 102, 102)
-                        .addComponent(btnAuto)
-                        .addGap(147, 147, 147))))
+                .addComponent(panelLogIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(75, 75, 75))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(425, Short.MAX_VALUE)
+                    .addComponent(btnAuto)
+                    .addContainerGap(426, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -502,6 +495,10 @@ public class LogIn extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnLogInKeyPressed
 
+    private void btnQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQuitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btnQuitActionPerformed
+
     private void btnAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAutoActionPerformed
         String log_email = "johnpatrick.skidmore@cvsu.edu.ph";
         String log_password = "123";
@@ -512,10 +509,6 @@ public class LogIn extends javax.swing.JPanel {
             paneInvalidEmail();
         }
     }//GEN-LAST:event_btnAutoActionPerformed
-
-    private void btnQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQuitActionPerformed
-        System.exit(0);
-    }//GEN-LAST:event_btnQuitActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

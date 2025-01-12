@@ -5,6 +5,7 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.model.Filter;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.generatePDFFromBarcode;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
@@ -44,11 +45,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
+import static ProjectINSY.java.util.TableUtil.fieldHasValue;
+import static ProjectINSY.java.util.TableUtil.floatRoundOff;
+import static ProjectINSY.java.util.TableUtil.getComboSelected;
+import static ProjectINSY.java.util.TableUtil.getFieldString;
+import static ProjectINSY.java.util.TableUtil.isDefaultComboItem;
+import static ProjectINSY.java.util.TableUtil.resetDefaultComboItem;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JTable;
 
 /**
  *
@@ -56,11 +64,13 @@ import javax.swing.ImageIcon;
  */
 public class ItemManagement extends javax.swing.JPanel {
 
+    private String filterWHERE = " ", filterHAVING = " ";
     public String currentSearchQuery = "SELECT stock_id, stock_batch, "
             + "stock_category, "
             + "stock_name, "
             + "stock_desc, "
-            + "(stock_price * COUNT(*)) AS stock_price, "
+            + "stock_price, "
+            + "(stock_price * COUNT(*)) AS stock_price_batch, "
             + "stock_dod, "
             + "stock_user, "
             + "CONCAT( "
@@ -74,7 +84,12 @@ public class ItemManagement extends javax.swing.JPanel {
             + ") AS stock_code, "
             + "COUNT(*) AS stock_quantity "
             + "FROM " + Main.TB_ITEM_STOCK + " "
-            + "GROUP BY stock_batch ORDER BY stock_id ASC";
+            + "WHERE stock_code IS NOT NULL "
+            + filterWHERE
+            + "GROUP BY stock_batch "
+            + "HAVING stock_code IS NOT NULL "
+            + filterHAVING
+            + "ORDER BY stock_id ASC";
 
     private final String PLACEHOLDER_CODE = "Enter Code (XXXX)";
     private final String PLACEHOLDER_DESC = "Enter Description";
@@ -85,28 +100,34 @@ public class ItemManagement extends javax.swing.JPanel {
     private String current_barcode = null;
     private ImageIcon barcodeIcon;
     private int batchQuantity = -1;
-    
-    private FilterFrame FilterFrame;
-
-    public static boolean groupByBatches = true;
 
     /**
      * Creates new form LogIn
      */
     public ItemManagement() {
         initComponents();
-        
-        FilterFrame = new FilterFrame(this);
 
         setScrollBarCustom(tableScroll);
+        setScrollBarCustom(scrollMain);
 
         setTransparentFrame(ItemManagement.this, fieldDesc, fieldPrice, fieldDOD, fieldQuantity, fieldHolder);
-        setTransparentFrame(btnDOD, btnAdd, btnUpdate, btnClear, btnDelete);
+        setTransparentFrame(btnDOD, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
 
-//        tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        fieldPrice.getDocument().addDocumentListener(new ItemManagement.FieldChangeListener());
-        fieldQuantity.getDocument().addDocumentListener(new ItemManagement.FieldChangeListener());
-        fieldHolder.getDocument().addDocumentListener(new ItemManagement.FieldChangeListener());
+        tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tableInventory.getColumnModel().getColumn(0).setPreferredWidth(250);
+        tableInventory.getColumnModel().getColumn(1).setPreferredWidth(250);
+        tableInventory.getColumnModel().getColumn(2).setPreferredWidth(350);
+        tableInventory.getColumnModel().getColumn(3).setPreferredWidth(175);
+        tableInventory.getColumnModel().getColumn(4).setPreferredWidth(75);
+        tableInventory.getColumnModel().getColumn(5).setPreferredWidth(150);
+        tableInventory.getColumnModel().getColumn(6).setPreferredWidth(250);
+        
+        
+        fieldPrice.getDocument().addDocumentListener(new FieldChangeListener());
+        fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
+        fieldHolder.getDocument().addDocumentListener(new FieldChangeListener());
+        searchDateStart.getDocument().addDocumentListener(new FieldChangeListener());
+        searchDateEnd.getDocument().addDocumentListener(new FieldChangeListener());
         defaultTable(tableInventory);
         tableInventory.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
@@ -120,22 +141,27 @@ public class ItemManagement extends javax.swing.JPanel {
         setColumnHorizontalAligment(tableInventory, 3, TableUtil.EnumAlignment.LEFT);
         floatFormatDecimal(tableInventory, 3);
         setColumnHorizontalAligment(tableInventory, 4, TableUtil.EnumAlignment.LEFT);
+        repopulateFilterComboBox();
+        searchDateStart.setText(Main.filterMinDate);
 //        sorterNumbers(tableInventory, 3);
 //        sorterNumbers(tableInventory, 4);
     }
 
     public void selectTableStock(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableInventory, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, fieldQuantity, fieldDOD, fieldHolder);
+        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, null, fieldDOD, fieldHolder);
 
         batchQuantity = Integer.parseInt(fieldQuantity.getText());
-
-        Float actual_price = Float.valueOf(fieldPrice.getText());
-        Float quantity = Float.valueOf(fieldQuantity.getText());
-//        fieldQuantity.setText("");
+        Float actual_price;
+        if (isGroupedByBatches()) {
+            String[] parts = fieldPrice.getText().split(" / ");
+            actual_price = Float.valueOf(parts[0]);
+        } else {
+            actual_price = Float.valueOf(fieldPrice.getText());
+        }
         setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
 
-        fieldPrice.setText(String.valueOf(actual_price / quantity) + "0");
+        fieldPrice.setText(floatRoundOff(actual_price));
 
         current_barcode = validateBarcode(fieldID.getText());
         barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
@@ -185,10 +211,131 @@ public class ItemManagement extends javax.swing.JPanel {
                     && !fieldQuantity.getText().trim().isEmpty()
                     && !fieldHolder.getText().trim().isEmpty()
                     && !fieldHolder.getText().trim().equals(PLACEHOLDER_HOLDER));
+            if (!fieldID2.getText().isEmpty()) {
+                btnUpdate.setEnabled(fieldQuantity.getText().equals(PLACEHOLDER_QTY));
+            }
+
+            refreshTableFromDate();
+
+            resetSearchQuery();
+            refreshTableInventory();
         }
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Filter Methods">
+    public void resetFilter() {
+        filterWHERE = " ";
+        if (!isDefaultComboItem(searchCategory)) {
+            filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
+        }
+        if (!isDefaultComboItem(searchName)) {
+            filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
+        }
+        if (!isDefaultComboItem(searchDesc)) {
+            filterWHERE += "AND stock_desc = '" + getComboSelected(searchDesc) + "' ";
+        }
+        if (!isDefaultComboItem(searchHolder)) {
+            filterWHERE += "AND stock_user = '" + getComboSelected(searchHolder) + "' ";
+        }
+        if (fieldHasValue(searchDateStart)) {
+            filterWHERE += "AND stock_dod >= '" + getFieldString(searchDateStart) + "' ";
+        }
+        if (fieldHasValue(searchDateEnd)) {
+            filterWHERE += "AND stock_dod <= '" + getFieldString(searchDateEnd) + "' ";
+        }
+
+        filterHAVING = " ";
+        if (fieldHasValue(searchPriceStart)) {
+            filterHAVING += "AND stock_price >= '" + getFieldString(searchPriceStart) + "' ";
+        }
+        if (fieldHasValue(searchPriceEnd)) {
+            filterHAVING += "AND stock_price <= '" + getFieldString(searchPriceEnd) + "' ";
+        }
+        if (fieldHasValue(searchQuantityStart)) {
+            filterHAVING += "AND stock_quantity >= '" + getFieldString(searchQuantityStart) + "' ";
+        }
+        if (fieldHasValue(searchQuantityEnd)) {
+            filterHAVING += "AND stock_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
+        }
+
+        refreshTableInventory();
+    }
+
+    private void resetSearchQuery() {
+        if (radioBatches.isSelected()) {
+            currentSearchQuery = "SELECT stock_id, stock_batch, "
+                    + "stock_category, "
+                    + "stock_name, "
+                    + "stock_desc, "
+                    + "stock_price, "
+                    + "(stock_price * COUNT(*)) AS stock_price_batch, "
+                    + "stock_dod, "
+                    + "stock_user, "
+                    + "CONCAT( "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
+                    + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
+                    + "    CASE "
+                    + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
+                    + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
+                    + "    END "
+                    + ") AS stock_code, "
+                    + "COUNT(*) AS stock_quantity "
+                    + "FROM " + Main.TB_ITEM_STOCK + " "
+                    + "WHERE stock_code IS NOT NULL "
+                    + filterWHERE
+                    + "GROUP BY stock_batch "
+                    + "HAVING stock_code IS NOT NULL "
+                    + filterHAVING
+                    + "ORDER BY stock_id ASC";
+        } else {
+            currentSearchQuery = "SELECT *, 1 AS stock_quantity FROM "
+                    + Main.TB_ITEM_STOCK + " "
+                    + "WHERE stock_code IS NOT NULL "
+                    + filterWHERE
+                    + "HAVING stock_code IS NOT NULL "
+                    + filterHAVING
+                    + " ORDER BY stock_id ASC";
+        }
+    }
+
+    public void repopulateFilterComboBox() {
+        GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchCategory);
+
+        GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchName);
+
+        GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchDesc);
+
+        GuiUtil.repopulateComboBox(searchHolder, "stock_user", "SELECT stock_user FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchHolder);
+    }
+
+    public void refreshTableFromDate() {
+        String date_filter = searchDateEnd.getText();
+        if (date_filter.matches(Main.validDatePattern)) {
+            try {
+                LocalDate.parse(date_filter);
+                resetFilter();
+            } catch (DateTimeParseException e) {
+            }
+        }
+        date_filter = searchDateStart.getText();
+        if (date_filter.matches(Main.validDatePattern)) {
+            try {
+                LocalDate.parse(date_filter);
+                resetFilter();
+            } catch (DateTimeParseException e) {
+            }
+        }
+    }
+    //</editor-fold>
+
     public void refreshTableInventory() {
+        resetSearchQuery();
+
         currentSearchQuery = cleanSpaces(currentSearchQuery);
         TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
 //        System.out.println(currentSearchQuery);
@@ -236,7 +383,7 @@ public class ItemManagement extends javax.swing.JPanel {
     }
 
     public static boolean isGroupedByBatches() {
-        return groupByBatches;
+        return radioBatches.isSelected();
     }
 
     /**
@@ -251,8 +398,19 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldID = new javax.swing.JTextField();
         dateDOD = new ProjectINSY.java.swing.Date.DateChooser();
         fieldID2 = new javax.swing.JTextField();
+        dateStart = new ProjectINSY.java.swing.Date.DateChooser();
+        dateEnd = new ProjectINSY.java.swing.Date.DateChooser();
         panelMain = new javax.swing.JPanel();
+        scrollMain = new javax.swing.JScrollPane();
+        panelBody = new javax.swing.JPanel();
         panelFields = new javax.swing.JPanel();
+        panelCode = new javax.swing.JPanel();
+        labelCode = new javax.swing.JLabel();
+        fieldCode = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        imageCode = new javax.swing.JLabel();
+        infoCode1 = new javax.swing.JLabel();
+        infoCode = new javax.swing.JLabel();
+        panelInformation = new javax.swing.JPanel();
         labelName = new javax.swing.JLabel();
         comboName = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageName = new javax.swing.JLabel();
@@ -272,6 +430,11 @@ public class ItemManagement extends javax.swing.JPanel {
         labelHolder = new javax.swing.JLabel();
         fieldHolder = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
         imageHolder = new javax.swing.JLabel();
+        panelBarcode = new javax.swing.JPanel();
+        imgBarcode = new javax.swing.JLabel();
+        labelPrint = new javax.swing.JLabel();
+        btnPrint = new javax.swing.JButton();
+        panelCRUD = new javax.swing.JPanel();
         labelAdd = new javax.swing.JLabel();
         btnAdd = new javax.swing.JButton();
         labelUpdate = new javax.swing.JLabel();
@@ -280,22 +443,56 @@ public class ItemManagement extends javax.swing.JPanel {
         btnClear = new javax.swing.JButton();
         labelDelete = new javax.swing.JLabel();
         btnDelete = new javax.swing.JButton();
-        labelCode = new javax.swing.JLabel();
-        fieldCode = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        imageCode = new javax.swing.JLabel();
-        infoCode = new javax.swing.JLabel();
-        infoCode1 = new javax.swing.JLabel();
-        panelBarcode = new javax.swing.JPanel();
-        imgBarcode = new javax.swing.JLabel();
-        labelPrint = new javax.swing.JLabel();
-        btnPrint = new javax.swing.JButton();
         tableScroll = new javax.swing.JScrollPane();
         tableInventory = new ProjectINSY.java.swing.Table();
-        btnFilter = new javax.swing.JButton();
+        panelFilters = new javax.swing.JPanel();
+        panelFilterTitle = new javax.swing.JPanel();
+        labelFilterTitle = new javax.swing.JLabel();
+        labelFilterCategory = new javax.swing.JLabel();
+        searchCategory = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterName = new javax.swing.JLabel();
+        searchName = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterDesc = new javax.swing.JLabel();
+        searchDesc = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterPrice = new javax.swing.JLabel();
+        labelFilterPriceFrom = new javax.swing.JLabel();
+        searchPriceStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        labelFilterPriceTo = new javax.swing.JLabel();
+        searchPriceEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        labelFilterQuantity = new javax.swing.JLabel();
+        labelFilterQuantityFrom = new javax.swing.JLabel();
+        searchQuantityStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        labelFilterQuantityTo = new javax.swing.JLabel();
+        searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        labelFilterHolder = new javax.swing.JLabel();
+        searchHolder = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
+        jSeparator3 = new javax.swing.JSeparator();
+        jSeparator4 = new javax.swing.JSeparator();
+        jSeparator5 = new javax.swing.JSeparator();
+        jSeparator7 = new javax.swing.JSeparator();
+        labelFilterDateFrom = new javax.swing.JLabel();
+        searchDateStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        labelFilterDate = new javax.swing.JLabel();
+        labelFilterDateTo = new javax.swing.JLabel();
+        searchDateEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        jSeparator6 = new javax.swing.JSeparator();
+        radioBatches = new ProjectINSY.java.swing.RadioButtonCustom();
+        labelCleaFilter = new javax.swing.JLabel();
+        btnClearFilter = new javax.swing.JButton();
 
         dateDOD.setForeground(new java.awt.Color(25, 102, 24));
         dateDOD.setDateFormat("yyyy-MM-dd");
         dateDOD.setTextRefernce(fieldDOD);
+
+        dateStart.setForeground(new java.awt.Color(25, 102, 24));
+        dateStart.setDateFormat("yyyy-MM-dd");
+        dateStart.setTextRefernce(searchDateStart);
+
+        dateEnd.setForeground(new java.awt.Color(25, 102, 24));
+        dateEnd.setDateFormat("yyyy-MM-dd");
+        dateEnd.setTextRefernce(searchDateEnd);
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -305,29 +502,84 @@ public class ItemManagement extends javax.swing.JPanel {
         panelMain.setBackground(new java.awt.Color(255, 255, 255));
         panelMain.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
 
+        scrollMain.setBackground(new java.awt.Color(255, 255, 255));
+        scrollMain.setBorder(null);
+
+        panelBody.setBackground(new java.awt.Color(255, 255, 255));
+        panelBody.setPreferredSize(new java.awt.Dimension(1825, 1298));
+
         panelFields.setBackground(new java.awt.Color(255, 255, 255));
+        panelFields.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
         panelFields.setLayout(null);
 
-        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        panelCode.setBackground(new java.awt.Color(255, 255, 255));
+        panelCode.setLayout(null);
+
+        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
+        labelCode.setText("Custom Code (Silang-YY-XXXX) - Optional");
+        panelCode.add(labelCode);
+        labelCode.setBounds(0, 0, 670, 60);
+
+        fieldCode.setBorder(null);
+        fieldCode.setForeground(new java.awt.Color(153, 153, 153));
+        fieldCode.setText("Enter Code (XXXX)");
+        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                fieldCodeFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                fieldCodeFocusLost(evt);
+            }
+        });
+        fieldCode.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                fieldCodeKeyTyped(evt);
+            }
+        });
+        panelCode.add(fieldCode);
+        fieldCode.setBounds(730, 10, 320, 50);
+
+        imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
+        panelCode.add(imageCode);
+        imageCode.setBounds(720, 0, 333, 70);
+
+        infoCode1.setFont(new java.awt.Font("Bahnschrift", 2, 18)); // NOI18N
+        infoCode1.setText("Only works for");
+        panelCode.add(infoCode1);
+        infoCode1.setBounds(1060, 10, 130, 30);
+
+        infoCode.setFont(new java.awt.Font("Bahnschrift", 2, 18)); // NOI18N
+        infoCode.setText("'Adding' Stocks");
+        panelCode.add(infoCode);
+        infoCode.setBounds(1060, 37, 130, 23);
+
+        panelFields.add(panelCode);
+        panelCode.setBounds(10, 10, 1610, 70);
+
+        panelInformation.setBackground(new java.awt.Color(255, 255, 255));
+        panelInformation.setLayout(null);
+
+        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelName.setText("Name");
-        panelFields.add(labelName);
-        labelName.setBounds(0, 110, 173, 30);
+        panelInformation.add(labelName);
+        labelName.setBounds(0, 0, 100, 60);
 
         comboName.setBorder(null);
-        comboName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        panelFields.add(comboName);
-        comboName.setBounds(10, 150, 520, 40);
+        comboName.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        panelInformation.add(comboName);
+        comboName.setBounds(150, 10, 640, 50);
 
-        imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
-        panelFields.add(imageName);
-        imageName.setBounds(0, 140, 540, 60);
+        imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldFull.png"))); // NOI18N
+        panelInformation.add(imageName);
+        imageName.setBounds(140, 0, 665, 70);
 
-        labelDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelDesc.setText("Description");
-        panelFields.add(labelDesc);
-        labelDesc.setBounds(0, 220, 173, 30);
+        panelInformation.add(labelDesc);
+        labelDesc.setBounds(910, 0, 180, 60);
 
-        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldDesc.setForeground(new java.awt.Color(153, 153, 153));
         fieldDesc.setText("Enter Description");
         fieldDesc.setBorder(null);
@@ -340,19 +592,19 @@ public class ItemManagement extends javax.swing.JPanel {
                 fieldDescFocusLost(evt);
             }
         });
-        panelFields.add(fieldDesc);
-        fieldDesc.setBounds(10, 260, 520, 40);
+        panelInformation.add(fieldDesc);
+        fieldDesc.setBounds(1130, 10, 640, 50);
 
-        imageDesc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
-        panelFields.add(imageDesc);
-        imageDesc.setBounds(0, 250, 540, 60);
+        imageDesc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldFull.png"))); // NOI18N
+        panelInformation.add(imageDesc);
+        imageDesc.setBounds(1120, 0, 665, 70);
 
-        labelPrice.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelPrice.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelPrice.setText("Price");
-        panelFields.add(labelPrice);
-        labelPrice.setBounds(0, 330, 173, 30);
+        panelInformation.add(labelPrice);
+        labelPrice.setBounds(0, 80, 90, 60);
 
-        fieldPrice.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldPrice.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldPrice.setForeground(new java.awt.Color(153, 153, 153));
         fieldPrice.setText("Enter Price");
         fieldPrice.setBorder(null);
@@ -370,19 +622,19 @@ public class ItemManagement extends javax.swing.JPanel {
                 fieldPriceKeyTyped(evt);
             }
         });
-        panelFields.add(fieldPrice);
-        fieldPrice.setBounds(10, 370, 230, 40);
+        panelInformation.add(fieldPrice);
+        fieldPrice.setBounds(10, 150, 310, 50);
 
         imagePrice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelFields.add(imagePrice);
-        imagePrice.setBounds(0, 360, 250, 60);
+        panelInformation.add(imagePrice);
+        imagePrice.setBounds(0, 140, 333, 70);
 
-        labelDOD.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelDOD.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelDOD.setText("Delivery Date");
-        panelFields.add(labelDOD);
-        labelDOD.setBounds(290, 330, 190, 30);
+        panelInformation.add(labelDOD);
+        labelDOD.setBounds(470, 80, 210, 60);
 
-        fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldDOD.setBorder(null);
         fieldDOD.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldDOD.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -393,8 +645,8 @@ public class ItemManagement extends javax.swing.JPanel {
                 fieldDODFocusLost(evt);
             }
         });
-        panelFields.add(fieldDOD);
-        fieldDOD.setBounds(300, 370, 190, 40);
+        panelInformation.add(fieldDOD);
+        fieldDOD.setBounds(480, 150, 270, 50);
 
         btnDOD.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnDateSelect.png"))); // NOI18N
         btnDOD.setBorder(null);
@@ -403,14 +655,14 @@ public class ItemManagement extends javax.swing.JPanel {
                 btnDODActionPerformed(evt);
             }
         });
-        panelFields.add(btnDOD);
-        btnDOD.setBounds(500, 370, 30, 40);
+        panelInformation.add(btnDOD);
+        btnDOD.setBounds(760, 150, 30, 50);
 
         imageDOD.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelFields.add(imageDOD);
-        imageDOD.setBounds(290, 360, 250, 60);
+        panelInformation.add(imageDOD);
+        imageDOD.setBounds(470, 140, 333, 70);
 
-        fieldQuantity.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldQuantity.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldQuantity.setForeground(new java.awt.Color(153, 153, 153));
         fieldQuantity.setText("1");
         fieldQuantity.setBorder(null);
@@ -428,27 +680,27 @@ public class ItemManagement extends javax.swing.JPanel {
                 fieldQuantityKeyTyped(evt);
             }
         });
-        panelFields.add(fieldQuantity);
-        fieldQuantity.setBounds(10, 480, 230, 40);
+        panelInformation.add(fieldQuantity);
+        fieldQuantity.setBounds(980, 150, 310, 50);
 
-        labelQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelQuantity.setText("Quantity");
-        panelFields.add(labelQuantity);
-        labelQuantity.setBounds(0, 440, 173, 30);
+        panelInformation.add(labelQuantity);
+        labelQuantity.setBounds(970, 90, 173, 50);
 
         imageQuantity.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelFields.add(imageQuantity);
-        imageQuantity.setBounds(0, 470, 250, 60);
+        panelInformation.add(imageQuantity);
+        imageQuantity.setBounds(970, 140, 333, 70);
 
-        labelHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelHolder.setText("Holder");
-        panelFields.add(labelHolder);
-        labelHolder.setBounds(290, 440, 173, 30);
+        panelInformation.add(labelHolder);
+        labelHolder.setBounds(1450, 90, 173, 50);
 
         fieldHolder.setBorder(null);
         fieldHolder.setForeground(new java.awt.Color(153, 153, 153));
         fieldHolder.setText("Enter Holder");
-        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldHolder.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldHolderFocusGained(evt);
@@ -457,141 +709,22 @@ public class ItemManagement extends javax.swing.JPanel {
                 fieldHolderFocusLost(evt);
             }
         });
-        panelFields.add(fieldHolder);
-        fieldHolder.setBounds(300, 480, 230, 40);
+        panelInformation.add(fieldHolder);
+        fieldHolder.setBounds(1460, 150, 310, 50);
 
         imageHolder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelFields.add(imageHolder);
-        imageHolder.setBounds(290, 470, 250, 60);
+        panelInformation.add(imageHolder);
+        imageHolder.setBounds(1450, 140, 340, 70);
 
-        labelAdd.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelAdd.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelAdd.setText("Add");
-        labelAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelAdd);
-        labelAdd.setBounds(10, 850, 80, 23);
-
-        btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
-        btnAdd.setBorder(null);
-        btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnAdd.setEnabled(false);
-        btnAdd.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnAdd.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnAdd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnAdd);
-        btnAdd.setBounds(0, 840, 100, 40);
-
-        labelUpdate.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelUpdate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelUpdate.setText("Update");
-        labelUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelUpdate);
-        labelUpdate.setBounds(160, 850, 80, 23);
-
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
-        btnUpdate.setBorder(null);
-        btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnUpdate.setEnabled(false);
-        btnUpdate.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnUpdate.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdateActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnUpdate);
-        btnUpdate.setBounds(150, 840, 100, 40);
-
-        labelClear.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelClear.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelClear.setText("Clear");
-        labelClear.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelClear);
-        labelClear.setBounds(300, 850, 80, 23);
-
-        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
-        btnClear.setBorder(null);
-        btnClear.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnClear.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnClear.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnClear.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClearActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnClear);
-        btnClear.setBounds(290, 840, 100, 40);
-
-        labelDelete.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelDelete.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelDelete.setText("Delete");
-        labelDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelDelete);
-        labelDelete.setBounds(450, 850, 80, 23);
-
-        btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red.png"))); // NOI18N
-        btnDelete.setBorder(null);
-        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnDelete.setEnabled(false);
-        btnDelete.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnDelete.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnDelete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnDelete);
-        btnDelete.setBounds(440, 840, 100, 40);
-
-        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelCode.setText("Custom Code (Silang-YY-XXXX) - Optional");
-        panelFields.add(labelCode);
-        labelCode.setBounds(0, 10, 540, 30);
-
-        fieldCode.setBorder(null);
-        fieldCode.setForeground(new java.awt.Color(153, 153, 153));
-        fieldCode.setText("Enter Code (XXXX)");
-        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldCodeFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldCodeFocusLost(evt);
-            }
-        });
-        fieldCode.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                fieldCodeKeyTyped(evt);
-            }
-        });
-        panelFields.add(fieldCode);
-        fieldCode.setBounds(9, 50, 230, 40);
-
-        imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelFields.add(imageCode);
-        imageCode.setBounds(0, 40, 250, 60);
-
-        infoCode.setFont(new java.awt.Font("Bahnschrift", 2, 14)); // NOI18N
-        infoCode.setText("'Adding' Stocks");
-        panelFields.add(infoCode);
-        infoCode.setBounds(260, 70, 110, 20);
-
-        infoCode1.setFont(new java.awt.Font("Bahnschrift", 2, 14)); // NOI18N
-        infoCode1.setText("Only works for");
-        panelFields.add(infoCode1);
-        infoCode1.setBounds(260, 50, 110, 20);
+        panelFields.add(panelInformation);
+        panelInformation.setBounds(10, 120, 1790, 210);
 
         panelBarcode.setBackground(new java.awt.Color(255, 255, 255));
         panelBarcode.setLayout(null);
 
         imgBarcode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         panelBarcode.add(imgBarcode);
-        imgBarcode.setBounds(0, 0, 250, 190);
+        imgBarcode.setBounds(0, 0, 200, 80);
 
         labelPrint.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelPrint.setForeground(new java.awt.Color(255, 255, 255));
@@ -600,7 +733,7 @@ public class ItemManagement extends javax.swing.JPanel {
         labelPrint.setText("Print");
         labelPrint.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelBarcode.add(labelPrint);
-        labelPrint.setBounds(340, 50, 150, 50);
+        labelPrint.setBounds(230, 10, 150, 50);
 
         btnPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint.png"))); // NOI18N
         btnPrint.setBorder(null);
@@ -612,10 +745,99 @@ public class ItemManagement extends javax.swing.JPanel {
             }
         });
         panelBarcode.add(btnPrint);
-        btnPrint.setBounds(340, 50, 150, 50);
+        btnPrint.setBounds(230, 10, 150, 50);
 
         panelFields.add(panelBarcode);
-        panelBarcode.setBounds(0, 540, 540, 190);
+        panelBarcode.setBounds(1410, 10, 390, 80);
+
+        panelCRUD.setBackground(new java.awt.Color(255, 255, 255));
+        panelCRUD.setLayout(null);
+
+        labelAdd.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelAdd.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelAdd.setText("Add");
+        labelAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelCRUD.add(labelAdd);
+        labelAdd.setBounds(10, 10, 290, 30);
+
+        btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong.png"))); // NOI18N
+        btnAdd.setBorder(null);
+        btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnAdd.setEnabled(false);
+        btnAdd.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_pressed.png"))); // NOI18N
+        btnAdd.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_pressed.png"))); // NOI18N
+        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddActionPerformed(evt);
+            }
+        });
+        panelCRUD.add(btnAdd);
+        btnAdd.setBounds(0, 0, 310, 50);
+
+        labelUpdate.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelUpdate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelUpdate.setText("Update");
+        labelUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelCRUD.add(labelUpdate);
+        labelUpdate.setBounds(500, 10, 290, 30);
+
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong.png"))); // NOI18N
+        btnUpdate.setBorder(null);
+        btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUpdate.setEnabled(false);
+        btnUpdate.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_pressed.png"))); // NOI18N
+        btnUpdate.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_pressed.png"))); // NOI18N
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
+        panelCRUD.add(btnUpdate);
+        btnUpdate.setBounds(490, 0, 310, 50);
+
+        labelClear.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelClear.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelClear.setText("Clear");
+        labelClear.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelCRUD.add(labelClear);
+        labelClear.setBounds(1010, 10, 290, 30);
+
+        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong.png"))); // NOI18N
+        btnClear.setBorder(null);
+        btnClear.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnClear.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_pressed.png"))); // NOI18N
+        btnClear.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_pressed.png"))); // NOI18N
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
+        panelCRUD.add(btnClear);
+        btnClear.setBounds(1000, 0, 310, 50);
+
+        labelDelete.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelDelete.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelDelete.setText("Delete");
+        labelDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelCRUD.add(labelDelete);
+        labelDelete.setBounds(1490, 10, 290, 30);
+
+        btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red.png"))); // NOI18N
+        btnDelete.setBorder(null);
+        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnDelete.setEnabled(false);
+        btnDelete.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red_pressed.png"))); // NOI18N
+        btnDelete.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red_pressed.png"))); // NOI18N
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
+        panelCRUD.add(btnDelete);
+        btnDelete.setBounds(1480, 0, 310, 50);
+
+        panelFields.add(panelCRUD);
+        panelCRUD.setBounds(10, 380, 1790, 50);
 
         tableScroll.setBorder(null);
 
@@ -627,7 +849,7 @@ public class ItemManagement extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "Name", "Description", "Price", "Quantity", "Delivery Date", "Holder"
+                "", "Name", "Description", "Unit Price / Total Price", "Quantity", "Delivery Date", "Holder"
             }
         ) {
             Class[] types = new Class [] {
@@ -638,45 +860,335 @@ public class ItemManagement extends javax.swing.JPanel {
                 return types [columnIndex];
             }
         });
-        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
         tableInventory.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableInventory);
 
-        btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch.png"))); // NOI18N
-        btnFilter.setToolTipText("");
-        btnFilter.setBorder(null);
-        btnFilter.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnFilter.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch_pressed.png"))); // NOI18N
-        btnFilter.addActionListener(new java.awt.event.ActionListener() {
+        panelFilters.setBackground(new java.awt.Color(255, 255, 255));
+        panelFilters.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
+        panelFilters.setLayout(null);
+
+        panelFilterTitle.setBackground(new java.awt.Color(25, 102, 24));
+
+        labelFilterTitle.setBackground(new java.awt.Color(25, 102, 24));
+        labelFilterTitle.setFont(new java.awt.Font("Bahnschrift", 1, 24)); // NOI18N
+        labelFilterTitle.setForeground(new java.awt.Color(255, 255, 255));
+        labelFilterTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelFilterTitle.setText("Item Filters");
+        labelFilterTitle.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        javax.swing.GroupLayout panelFilterTitleLayout = new javax.swing.GroupLayout(panelFilterTitle);
+        panelFilterTitle.setLayout(panelFilterTitleLayout);
+        panelFilterTitleLayout.setHorizontalGroup(
+            panelFilterTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(labelFilterTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        panelFilterTitleLayout.setVerticalGroup(
+            panelFilterTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelFilterTitleLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(labelFilterTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        panelFilters.add(panelFilterTitle);
+        panelFilterTitle.setBounds(2, 8, 312, 36);
+
+        labelFilterCategory.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterCategory.setText("Category");
+        panelFilters.add(labelFilterCategory);
+        labelFilterCategory.setBounds(8, 94, 300, 30);
+
+        searchCategory.setBorder(null);
+        searchCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchCategory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnFilterActionPerformed(evt);
+                searchCategoryActionPerformed(evt);
             }
         });
+        panelFilters.add(searchCategory);
+        searchCategory.setBounds(8, 130, 300, 29);
+
+        labelFilterName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterName.setText("Name");
+        panelFilters.add(labelFilterName);
+        labelFilterName.setBounds(8, 181, 300, 30);
+
+        searchName.setBorder(null);
+        searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchNameActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchName);
+        searchName.setBounds(8, 217, 300, 29);
+
+        labelFilterDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterDesc.setText("Description");
+        panelFilters.add(labelFilterDesc);
+        labelFilterDesc.setBounds(8, 268, 300, 30);
+
+        searchDesc.setBorder(null);
+        searchDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchDesc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchDescActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchDesc);
+        searchDesc.setBounds(8, 304, 300, 29);
+
+        labelFilterPrice.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterPrice.setText("Price Range");
+        panelFilters.add(labelFilterPrice);
+        labelFilterPrice.setBounds(8, 355, 300, 30);
+
+        labelFilterPriceFrom.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        labelFilterPriceFrom.setText("From");
+        panelFilters.add(labelFilterPriceFrom);
+        labelFilterPriceFrom.setBounds(8, 391, 34, 24);
+
+        searchPriceStart.setBorder(null);
+        searchPriceStart.setForeground(new java.awt.Color(153, 153, 153));
+        searchPriceStart.setText("1");
+        searchPriceStart.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        searchPriceStart.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                searchPriceStartFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                searchPriceStartFocusLost(evt);
+            }
+        });
+        searchPriceStart.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                searchPriceStartKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                searchPriceStartKeyTyped(evt);
+            }
+        });
+        panelFilters.add(searchPriceStart);
+        searchPriceStart.setBounds(48, 391, 100, 24);
+
+        labelFilterPriceTo.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        labelFilterPriceTo.setText("To");
+        panelFilters.add(labelFilterPriceTo);
+        labelFilterPriceTo.setBounds(166, 391, 15, 24);
+
+        searchPriceEnd.setBorder(null);
+        searchPriceEnd.setForeground(new java.awt.Color(153, 153, 153));
+        searchPriceEnd.setText("999999999");
+        searchPriceEnd.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        searchPriceEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                searchPriceEndFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                searchPriceEndFocusLost(evt);
+            }
+        });
+        searchPriceEnd.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                searchPriceEndKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                searchPriceEndKeyTyped(evt);
+            }
+        });
+        panelFilters.add(searchPriceEnd);
+        searchPriceEnd.setBounds(187, 394, 121, 18);
+
+        labelFilterQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterQuantity.setText("Quantity Range");
+        panelFilters.add(labelFilterQuantity);
+        labelFilterQuantity.setBounds(8, 437, 300, 30);
+
+        labelFilterQuantityFrom.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        labelFilterQuantityFrom.setText("From");
+        panelFilters.add(labelFilterQuantityFrom);
+        labelFilterQuantityFrom.setBounds(8, 473, 34, 24);
+
+        searchQuantityStart.setBorder(null);
+        searchQuantityStart.setForeground(new java.awt.Color(153, 153, 153));
+        searchQuantityStart.setText("1");
+        searchQuantityStart.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        searchQuantityStart.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                searchQuantityStartFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                searchQuantityStartFocusLost(evt);
+            }
+        });
+        searchQuantityStart.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                searchQuantityStartKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                searchQuantityStartKeyTyped(evt);
+            }
+        });
+        panelFilters.add(searchQuantityStart);
+        searchQuantityStart.setBounds(48, 473, 100, 24);
+
+        labelFilterQuantityTo.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        labelFilterQuantityTo.setText("To");
+        panelFilters.add(labelFilterQuantityTo);
+        labelFilterQuantityTo.setBounds(166, 473, 15, 24);
+
+        searchQuantityEnd.setBorder(null);
+        searchQuantityEnd.setForeground(new java.awt.Color(153, 153, 153));
+        searchQuantityEnd.setText("999999999");
+        searchQuantityEnd.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        searchQuantityEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                searchQuantityEndFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                searchQuantityEndFocusLost(evt);
+            }
+        });
+        searchQuantityEnd.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                searchQuantityEndKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                searchQuantityEndKeyTyped(evt);
+            }
+        });
+        panelFilters.add(searchQuantityEnd);
+        searchQuantityEnd.setBounds(187, 476, 121, 18);
+
+        labelFilterHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterHolder.setText("Holder");
+        panelFilters.add(labelFilterHolder);
+        labelFilterHolder.setBounds(8, 603, 300, 30);
+
+        searchHolder.setBorder(null);
+        searchHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchHolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchHolderActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchHolder);
+        searchHolder.setBounds(8, 639, 300, 29);
+        panelFilters.add(jSeparator1);
+        jSeparator1.setBounds(8, 165, 300, 10);
+        panelFilters.add(jSeparator2);
+        jSeparator2.setBounds(8, 252, 300, 10);
+        panelFilters.add(jSeparator3);
+        jSeparator3.setBounds(8, 339, 300, 10);
+        panelFilters.add(jSeparator4);
+        jSeparator4.setBounds(8, 421, 300, 10);
+        panelFilters.add(jSeparator5);
+        jSeparator5.setBounds(8, 503, 300, 10);
+        panelFilters.add(jSeparator7);
+        jSeparator7.setBounds(8, 674, 300, 10);
+
+        labelFilterDateFrom.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        labelFilterDateFrom.setText("From");
+        panelFilters.add(labelFilterDateFrom);
+        labelFilterDateFrom.setBounds(8, 557, 34, 24);
+
+        searchDateStart.setBorder(null);
+        searchDateStart.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        panelFilters.add(searchDateStart);
+        searchDateStart.setBounds(48, 557, 100, 24);
+
+        labelFilterDate.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterDate.setText("Date Range");
+        panelFilters.add(labelFilterDate);
+        labelFilterDate.setBounds(8, 519, 300, 30);
+
+        labelFilterDateTo.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        labelFilterDateTo.setText("To");
+        panelFilters.add(labelFilterDateTo);
+        labelFilterDateTo.setBounds(168, 557, 15, 24);
+
+        searchDateEnd.setBorder(null);
+        searchDateEnd.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        panelFilters.add(searchDateEnd);
+        searchDateEnd.setBounds(188, 557, 121, 24);
+        panelFilters.add(jSeparator6);
+        jSeparator6.setBounds(8, 587, 300, 10);
+
+        radioBatches.setBackground(new java.awt.Color(25, 102, 24));
+        radioBatches.setBorder(null);
+        radioBatches.setSelected(true);
+        radioBatches.setText("Group by Batches");
+        radioBatches.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        radioBatches.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioBatchesActionPerformed(evt);
+            }
+        });
+        panelFilters.add(radioBatches);
+        radioBatches.setBounds(8, 53, 300, 35);
+
+        labelCleaFilter.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelCleaFilter.setForeground(new java.awt.Color(255, 255, 255));
+        labelCleaFilter.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelCleaFilter.setText("Clear Filters");
+        labelCleaFilter.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelFilters.add(labelCleaFilter);
+        labelCleaFilter.setBounds(0, 700, 320, 50);
+
+        btnClearFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red.png"))); // NOI18N
+        btnClearFilter.setBorder(null);
+        btnClearFilter.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red_pressed.png"))); // NOI18N
+        btnClearFilter.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red_pressed.png"))); // NOI18N
+        btnClearFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearFilterActionPerformed(evt);
+            }
+        });
+        panelFilters.add(btnClearFilter);
+        btnClearFilter.setBounds(2, 702, 312, 49);
+
+        javax.swing.GroupLayout panelBodyLayout = new javax.swing.GroupLayout(panelBody);
+        panelBody.setLayout(panelBodyLayout);
+        panelBodyLayout.setHorizontalGroup(
+            panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBodyLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelFilters, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1497, Short.MAX_VALUE))
+            .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(panelBodyLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap()))
+        );
+        panelBodyLayout.setVerticalGroup(
+            panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBodyLayout.createSequentialGroup()
+                .addContainerGap(483, Short.MAX_VALUE)
+                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 809, Short.MAX_VALUE)
+                    .addComponent(panelFilters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+            .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(panelBodyLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 471, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(821, Short.MAX_VALUE)))
+        );
+
+        scrollMain.setViewportView(panelBody);
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 545, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
-                .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnFilter)
-                    .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 1262, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addComponent(scrollMain)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelMainLayout.createSequentialGroup()
-                        .addComponent(btnFilter)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 853, Short.MAX_VALUE))
-                    .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+            .addComponent(scrollMain, javax.swing.GroupLayout.DEFAULT_SIZE, 896, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -691,45 +1203,144 @@ public class ItemManagement extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fieldDescFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDescFocusGained
-        setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldDescFocusGained
+    private void btnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintActionPerformed
+        if (current_barcode != null) {
+            int warnUser = JOptionPane.showConfirmDialog(
+                    null,
+                    "This item is part of a batch. Do you wish to print barcodes for the entire batch?",
+                    "Warning: Batch Print",
+                    JOptionPane.YES_NO_OPTION
+            );
+            List<BufferedImage> barcodeImages = new ArrayList<>();
+            String outputPdfPath = "barcodes/output.pdf";
 
-    private void fieldDescFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDescFocusLost
-        setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldDescFocusLost
+            if (warnUser == JOptionPane.NO_OPTION) {
+                BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+                barcodeImages.add(bufferedImage);
+            } else if (warnUser == JOptionPane.YES_OPTION) {
+                int stock_id = Integer.parseInt(fieldID.getText());
 
-    private void fieldPriceFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldPriceFocusGained
-        setDefaultField(fieldPrice, PLACEHOLDER_PRICE, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldPriceFocusGained
+                for (int i = 0; i < batchQuantity; i++) {
+                    String code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
+                    current_barcode = validateBarcode(code);
+                    barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
 
-    private void fieldPriceFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldPriceFocusLost
-        setDefaultField(fieldPrice, PLACEHOLDER_PRICE, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldPriceFocusLost
+                    BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+                    barcodeImages.add(bufferedImage);
 
-    private void fieldDODFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDODFocusGained
-        setDefaultField(fieldDOD, PLACEHOLDER_DOD, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldDODFocusGained
+                    stock_id++;
+                }
+            }
 
-    private void fieldDODFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDODFocusLost
-        setDefaultField(fieldDOD, PLACEHOLDER_DOD, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldDODFocusLost
+            try {
+                generatePDFFromBarcode(barcodeImages, outputPdfPath);
+                JOptionPane.showMessageDialog(this, "PDF created successfully: " + outputPdfPath, "Print Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Failed to create PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnPrintActionPerformed
 
-    private void fieldPriceKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldPriceKeyTyped
+    private void fieldCodeKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldCodeKeyTyped
         enforceDigits(evt);
-    }//GEN-LAST:event_fieldPriceKeyTyped
+    }//GEN-LAST:event_fieldCodeKeyTyped
 
-    private void fieldQuantityKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldQuantityKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_fieldQuantityKeyTyped
+    private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
+        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldCodeFocusLost
 
-    private void fieldQuantityFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldQuantityFocusLost
-        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldQuantityFocusLost
+    private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
+        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldCodeFocusGained
 
-    private void fieldQuantityFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldQuantityFocusGained
-        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldQuantityFocusGained
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        int stock_id = Integer.parseInt(fieldID.getText());
+        int stock_batch_end = Integer.parseInt(fieldID2.getText());
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            int warnUser = JOptionPane.showConfirmDialog(
+                    null,
+                    "Confirm Delete?",
+                    "Warning: Delete",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (warnUser == JOptionPane.YES_OPTION) {
+                String query = "DELETE FROM " + Main.TB_ITEM_STOCK + " WHERE stock_id >= ? && stock_id <= ?";
+                PreparedStatement pst = conn.prepareStatement(query);
+                pst.setInt(1, stock_id);
+                pst.setInt(2, stock_batch_end);
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Stock Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                clearFields();
+                refreshTableInventory();
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        clearFields();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        if (!fieldQuantity.getText().equals(PLACEHOLDER_QTY)) {
+            fieldQuantity.setText("");
+            setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+            JOptionPane.showMessageDialog(this, "Stock quantity cannot be updated! \n\nPlease just use 'Add' or 'Delete' to update the new stock quantity.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        //        if (!fieldCode.getText().equals(PLACEHOLDER_CODE)) {
+        //            fieldCode.setText("");
+        //            setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
+        //            JOptionPane.showMessageDialog(this, "Stock code are not allowed to be updated.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+        //            return;
+        //        }
+
+        int stock_id = Integer.parseInt(fieldID.getText());
+        int stock_batch_end = Integer.parseInt(fieldID2.getText());
+        String stock_name = comboName.getSelectedItem().toString();
+        String stock_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
+        String stock_price = fieldPrice.getText();
+        String stock_deliveryDate = fieldDOD.getText();
+        String stock_holder = fieldHolder.getText();
+
+        String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            int warnUser = JOptionPane.showConfirmDialog(
+                    null,
+                    "Confirm Update?",
+                    "Warning: Stock Update",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (warnUser == JOptionPane.YES_OPTION) {
+                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_category = ?, stock_name = ?, stock_desc = ?, stock_price = ?, stock_dod = ?, stock_user = ? WHERE stock_id >= ? && stock_id <= ?";
+                PreparedStatement pst = conn.prepareStatement(query);
+                pst.setString(1, stock_category);
+                pst.setString(2, stock_name);
+                pst.setString(3, stock_desc);
+                pst.setString(4, stock_price);
+                pst.setString(5, stock_deliveryDate);
+                pst.setString(6, stock_holder);
+                pst.setInt(7, stock_id);
+                pst.setInt(8, stock_batch_end);
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                clearFields();
+                refreshTableInventory();
+            }
+
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         String stock_name = comboName.getSelectedItem().toString();
@@ -848,177 +1459,215 @@ public class ItemManagement extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
-    private void btnDODActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDODActionPerformed
-        dateDOD.showPopup();
-    }//GEN-LAST:event_btnDODActionPerformed
-
-    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        if (!fieldQuantity.getText().equals(PLACEHOLDER_QTY)) {
-            fieldQuantity.setText("");
-            setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
-            JOptionPane.showMessageDialog(this, "Stock quantity cannot be updated! \n\nPlease just use 'Add' or 'Delete' to update the new stock quantity.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-//        if (!fieldCode.getText().equals(PLACEHOLDER_CODE)) {
-//            fieldCode.setText("");
-//            setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
-//            JOptionPane.showMessageDialog(this, "Stock code are not allowed to be updated.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-//            return;
-//        }
-
-        int stock_id = Integer.parseInt(fieldID.getText());
-        int stock_batch_end = Integer.parseInt(fieldID2.getText());
-        String stock_name = comboName.getSelectedItem().toString();
-        String stock_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
-        String stock_price = fieldPrice.getText();
-        String stock_deliveryDate = fieldDOD.getText();
-        String stock_holder = fieldHolder.getText();
-
-        String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
-
-        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            int warnUser = JOptionPane.showConfirmDialog(
-                    null,
-                    "Confirm Update?",
-                    "Warning: Stock Update",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-            if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_category = ?, stock_name = ?, stock_desc = ?, stock_price = ?, stock_dod = ?, stock_user = ? WHERE stock_id >= ? && stock_id <= ?";
-                PreparedStatement pst = conn.prepareStatement(query);
-                pst.setString(1, stock_category);
-                pst.setString(2, stock_name);
-                pst.setString(3, stock_desc);
-                pst.setString(4, stock_price);
-                pst.setString(5, stock_deliveryDate);
-                pst.setString(6, stock_holder);
-                pst.setInt(7, stock_id);
-                pst.setInt(8, stock_batch_end);
-                pst.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-                clearFields();
-                refreshTableInventory();
-            }
-
-        } catch (SQLException e) {
-            paneDatabaseError(e);
-        }
-    }//GEN-LAST:event_btnUpdateActionPerformed
-
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        int stock_id = Integer.parseInt(fieldID.getText());
-        int stock_batch_end = Integer.parseInt(fieldID2.getText());
-
-        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            int warnUser = JOptionPane.showConfirmDialog(
-                    null,
-                    "Confirm Delete?",
-                    "Warning: Delete",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-            if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "DELETE FROM " + Main.TB_ITEM_STOCK + " WHERE stock_id >= ? && stock_id <= ?";
-                PreparedStatement pst = conn.prepareStatement(query);
-                pst.setInt(1, stock_id);
-                pst.setInt(2, stock_batch_end);
-                pst.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Stock Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-                clearFields();
-                refreshTableInventory();
-            }
-        } catch (SQLException e) {
-            paneDatabaseError(e);
-        }
-    }//GEN-LAST:event_btnDeleteActionPerformed
+    private void fieldHolderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusLost
+        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldHolderFocusLost
 
     private void fieldHolderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusGained
         setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldHolderFocusGained
 
-    private void fieldHolderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldHolderFocusLost
-        setDefaultField(fieldHolder, PLACEHOLDER_HOLDER, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldHolderFocusLost
-
-    private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldCodeFocusGained
-
-    private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldCodeFocusLost
-
-    private void fieldCodeKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldCodeKeyTyped
+    private void fieldQuantityKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldQuantityKeyTyped
         enforceDigits(evt);
-    }//GEN-LAST:event_fieldCodeKeyTyped
+    }//GEN-LAST:event_fieldQuantityKeyTyped
 
-    private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
-        FilterFrame.setVisible(true);
-        showFilterFrame(false);
-    }//GEN-LAST:event_btnFilterActionPerformed
+    private void fieldQuantityFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldQuantityFocusLost
+        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldQuantityFocusLost
 
-    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        clearFields();
-    }//GEN-LAST:event_btnClearActionPerformed
+    private void fieldQuantityFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldQuantityFocusGained
+        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldQuantityFocusGained
 
-    private void btnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintActionPerformed
-        if (current_barcode != null) {
-            int warnUser = JOptionPane.showConfirmDialog(
-                    null,
-                    "This item is part of a batch. Do you wish to print barcodes for the entire batch?",
-                    "Warning: Batch Print",
-                    JOptionPane.YES_NO_OPTION
-            );
-            List<BufferedImage> barcodeImages = new ArrayList<>();
-            String outputPdfPath = "barcodes/output.pdf";
+    private void btnDODActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDODActionPerformed
+        dateDOD.showPopup();
+    }//GEN-LAST:event_btnDODActionPerformed
 
-            if (warnUser == JOptionPane.NO_OPTION) {
-                BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
-                barcodeImages.add(bufferedImage);
-            } else if (warnUser == JOptionPane.YES_OPTION) {
-                int stock_id = Integer.parseInt(fieldID.getText());
+    private void fieldDODFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDODFocusLost
+        setDefaultField(fieldDOD, PLACEHOLDER_DOD, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldDODFocusLost
 
-                for (int i = 0; i < batchQuantity; i++) {
-                    String code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
-                    current_barcode = validateBarcode(code);
-                    barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
+    private void fieldDODFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDODFocusGained
+        setDefaultField(fieldDOD, PLACEHOLDER_DOD, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldDODFocusGained
 
-                    BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
-                    barcodeImages.add(bufferedImage);
+    private void fieldPriceKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldPriceKeyTyped
+        enforceDigits(evt);
+    }//GEN-LAST:event_fieldPriceKeyTyped
 
-                    stock_id++;
-                }
+    private void fieldPriceFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldPriceFocusLost
+        setDefaultField(fieldPrice, PLACEHOLDER_PRICE, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldPriceFocusLost
+
+    private void fieldPriceFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldPriceFocusGained
+        setDefaultField(fieldPrice, PLACEHOLDER_PRICE, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldPriceFocusGained
+
+    private void fieldDescFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDescFocusLost
+        setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_fieldDescFocusLost
+
+    private void fieldDescFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDescFocusGained
+        setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_fieldDescFocusGained
+
+    private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
+        Object selectedItem = searchCategory.getSelectedItem();
+        if (selectedItem != null && selectedItem.toString() != null) {
+            String selectedCategory = searchCategory.getSelectedItem().toString();
+
+            if (isDefaultComboItem(searchCategory)) {
+                GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+            } else {
+                GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
+                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
             }
 
-            try {
-                generatePDFFromBarcode(barcodeImages, outputPdfPath);
-                JOptionPane.showMessageDialog(this, "PDF created successfully: " + outputPdfPath, "Print Success", JOptionPane.INFORMATION_MESSAGE);
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Failed to create PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
+            resetDefaultComboItem(searchName);
+
+            resetFilter();
         }
+    }//GEN-LAST:event_searchCategoryActionPerformed
 
-    }//GEN-LAST:event_btnPrintActionPerformed
+    private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
+        Object selectedItem = searchName.getSelectedItem();
+        if (selectedItem != null && selectedItem.toString() != null) {
+            String selectedCategory = searchCategory.getSelectedItem().toString();
+            String selectedName = searchName.getSelectedItem().toString();
 
-    public void showFilterFrame(boolean bool) {
-        btnFilter.setEnabled(bool);
-    }
+            if (!isDefaultComboItem(searchCategory) && isDefaultComboItem(searchName)) {
+                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
+            } else if (isDefaultComboItem(searchName)) {
+                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+            } else {
+                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_name = '" + selectedName + "'");
+            }
+
+            resetDefaultComboItem(searchDesc);
+
+            resetFilter();
+        }
+    }//GEN-LAST:event_searchNameActionPerformed
+
+    private void searchDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchDescActionPerformed
+        resetFilter();
+    }//GEN-LAST:event_searchDescActionPerformed
+
+    private void searchPriceStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceStartFocusGained
+        setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_searchPriceStartFocusGained
+
+    private void searchPriceStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceStartFocusLost
+        setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_searchPriceStartFocusLost
+
+    private void searchPriceStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceStartKeyReleased
+        resetFilter();
+    }//GEN-LAST:event_searchPriceStartKeyReleased
+
+    private void searchPriceStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceStartKeyTyped
+        enforceDigits(evt);
+    }//GEN-LAST:event_searchPriceStartKeyTyped
+
+    private void searchPriceEndFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceEndFocusGained
+        setDefaultField(searchPriceEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_searchPriceEndFocusGained
+
+    private void searchPriceEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceEndFocusLost
+        setDefaultField(searchPriceEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_searchPriceEndFocusLost
+
+    private void searchPriceEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceEndKeyReleased
+        resetFilter();
+    }//GEN-LAST:event_searchPriceEndKeyReleased
+
+    private void searchPriceEndKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceEndKeyTyped
+        enforceDigits(evt);
+    }//GEN-LAST:event_searchPriceEndKeyTyped
+
+    private void searchQuantityStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusGained
+        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_searchQuantityStartFocusGained
+
+    private void searchQuantityStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusLost
+        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_searchQuantityStartFocusLost
+
+    private void searchQuantityStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyReleased
+        resetFilter();
+    }//GEN-LAST:event_searchQuantityStartKeyReleased
+
+    private void searchQuantityStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyTyped
+        enforceDigits(evt);
+    }//GEN-LAST:event_searchQuantityStartKeyTyped
+
+    private void searchQuantityEndFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusGained
+        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+    }//GEN-LAST:event_searchQuantityEndFocusGained
+
+    private void searchQuantityEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusLost
+        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+    }//GEN-LAST:event_searchQuantityEndFocusLost
+
+    private void searchQuantityEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyReleased
+        resetFilter();
+    }//GEN-LAST:event_searchQuantityEndKeyReleased
+
+    private void searchQuantityEndKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyTyped
+        enforceDigits(evt);
+    }//GEN-LAST:event_searchQuantityEndKeyTyped
+
+    private void searchHolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchHolderActionPerformed
+        resetFilter();
+    }//GEN-LAST:event_searchHolderActionPerformed
+
+    private void radioBatchesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchesActionPerformed
+        refreshTableInventory();
+        if (radioBatches.isSelected()) {
+            tableInventory.getColumnModel().getColumn(3).setHeaderValue("Unit Price / Total Price");
+        } else {
+            tableInventory.getColumnModel().getColumn(3).setHeaderValue("Unit Price");
+        }
+        tableInventory.getTableHeader().repaint();
+    }//GEN-LAST:event_radioBatchesActionPerformed
+
+    private void btnClearFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearFilterActionPerformed
+        searchCategory.setSelectedIndex(0);        
+        searchName.setSelectedIndex(0);      
+        searchDesc.setSelectedIndex(0);      
+        searchHolder.setSelectedIndex(0);
+        
+        searchPriceStart.setText("");
+        setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        searchPriceEnd.setText("");
+        setDefaultField(searchPriceEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        searchQuantityStart.setText("");
+        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        searchQuantityEnd.setText("");
+        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        searchDateStart.setText("");
+        setDefaultField(searchDateStart, Main.filterMinDate, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        searchDateStart.setForeground(Color.BLACK);
+        searchDateEnd.setText("");
+        setDefaultField(searchDateEnd, Main.filterMaxDate, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        searchDateEnd.setForeground(Color.BLACK);
+        
+        resetFilter();
+    }//GEN-LAST:event_btnClearFilterActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnClearFilter;
     private javax.swing.JButton btnDOD;
     private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnFilter;
     private javax.swing.JButton btnPrint;
     private javax.swing.JButton btnUpdate;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboName;
     private ProjectINSY.java.swing.Date.DateChooser dateDOD;
+    private ProjectINSY.java.swing.Date.DateChooser dateEnd;
+    private ProjectINSY.java.swing.Date.DateChooser dateStart;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldCode;
     private javax.swing.JTextField fieldDOD;
     private javax.swing.JTextField fieldDesc;
@@ -1037,12 +1686,34 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JLabel imgBarcode;
     private javax.swing.JLabel infoCode;
     private javax.swing.JLabel infoCode1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JSeparator jSeparator6;
+    private javax.swing.JSeparator jSeparator7;
     private javax.swing.JLabel labelAdd;
+    private javax.swing.JLabel labelCleaFilter;
     private javax.swing.JLabel labelClear;
     private javax.swing.JLabel labelCode;
     private javax.swing.JLabel labelDOD;
     private javax.swing.JLabel labelDelete;
     private javax.swing.JLabel labelDesc;
+    private javax.swing.JLabel labelFilterCategory;
+    private javax.swing.JLabel labelFilterDate;
+    private javax.swing.JLabel labelFilterDateFrom;
+    private javax.swing.JLabel labelFilterDateTo;
+    private javax.swing.JLabel labelFilterDesc;
+    private javax.swing.JLabel labelFilterHolder;
+    private javax.swing.JLabel labelFilterName;
+    private javax.swing.JLabel labelFilterPrice;
+    private javax.swing.JLabel labelFilterPriceFrom;
+    private javax.swing.JLabel labelFilterPriceTo;
+    private javax.swing.JLabel labelFilterQuantity;
+    private javax.swing.JLabel labelFilterQuantityFrom;
+    private javax.swing.JLabel labelFilterQuantityTo;
+    private javax.swing.JLabel labelFilterTitle;
     private javax.swing.JLabel labelHolder;
     private javax.swing.JLabel labelName;
     private javax.swing.JLabel labelPrice;
@@ -1050,8 +1721,26 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JLabel labelQuantity;
     private javax.swing.JLabel labelUpdate;
     private javax.swing.JPanel panelBarcode;
+    private javax.swing.JPanel panelBody;
+    private javax.swing.JPanel panelCRUD;
+    private javax.swing.JPanel panelCode;
     private javax.swing.JPanel panelFields;
+    private javax.swing.JPanel panelFilterTitle;
+    private javax.swing.JPanel panelFilters;
+    private javax.swing.JPanel panelInformation;
     private javax.swing.JPanel panelMain;
+    public static ProjectINSY.java.swing.RadioButtonCustom radioBatches;
+    private javax.swing.JScrollPane scrollMain;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateEnd;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateStart;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchDesc;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchHolder;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchPriceEnd;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchPriceStart;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityEnd;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityStart;
     private ProjectINSY.java.swing.Table tableInventory;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

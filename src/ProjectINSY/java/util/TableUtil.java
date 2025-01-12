@@ -14,11 +14,10 @@ import com.mysql.cj.jdbc.Blob;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
-import static java.awt.image.ImageObserver.ERROR;
-import static java.awt.image.ImageObserver.WIDTH;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DecimalFormat;
@@ -28,7 +27,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -88,11 +86,16 @@ public class TableUtil {
 
     public static void setColumnHorizontalAligment(JTable tableName, int columnIndex, EnumAlignment enumAlignment) {
         DefaultTableCellRenderer alignment = new DefaultTableCellRenderer();
-        if (null != enumAlignment) switch (enumAlignment) {
-            case CENTER -> alignment.setHorizontalAlignment(JLabel.CENTER);
-            case LEFT -> alignment.setHorizontalAlignment(JLabel.LEFT);
-            case RIGHT -> alignment.setHorizontalAlignment(JLabel.RIGHT);
-            default -> {
+        if (null != enumAlignment) {
+            switch (enumAlignment) {
+                case CENTER ->
+                    alignment.setHorizontalAlignment(JLabel.CENTER);
+                case LEFT ->
+                    alignment.setHorizontalAlignment(JLabel.LEFT);
+                case RIGHT ->
+                    alignment.setHorizontalAlignment(JLabel.RIGHT);
+                default -> {
+                }
             }
         }
         tableName.getColumnModel().getColumn(columnIndex).setCellRenderer(alignment);
@@ -158,7 +161,12 @@ public class TableUtil {
                                 String name = rs.getString("stock_name");
                                 String desc = rs.getString("stock_desc");
                                 int quantity = 1;
-                                float price = rs.getFloat("stock_price");
+                                String price = floatRoundOff(rs.getFloat("stock_price"));
+                                if (ItemManagement.isGroupedByBatches()) {
+                                    if (rs.getFloat("stock_price") != rs.getFloat("stock_price_batch")) {
+                                        price = price + " / " + floatRoundOff(rs.getFloat("stock_price_batch"));
+                                    }
+                                }
                                 Date deliveryDate = rs.getDate("stock_dod");
                                 String holder = rs.getString("stock_user");
 
@@ -210,6 +218,13 @@ public class TableUtil {
         }
     }
 
+    public static String floatRoundOff(float input) {
+        BigDecimal bd = new BigDecimal(input);
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+
+        return bd.toString();
+    }
+
     public static void clearSelectedTableRow(JTable table) {
         table.getSelectionModel().clearSelection();
     }
@@ -236,5 +251,32 @@ public class TableUtil {
                 jComboBox.setSelectedItem(tableRow[i]);
             }
         }
+    }
+
+    public static String getComboSelected(JComboBox combo) {
+        if (combo.getSelectedItem() == null) {
+            return "";
+        }
+        return combo.getSelectedItem().toString();
+    }
+
+    public static boolean isDefaultComboItem(JComboBox combo) {
+        if (combo.getSelectedItem() == null) {
+            return false;
+        }
+        return combo.getSelectedItem().toString().equals(combo.getItemAt(0));
+    }
+
+    public static void resetDefaultComboItem(JComboBox combo) {
+        combo.insertItemAt("- - - - -", 0);
+        combo.setSelectedIndex(0);
+    }
+
+    public static String getFieldString(JTextField field) {
+        return field.getText().trim().toString();
+    }
+
+    public static boolean fieldHasValue(JTextField field) {
+        return !field.getText().trim().isEmpty();
     }
 }

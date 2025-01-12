@@ -31,16 +31,18 @@ public class Menu extends javax.swing.JPanel {
         this.menuIndex = menuIndex;
     }
 
-//    private EventMenuSelected event;
-//    public void addEventMenuSelected(EventMenuSelected event) {
-//        this.event = event;
-//    }
     private Main main;
 
     public Menu(Main main) {
         this.main = main;
 
         initComponents();
+
+        btnItemStock.setForeground(new Color(255, 255, 255));
+        btnItemManagement.setForeground(new Color(255, 255, 255));
+        btnItemCatalog.setForeground(new Color(255, 255, 255));
+        btnItemTracker.setForeground(new Color(255, 255, 255));
+        btnLogOut.setForeground(new Color(255, 255, 255));
 
         setTransparentFrame(btnItemStock, btnItemManagement, btnItemCatalog, btnItemTracker, btnLogOut);
 
@@ -85,7 +87,7 @@ public class Menu extends javax.swing.JPanel {
 
         setBackground(new java.awt.Color(249, 215, 30));
 
-        panelBody.setBackground(new java.awt.Color(249, 215, 30));
+        panelBody.setBackground(new java.awt.Color(25, 102, 24));
         panelBody.setPreferredSize(new java.awt.Dimension(333, 628));
 
         imageLogo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -217,9 +219,9 @@ public class Menu extends javax.swing.JPanel {
                 .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btnItemTracker, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pointerItemTracker, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(257, 257, 257)
+                .addGap(317, 317, 317)
                 .addComponent(btnLogOut, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(66, 66, 66))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -269,9 +271,10 @@ public class Menu extends javax.swing.JPanel {
         if (warnUser == JOptionPane.YES_OPTION) {
             setMenuIndex(0);
             refreshPointers();
-            
+
             removeUserSession();
             main.showMenu();
+            main.showHeaderMenu(false);
             main.setLogInForm();
         }
     }//GEN-LAST:event_btnLogOutActionPerformed

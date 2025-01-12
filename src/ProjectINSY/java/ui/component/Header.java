@@ -26,8 +26,12 @@ public class Header extends javax.swing.JPanel {
 
         setTransparentFrame(btnMenu);
 //        btnMenu.setEnabled(false);
-        btnMenu.setToolTipText("This action requires logging in!");
+        btnMenu.setVisible(false);
         btnMenu.setMnemonic(KeyEvent.VK_ESCAPE);
+    }
+
+    public void showHeaderMenu(boolean show) {
+        btnMenu.setVisible(show);
     }
 
     /**
@@ -55,14 +59,14 @@ public class Header extends javax.swing.JPanel {
         add(btnMenu);
         btnMenu.setBounds(20, 10, 49, 80);
 
-        labelHeader.setFont(new java.awt.Font("Bebas", 0, 30)); // NOI18N
+        labelHeader.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
         labelHeader.setForeground(new java.awt.Color(255, 255, 255));
         labelHeader.setText("CAVITE STATE UNIVERSITY INVENTORY SYSTEM");
         add(labelHeader);
-        labelHeader.setBounds(80, 10, 600, 80);
+        labelHeader.setBounds(80, 10, 550, 80);
 
-        blur.setColorEnd(new java.awt.Color(25, 102, 24));
-        blur.setColorStart(new java.awt.Color(25, 102, 24));
+        blur.setColorEnd(new java.awt.Color(84, 34, 102));
+        blur.setColorStart(new java.awt.Color(84, 34, 102));
         blur.setShadowIntensity(255);
 
         imageLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/images/cvsu-logo.png"))); // NOI18N
@@ -79,8 +83,8 @@ public class Header extends javax.swing.JPanel {
         blurLayout.setVerticalGroup(
             blurLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, blurLayout.createSequentialGroup()
-                .addContainerGap(26, Short.MAX_VALUE)
-                .addComponent(imageLogo)
+                .addContainerGap(21, Short.MAX_VALUE)
+                .addComponent(imageLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(15, 15, 15))
         );
 
