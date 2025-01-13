@@ -114,6 +114,66 @@ public class DatabaseUtil {
 
         return column_value;
     }
+
+    public enum HistoryFrame {
+        CATALOG, MANAGEMENT, TRACKER
+    }
+
+    public enum HistoryType {
+        ADD, UPDATE, DELETE
+    }
+
+    public static void insertHistory(HistoryFrame HistoryFrame, HistoryType HistoryType, String history_item_code_start, String history_item_code_end, String history_desc, String history_user) {
+        String query = "INSERT INTO " + Main.TB_ITEM_HISTORY + " (history_frame, history_type, history_item_code_start, history_item_code_end, history_desc, history_user) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+
+            pst.setString(1, HistoryFrame.toString());
+            pst.setString(2, HistoryType.toString());
+            pst.setString(3, history_item_code_start);
+            pst.setString(4, history_item_code_end);
+            pst.setString(5, history_desc);
+            pst.setString(6, history_user);
+
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }
+
+    public static String createHistoryDesc(String old_value, String new_value, String column_name) {
+        if (!old_value.equals(new_value)) {
+            return "; " + column_name + ": " + old_value + " -> " + new_value;
+        }
+        return "";
+    }
+
+    public static String createHistoryDesc(String new_value, String column_name) {
+        return "; " + column_name + ": " + new_value;
+    }
+
+    public static String createHistoryDesc(String new_value) {
+        return "; " + new_value;
+    }
+
+    public static String getColumnFromLastRow(String table_name, String last_key, String column_name_to_get) {
+        String column_value = "";
+        String query = "SELECT * FROM " + table_name + " ORDER BY " + last_key + " DESC LIMIT 1";
+
+        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                column_value = rs.getString(column_name_to_get);
+            }
+
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+
+        return column_value;
+    }
 }
 
 //    -- Step 1: Get the highest category_id value

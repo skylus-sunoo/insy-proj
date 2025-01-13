@@ -10,9 +10,12 @@ import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.generatePDFFromBarcode;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
+import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
 import static ProjectINSY.java.util.DatabaseUtil.generateNewBatch;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnFromLastRow;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
 import static ProjectINSY.java.util.DatabaseUtil.getConnection;
+import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.cleanSpaces;
@@ -84,12 +87,12 @@ public class ItemManagement extends javax.swing.JPanel {
             + ") AS stock_code, "
             + "COUNT(*) AS stock_quantity "
             + "FROM " + Main.TB_ITEM_STOCK + " "
-            + "WHERE stock_code IS NOT NULL "
+            + "WHERE 1 "
             + filterWHERE
             + "GROUP BY stock_batch "
-            + "HAVING stock_code IS NOT NULL "
+            + "HAVING 1 "
             + filterHAVING
-            + "ORDER BY stock_id ASC";
+            + "ORDER BY stock_timestamp DESC";
 
     private final String PLACEHOLDER_CODE = "Enter Code (XXXX)";
     private final String PLACEHOLDER_DESC = "Enter Description";
@@ -120,9 +123,8 @@ public class ItemManagement extends javax.swing.JPanel {
         tableInventory.getColumnModel().getColumn(3).setPreferredWidth(175);
         tableInventory.getColumnModel().getColumn(4).setPreferredWidth(75);
         tableInventory.getColumnModel().getColumn(5).setPreferredWidth(150);
-        tableInventory.getColumnModel().getColumn(6).setPreferredWidth(250);
-        
-        
+        tableInventory.getColumnModel().getColumn(6).setPreferredWidth(242);
+
         fieldPrice.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
         fieldBenefactor.getDocument().addDocumentListener(new FieldChangeListener());
@@ -141,7 +143,6 @@ public class ItemManagement extends javax.swing.JPanel {
         setColumnHorizontalAligment(tableInventory, 3, TableUtil.EnumAlignment.LEFT);
         floatFormatDecimal(tableInventory, 3);
         setColumnHorizontalAligment(tableInventory, 4, TableUtil.EnumAlignment.LEFT);
-        repopulateFilterComboBox();
         searchDateStart.setText(Main.filterMinDate);
 //        sorterNumbers(tableInventory, 3);
 //        sorterNumbers(tableInventory, 4);
@@ -149,9 +150,9 @@ public class ItemManagement extends javax.swing.JPanel {
 
     public void selectTableStock(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableInventory, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, null, fieldDOD, fieldBenefactor);
+        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, fieldQuantitySelected, fieldDOD, fieldBenefactor);
 
-        batchQuantity = Integer.parseInt(fieldQuantity.getText());
+        batchQuantity = Integer.parseInt(fieldQuantitySelected.getText());
         Float actual_price;
         if (isGroupedByBatches()) {
             String[] parts = fieldPrice.getText().split(" / ");
@@ -263,7 +264,7 @@ public class ItemManagement extends javax.swing.JPanel {
 
     private void resetSearchQuery() {
         if (radioBatches.isSelected()) {
-            currentSearchQuery = "SELECT stock_id, stock_batch, "
+            currentSearchQuery = "SELECT stock_timestamp, stock_id, stock_batch, "
                     + "stock_category, "
                     + "stock_name, "
                     + "stock_desc, "
@@ -282,20 +283,20 @@ public class ItemManagement extends javax.swing.JPanel {
                     + ") AS stock_code, "
                     + "COUNT(*) AS stock_quantity "
                     + "FROM " + Main.TB_ITEM_STOCK + " "
-                    + "WHERE stock_code IS NOT NULL "
+                    + "WHERE 1 "
                     + filterWHERE
                     + "GROUP BY stock_batch "
-                    + "HAVING stock_code IS NOT NULL "
+                    + "HAVING 1 "
                     + filterHAVING
-                    + "ORDER BY stock_id ASC";
+                    + "ORDER BY stock_timestamp DESC";
         } else {
             currentSearchQuery = "SELECT *, 1 AS stock_quantity FROM "
                     + Main.TB_ITEM_STOCK + " "
-                    + "WHERE stock_code IS NOT NULL "
+                    + "WHERE 1 "
                     + filterWHERE
-                    + "HAVING stock_code IS NOT NULL "
+                    + "HAVING 1 "
                     + filterHAVING
-                    + " ORDER BY stock_id ASC";
+                    + " ORDER BY stock_timestamp DESC";
         }
     }
 
@@ -371,6 +372,7 @@ public class ItemManagement extends javax.swing.JPanel {
         GuiUtil.clearField(fieldDesc, PLACEHOLDER_DESC);
         GuiUtil.clearField(fieldPrice, PLACEHOLDER_PRICE);
         GuiUtil.clearField(fieldQuantity, PLACEHOLDER_QTY);
+        GuiUtil.clearField(fieldQuantitySelected, "");
         GuiUtil.clearField(fieldBenefactor, PLACEHOLDER_BENEFACTOR);
         GuiUtil.clearFieldDate(fieldDOD);
         fieldDOD.setForeground(Color.BLACK);
@@ -400,6 +402,7 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldID2 = new javax.swing.JTextField();
         dateStart = new ProjectINSY.java.swing.Date.DateChooser();
         dateEnd = new ProjectINSY.java.swing.Date.DateChooser();
+        fieldQuantitySelected = new javax.swing.JTextField();
         panelMain = new javax.swing.JPanel();
         scrollMain = new javax.swing.JScrollPane();
         panelBody = new javax.swing.JPanel();
@@ -493,6 +496,8 @@ public class ItemManagement extends javax.swing.JPanel {
         dateEnd.setForeground(new java.awt.Color(25, 102, 24));
         dateEnd.setDateFormat("yyyy-MM-dd");
         dateEnd.setTextRefernce(searchDateEnd);
+
+        fieldQuantitySelected.setText("jTextField1");
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -1272,6 +1277,13 @@ public class ItemManagement extends javax.swing.JPanel {
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setInt(1, stock_id);
                 pst.setInt(2, stock_batch_end);
+
+                // HISTORY : MANAGEMENT-DELETE
+                String stock_code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
+                String stock_code_end = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_batch_end);
+
+                insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.DELETE, stock_code, stock_code_end, "", "");
+
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Stock Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -1330,6 +1342,28 @@ public class ItemManagement extends javax.swing.JPanel {
                 pst.setString(6, stock_benefactor);
                 pst.setInt(7, stock_id);
                 pst.setInt(8, stock_batch_end);
+
+                // HISTORY : MANAGEMENT-UPDATE
+                String history_desc = "";
+                String selectedCode = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
+                String selectedCodeEnd = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_batch_end);
+                String stock_holder = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_holder", "stock_id", stock_batch_end);
+
+                String old_name = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_name", "stock_id", stock_id);
+                String old_desc = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_desc", "stock_id", stock_id);
+                Float old_priceFloat = Float.valueOf(getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_price", "stock_id", stock_id));
+                String old_price = floatRoundOff(old_priceFloat);
+                String old_deliveryDate = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_dod", "stock_id", stock_id);
+                String old_benefactor = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_benefactor", "stock_id", stock_id);
+
+                history_desc += createHistoryDesc(old_name, stock_name, "Name");
+                history_desc += createHistoryDesc(old_desc, stock_desc, "Description");
+                history_desc += createHistoryDesc(old_price, stock_price, "Price");
+                history_desc += createHistoryDesc(old_deliveryDate, stock_deliveryDate, "DOD");
+                history_desc += createHistoryDesc(old_benefactor, stock_benefactor, "Benefactor");
+
+                insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.UPDATE, selectedCode, selectedCodeEnd, history_desc, stock_holder);
+
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -1448,6 +1482,31 @@ public class ItemManagement extends javax.swing.JPanel {
                     }
                 }
             }
+
+            // HISTORY : MANAGEMENT-ADD
+            String stock_code = getColumnFromLastRow(Main.TB_ITEM_STOCK, "stock_timestamp", "stock_code");
+
+            String stock_code_end = stock_code;
+
+            if (stock_code_end.contains("-")) {
+                String[] parts = stock_code_end.split("-");
+                int qty = Integer.parseInt(parts[2]) + stock_quantity - 1;
+                stock_code_end = parts[0] + "-" + parts[1] + "-" + qty;
+            }
+
+            String history_desc = "";
+
+            history_desc += createHistoryDesc(stock_name, "Name");
+            if (!stock_desc.isEmpty()) {
+                history_desc += createHistoryDesc(stock_desc, "Description");
+            }
+            history_desc += createHistoryDesc(stock_price, "Price");
+            history_desc += createHistoryDesc(String.valueOf(stock_quantity), "Quantity");
+            history_desc += createHistoryDesc(stock_deliveryDate, "DOD");
+            history_desc += createHistoryDesc(stock_benefactor, "Benefactor");
+
+            insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.ADD, stock_code, stock_code_end, history_desc, "N/A");
+
             JOptionPane.showMessageDialog(this, "(" + stock_quantity + ") Stock/s Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearFields();
@@ -1633,11 +1692,11 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_radioBatchesActionPerformed
 
     private void btnClearFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearFilterActionPerformed
-        searchCategory.setSelectedIndex(0);        
-        searchName.setSelectedIndex(0);      
-        searchDesc.setSelectedIndex(0);      
+        searchCategory.setSelectedIndex(0);
+        searchName.setSelectedIndex(0);
+        searchDesc.setSelectedIndex(0);
         searchBenefactor.setSelectedIndex(0);
-        
+
         searchPriceStart.setText("");
         setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
         searchPriceEnd.setText("");
@@ -1652,7 +1711,7 @@ public class ItemManagement extends javax.swing.JPanel {
         searchDateEnd.setText("");
         setDefaultField(searchDateEnd, Main.filterMaxDate, GuiUtil.FieldFocus.LOST, Color.BLACK);
         searchDateEnd.setForeground(Color.BLACK);
-        
+
         resetFilter();
     }//GEN-LAST:event_btnClearFilterActionPerformed
 
@@ -1676,6 +1735,7 @@ public class ItemManagement extends javax.swing.JPanel {
     private javax.swing.JTextField fieldID2;
     private javax.swing.JTextField fieldPrice;
     private javax.swing.JTextField fieldQuantity;
+    private javax.swing.JTextField fieldQuantitySelected;
     private javax.swing.JLabel imageBenefactor;
     private javax.swing.JLabel imageCode;
     private javax.swing.JLabel imageDOD;

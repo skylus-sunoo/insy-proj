@@ -5,9 +5,21 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.util.DatabaseUtil;
+import ProjectINSY.java.util.GuiUtil;
+import static ProjectINSY.java.util.GuiUtil.repopulateComboBox;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
+import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
 import static ProjectINSY.java.util.TableUtil.defaultTable;
+import static ProjectINSY.java.util.TableUtil.getComboSelected;
+import static ProjectINSY.java.util.TableUtil.isDefaultComboItem;
+import static ProjectINSY.java.util.TableUtil.resetDefaultComboItem;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import javax.swing.DefaultComboBoxModel;
 
 /**
  *
@@ -15,6 +27,7 @@ import static ProjectINSY.java.util.TableUtil.defaultTable;
  */
 public class ItemTrackerLocation extends javax.swing.JPanel {
 
+    public String filterWHERE = "";
     public String currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " ORDER BY stock_id ASC";
 
     /**
@@ -22,15 +35,76 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
      */
     public ItemTrackerLocation() {
         initComponents();
-        
+
         setScrollBarCustom(tableScroll);
-        
+
         defaultTable(tableLocation);
         tableLocation.getColumnModel().getColumn(0).setPreferredWidth(10);
+
+        repopulateFilterComboBox();
     }
 
     public void refreshTableInventory() {
         TableUtil.refreshTable(tableLocation, currentSearchQuery, TableUtil.TableEnum.STOCK_LOCATION);
+    }
+
+    public void resetSearchQuery() {
+        filterWHERE = "";
+        if (!isDefaultComboItem(searchCategory)) {
+            filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
+        }
+        if (!isDefaultComboItem(searchName)) {
+            filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
+        }
+        if (!isDefaultComboItem(searchDesc)) {
+            filterWHERE += "AND stock_desc = '" + getComboSelected(searchDesc) + "' ";
+        }
+        if (!isDefaultComboItem(searchLoc)) {
+            filterWHERE += "AND stock_location = '" + getComboSelected(searchLoc) + "' ";
+        }
+        if (!isDefaultComboItem(searchHolder)) {
+            filterWHERE += "AND stock_holder = '" + getComboSelected(searchHolder) + "' ";
+        }
+
+        currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " WHERE 1 " + filterWHERE + "ORDER BY stock_id ASC";
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            String query = "SELECT COUNT(*) FROM " + Main.TB_ITEM_STOCK + " WHERE 1 " + filterWHERE;
+            PreparedStatement pst = conn.prepareStatement(query);
+            ResultSet rs = pst.executeQuery();
+
+            if (rs.next()) {
+                labelNumItem.setText("(" + rs.getInt("Count(*)") + ") Items Found");
+                if (rs.getInt("Count(*)") == 0) {
+                    labelNumItem.setText("No Items Found");
+                }
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+
+        refreshTableInventory();
+    }
+
+    public void repopulateFilterComboBox() {
+        GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchCategory);
+
+        GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchName);
+
+        GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchDesc);
+
+        GuiUtil.repopulateComboBox(searchLoc, "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchLoc);
+        if (((DefaultComboBoxModel) searchLoc.getModel()).getIndexOf("Supply Room") < 0) {
+            searchLoc.insertItemAt("Supply Room", 1);
+        }
+        searchLoc.setSelectedItem("Supply Room");
+
+        GuiUtil.repopulateComboBox(searchHolder, "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        resetDefaultComboItem(searchHolder);
     }
 
     /**
@@ -44,6 +118,27 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
 
         tableScroll = new javax.swing.JScrollPane();
         tableLocation = new ProjectINSY.java.swing.Table();
+        panelFilters = new javax.swing.JPanel();
+        panelFilterTitle = new javax.swing.JPanel();
+        labelFilterTitle = new javax.swing.JLabel();
+        labelFilterCategory = new javax.swing.JLabel();
+        searchCategory = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterName = new javax.swing.JLabel();
+        searchName = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterDesc = new javax.swing.JLabel();
+        searchDesc = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterHolder = new javax.swing.JLabel();
+        searchHolder = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
+        jSeparator3 = new javax.swing.JSeparator();
+        jSeparator7 = new javax.swing.JSeparator();
+        labelCleaFilter = new javax.swing.JLabel();
+        btnClearFilter = new javax.swing.JButton();
+        labelFilterLoc = new javax.swing.JLabel();
+        searchLoc = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        jSeparator4 = new javax.swing.JSeparator();
+        labelNumItem = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setPreferredSize(new java.awt.Dimension(1836, 850));
@@ -66,22 +161,249 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
         tableLocation.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableLocation);
 
+        panelFilters.setBackground(new java.awt.Color(255, 255, 255));
+        panelFilters.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
+        panelFilters.setLayout(null);
+
+        panelFilterTitle.setBackground(new java.awt.Color(25, 102, 24));
+
+        labelFilterTitle.setBackground(new java.awt.Color(25, 102, 24));
+        labelFilterTitle.setFont(new java.awt.Font("Bahnschrift", 1, 24)); // NOI18N
+        labelFilterTitle.setForeground(new java.awt.Color(255, 255, 255));
+        labelFilterTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelFilterTitle.setText("Item Filters");
+        labelFilterTitle.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        javax.swing.GroupLayout panelFilterTitleLayout = new javax.swing.GroupLayout(panelFilterTitle);
+        panelFilterTitle.setLayout(panelFilterTitleLayout);
+        panelFilterTitleLayout.setHorizontalGroup(
+            panelFilterTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(labelFilterTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        panelFilterTitleLayout.setVerticalGroup(
+            panelFilterTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelFilterTitleLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(labelFilterTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        panelFilters.add(panelFilterTitle);
+        panelFilterTitle.setBounds(2, 8, 312, 36);
+
+        labelFilterCategory.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterCategory.setText("Category");
+        panelFilters.add(labelFilterCategory);
+        labelFilterCategory.setBounds(8, 94, 300, 30);
+
+        searchCategory.setBorder(null);
+        searchCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchCategory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchCategoryActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchCategory);
+        searchCategory.setBounds(8, 130, 300, 29);
+
+        labelFilterName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterName.setText("Name");
+        panelFilters.add(labelFilterName);
+        labelFilterName.setBounds(8, 181, 300, 30);
+
+        searchName.setBorder(null);
+        searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchNameActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchName);
+        searchName.setBounds(8, 217, 300, 29);
+
+        labelFilterDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterDesc.setText("Description");
+        panelFilters.add(labelFilterDesc);
+        labelFilterDesc.setBounds(8, 268, 300, 30);
+
+        searchDesc.setBorder(null);
+        searchDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchDesc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchDescActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchDesc);
+        searchDesc.setBounds(8, 304, 300, 29);
+
+        labelFilterHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterHolder.setText("Holder");
+        panelFilters.add(labelFilterHolder);
+        labelFilterHolder.setBounds(10, 460, 300, 30);
+
+        searchHolder.setBorder(null);
+        searchHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchHolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchHolderActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchHolder);
+        searchHolder.setBounds(10, 500, 300, 29);
+        panelFilters.add(jSeparator1);
+        jSeparator1.setBounds(8, 165, 300, 10);
+        panelFilters.add(jSeparator2);
+        jSeparator2.setBounds(8, 252, 300, 10);
+        panelFilters.add(jSeparator3);
+        jSeparator3.setBounds(8, 339, 300, 10);
+        panelFilters.add(jSeparator7);
+        jSeparator7.setBounds(10, 530, 300, 10);
+
+        labelCleaFilter.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelCleaFilter.setForeground(new java.awt.Color(255, 255, 255));
+        labelCleaFilter.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelCleaFilter.setText("Clear Filters");
+        labelCleaFilter.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelFilters.add(labelCleaFilter);
+        labelCleaFilter.setBounds(0, 560, 310, 50);
+
+        btnClearFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red.png"))); // NOI18N
+        btnClearFilter.setBorder(null);
+        btnClearFilter.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red_pressed.png"))); // NOI18N
+        btnClearFilter.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLong_red_pressed.png"))); // NOI18N
+        btnClearFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearFilterActionPerformed(evt);
+            }
+        });
+        panelFilters.add(btnClearFilter);
+        btnClearFilter.setBounds(2, 560, 310, 49);
+
+        labelFilterLoc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterLoc.setText("Location");
+        panelFilters.add(labelFilterLoc);
+        labelFilterLoc.setBounds(10, 360, 300, 30);
+
+        searchLoc.setBorder(null);
+        searchLoc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchLoc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchLocActionPerformed(evt);
+            }
+        });
+        panelFilters.add(searchLoc);
+        searchLoc.setBounds(10, 400, 300, 30);
+        panelFilters.add(jSeparator4);
+        jSeparator4.setBounds(10, 440, 300, 10);
+
+        labelNumItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelNumItem.setText("No Items Found");
+        panelFilters.add(labelNumItem);
+        labelNumItem.setBounds(10, 50, 290, 30);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1840, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelFilters, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1508, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 116, Short.MAX_VALUE)
-                .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(tableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 850, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelFilters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
+        Object selectedItem = searchCategory.getSelectedItem();
+        if (selectedItem != null && selectedItem.toString() != null) {
+            String selectedCategory = searchCategory.getSelectedItem().toString();
+
+            if (isDefaultComboItem(searchCategory)) {
+                repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+                repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+            } else {
+                repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
+                repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
+            }
+
+            resetDefaultComboItem(searchName);
+
+            resetSearchQuery();
+        }
+    }//GEN-LAST:event_searchCategoryActionPerformed
+
+    private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
+        Object selectedItem = searchName.getSelectedItem();
+        if (selectedItem != null && selectedItem.toString() != null) {
+            String selectedCategory = searchCategory.getSelectedItem().toString();
+            String selectedName = searchName.getSelectedItem().toString();
+
+            if (!isDefaultComboItem(searchCategory) && isDefaultComboItem(searchName)) {
+                repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
+            } else if (isDefaultComboItem(searchName)) {
+                repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+            } else {
+                repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_name = '" + selectedName + "'");
+            }
+
+            resetDefaultComboItem(searchDesc);
+
+            resetSearchQuery();
+        }
+    }//GEN-LAST:event_searchNameActionPerformed
+
+    private void searchDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchDescActionPerformed
+        resetSearchQuery();
+    }//GEN-LAST:event_searchDescActionPerformed
+
+    private void searchHolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchHolderActionPerformed
+        resetSearchQuery();
+    }//GEN-LAST:event_searchHolderActionPerformed
+
+    private void btnClearFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearFilterActionPerformed
+        searchCategory.setSelectedIndex(0);
+        searchName.setSelectedIndex(0);
+        searchDesc.setSelectedIndex(0);
+        searchLoc.setSelectedIndex(0);
+        searchHolder.setSelectedIndex(0);
+
+        resetSearchQuery();
+    }//GEN-LAST:event_btnClearFilterActionPerformed
+
+    private void searchLocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchLocActionPerformed
+        resetSearchQuery();
+    }//GEN-LAST:event_searchLocActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnClearFilter;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator7;
+    private javax.swing.JLabel labelCleaFilter;
+    private javax.swing.JLabel labelFilterCategory;
+    private javax.swing.JLabel labelFilterDesc;
+    private javax.swing.JLabel labelFilterHolder;
+    private javax.swing.JLabel labelFilterLoc;
+    private javax.swing.JLabel labelFilterName;
+    private javax.swing.JLabel labelFilterTitle;
+    private javax.swing.JLabel labelNumItem;
+    private javax.swing.JPanel panelFilterTitle;
+    private javax.swing.JPanel panelFilters;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchDesc;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchHolder;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchLoc;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
     private ProjectINSY.java.swing.Table tableLocation;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

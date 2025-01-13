@@ -6,6 +6,11 @@ package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.util.DatabaseUtil;
+import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnFromLastRow;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
+import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
@@ -126,7 +131,7 @@ public class ItemCatalog extends javax.swing.JPanel {
     }
 
     public void refreshTableCategory() {
-        TableUtil.refreshTable(tableCategory, "SELECT * FROM " + Main.TB_CATALOG_CATEGORY, TableUtil.TableEnum.CATALOG_CATEGORY);
+        TableUtil.refreshTable(tableCategory, "SELECT * FROM " + Main.TB_CATALOG_CATEGORY + " ORDER BY category_name ASC", TableUtil.TableEnum.CATALOG_CATEGORY);
     }
 
     public void setUpdateDeleteEnableCategory() {
@@ -141,7 +146,7 @@ public class ItemCatalog extends javax.swing.JPanel {
     }
 
     public void refreshTableItem() {
-        TableUtil.refreshTable(tableItem, "SELECT * FROM " + Main.TB_CATALOG_ITEM, TableUtil.TableEnum.CATALOG_ITEM);
+        TableUtil.refreshTable(tableItem, "SELECT * FROM " + Main.TB_CATALOG_ITEM + " ORDER BY item_name ASC", TableUtil.TableEnum.CATALOG_ITEM);
     }
 
     public void setUpdateDeleteEnableItem() {
@@ -342,7 +347,7 @@ public class ItemCatalog extends javax.swing.JPanel {
                 "Category List"
             }
         ));
-        tableCategory.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        tableCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableCategory.setSelectionBackground(new java.awt.Color(25, 102, 24));
         scrollCategory.setViewportView(tableCategory);
 
@@ -402,7 +407,7 @@ public class ItemCatalog extends javax.swing.JPanel {
                 "Item", "Category", "Unit of Measure"
             }
         ));
-        tableItem.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        tableItem.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableItem.setGridColor(new java.awt.Color(255, 255, 255));
         tableItem.setSelectionBackground(new java.awt.Color(25, 102, 24));
         tableScroll.setViewportView(tableItem);
@@ -606,12 +611,20 @@ public class ItemCatalog extends javax.swing.JPanel {
                         + "VALUES (?)";
                 PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
                 pst.setString(1, category_name);
+
+                // HISTORY : CATALOG-ADD
+                String history_desc = createHistoryDesc(category_name, "Category Name");
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, "", "", history_desc, "");
+                
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Category Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearCategoryFields();
                 refreshTableCategory();
                 repopulateCategoryComboBox();
+            } else {
+                JOptionPane.showMessageDialog(this, "This category already exists!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
@@ -644,6 +657,12 @@ public class ItemCatalog extends javax.swing.JPanel {
                     PreparedStatement pst = conn.prepareStatement(query);
                     pst.setString(1, category_name);
                     pst.setString(2, category_name_original);
+
+                    // HISTORY : CATALOG-UPDATE
+                    String history_desc = createHistoryDesc(category_name_original, category_name, "Category Name");
+
+                    insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, "", "", history_desc, "");
+                    
                     pst.executeUpdate();
                     JOptionPane.showMessageDialog(this, "Category Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -675,6 +694,12 @@ public class ItemCatalog extends javax.swing.JPanel {
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setString(1, category_name);
                 pst.executeUpdate();
+
+                // HISTORY : CATALOG-DELETE
+                String history_desc = createHistoryDesc(category_name, "Category Name");
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, "", "", history_desc, "");
+
                 JOptionPane.showMessageDialog(this, "Category Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearCategoryFields();
@@ -699,11 +724,23 @@ public class ItemCatalog extends javax.swing.JPanel {
                 pst.setString(1, item_category);
                 pst.setString(2, item_name);
                 pst.setString(3, item_uom);
+
+                // HISTORY : CATALOG-ADD
+                String history_desc = "";
+
+                history_desc += createHistoryDesc(item_name, "Item Name");
+                history_desc += createHistoryDesc(item_category, "Category");
+                history_desc += createHistoryDesc(item_uom, "UOM");
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, "", "", history_desc, "");
+
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Item Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();
                 refreshTableItem();
+            } else {
+                JOptionPane.showMessageDialog(this, "This item already exists!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
@@ -717,7 +754,6 @@ public class ItemCatalog extends javax.swing.JPanel {
         String item_uom = comboUOM.getSelectedItem().toString();
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-//            if (!DatabaseUtil.recordExists(conn, Main.TB_CATALOG_ITEM, "item_name", item_name)) {
             int warnUser = JOptionPane.showConfirmDialog(
                     null,
                     "Updating this Item's name will also update the corresponding item name in other related tables. Do you want to proceed?",
@@ -732,15 +768,25 @@ public class ItemCatalog extends javax.swing.JPanel {
                 pst.setString(2, item_name);
                 pst.setString(3, item_uom);
                 pst.setString(4, item_name_original);
+
+                // HISTORY : CATALOG-UPDATE
+                String history_desc = "";
+
+                String old_category = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", item_name_original);
+                String old_uom = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_uom", "item_name", item_name_original);
+                
+                history_desc += createHistoryDesc(item_name_original, item_name, "Item Name");
+                history_desc += createHistoryDesc(old_category, item_category, "Category");
+                history_desc += createHistoryDesc(old_uom, item_uom, "UOM");
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, "", "", history_desc, "");
+                
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Item Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();
                 refreshTableItem();
             }
-//            } else {
-//                JOptionPane.showMessageDialog(this, "This item already exists!", "Error", JOptionPane.ERROR_MESSAGE);
-//            }
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
@@ -761,6 +807,12 @@ public class ItemCatalog extends javax.swing.JPanel {
                 String query = "DELETE FROM " + Main.TB_CATALOG_ITEM + " WHERE item_name = ?";
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setString(1, item_name);
+
+                // HISTORY : CATALOG-DELETE
+                String history_desc = createHistoryDesc(item_name, "Item Name");
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, "", "", history_desc, "");
+                
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Item Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 

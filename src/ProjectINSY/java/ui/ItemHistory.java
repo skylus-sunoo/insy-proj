@@ -15,10 +15,20 @@ import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import ProjectINSY.java.util.TableUtil;
 import ProjectINSY.java.util.TableUtil.EnumAlignment;
 import static ProjectINSY.java.util.TableUtil.defaultTable;
+import static ProjectINSY.java.util.TableUtil.fieldHasValue;
 import static ProjectINSY.java.util.TableUtil.fixedColumnAll;
+import static ProjectINSY.java.util.TableUtil.getComboSelected;
+import static ProjectINSY.java.util.TableUtil.getFieldString;
+import static ProjectINSY.java.util.TableUtil.isDefaultComboItem;
+import static ProjectINSY.java.util.TableUtil.resetDefaultComboItem;
 import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
 import static ProjectINSY.java.util.TableUtil.sorterNumbers;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JTable;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -26,16 +36,7 @@ import java.awt.Color;
  */
 public class ItemHistory extends javax.swing.JPanel {
 
-    private final Filter filterCategory = new Filter(FilterOrder.START, "stock_category", FilterComparator.EQUAL, "- - Select Category - -");
-    private final Filter filterName = new Filter(FilterOrder.NOT_START, "stock_name", FilterComparator.EQUAL, "- - Select Name - -");
-    private final Filter filterQuantityStart = new Filter(FilterOrder.START, "stock_quantity", FilterComparator.GREATER_THAN, null);
-    private final Filter filterQuantityEnd = new Filter(FilterOrder.NOT_START, "stock_quantity", FilterComparator.LESSER_THAN, null);
-
-    public String currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
-            + Main.TB_ITEM_STOCK + " WHERE "
-            + filterCategory.getFilterSQL() + filterName.getFilterSQL()
-            + "GROUP BY stock_category, stock_name HAVING "
-            + filterQuantityStart.getFilterSQL() + filterQuantityEnd.getFilterSQL();
+    public String currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_HISTORY, filterWHERE = "";
 
     /**
      * Creates new form LogIn
@@ -43,44 +44,89 @@ public class ItemHistory extends javax.swing.JPanel {
     public ItemHistory() {
         initComponents();
 
-        btnSearch.setVisible(false);
         setScrollBarCustom(tableScroll);
 
-        defaultTable(tableInventory);
+        defaultTable(tableHistory);
+        tableHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tableHistory.getColumnModel().getColumn(0).setPreferredWidth(200);
+        tableHistory.getColumnModel().getColumn(1).setPreferredWidth(200);
+        tableHistory.getColumnModel().getColumn(2).setPreferredWidth(250);
+        tableHistory.getColumnModel().getColumn(3).setPreferredWidth(974);
+        tableHistory.getColumnModel().getColumn(4).setPreferredWidth(200);
 
-        setColumnHorizontalAligment(tableInventory, 2, EnumAlignment.LEFT);
-        fixedColumnAll(tableInventory);
-        sorterNumbers(tableInventory, 2);
-
-//        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher((KeyEvent e) -> {
-//            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_ENTER) {
-//                refreshTableInventory();
-//                return true;
-//            }
-//            return false;
-//        });
+//        setColumnHorizontalAligment(tableInventory, 2, EnumAlignment.LEFT);
+//        fixedColumnAll(tableInventory);
+//        sorterNumbers(tableInventory, 2);
+        String[] parts = getFieldString(searchTimestampStart).split("-");
+        String month_start = parts[0] + "-" + parts[1] + "-01";
+        searchTimestampStart.setText(month_start);
+        searchTimestampStart.getDocument().addDocumentListener(new FieldChangeListener());
+        searchTimestampEnd.getDocument().addDocumentListener(new FieldChangeListener());
     }
 
     public void refreshTableInventory() {
-        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DISTINCT);
+        TableUtil.refreshTable(tableHistory, currentSearchQuery, TableUtil.TableEnum.ITEM_HISTORY);
     }
 
     public void repopulateComboBox() {
-        GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        searchCategory.insertItemAt(filterCategory.getDefaultString(), 0);
-        searchCategory.setSelectedIndex(0);
+        GuiUtil.repopulateComboBox(searchType, "history_frame_type", "SELECT CONCAT(history_frame,'-', history_type) AS history_frame_type FROM " + Main.TB_ITEM_HISTORY);
+        resetDefaultComboItem(searchType);
 
-        GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        searchName.insertItemAt(filterName.getDefaultString(), 0);
-        searchName.setSelectedIndex(0);
+        GuiUtil.repopulateComboBox(searchHolder, "history_user", "SELECT history_user FROM " + Main.TB_ITEM_HISTORY);
+        resetDefaultComboItem(searchHolder);
     }
 
-    private void resetSearchQuery() {
-        currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
-                + Main.TB_ITEM_STOCK + " WHERE "
-                + filterCategory.getFilterSQL() + filterName.getFilterSQL()
-                + "GROUP BY stock_category, stock_name HAVING "
-                + filterQuantityStart.getFilterSQL() + filterQuantityEnd.getFilterSQL();
+    public void resetSearchQuery() {
+        filterWHERE = "";
+        if (!isDefaultComboItem(searchType)) {
+            String[] parts = getComboSelected(searchType).split("-");
+            if (parts.length == 2) {
+                filterWHERE += "AND history_frame = '" + parts[0] + "' AND history_type = '" + parts[1] + "' ";
+            }
+        }
+        if (!isDefaultComboItem(searchHolder)) {
+            filterWHERE += "AND history_user = '" + getComboSelected(searchHolder) + "' ";
+        }
+        if (fieldHasValue(searchTimestampStart)) {
+            filterWHERE += "AND history_timestamp >= '" + getFieldString(searchTimestampStart) + " 00:00:00' ";
+        }
+        if (fieldHasValue(searchTimestampEnd)) {
+            filterWHERE += "AND history_timestamp <= '" + getFieldString(searchTimestampEnd) + " 23:59:59' ";
+        }
+
+        currentSearchQuery = "SELECT *, CONCAT(history_frame,'-', history_type) AS history_frame_type FROM "
+                + Main.TB_ITEM_HISTORY + " WHERE 1 "
+                + filterWHERE
+                + "ORDER BY history_timestamp DESC";
+
+        refreshTableInventory();
+    }
+
+    private class FieldChangeListener implements DocumentListener, ActionListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            checkFields();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            checkFields();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            checkFields();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            checkFields();
+        }
+
+        private void checkFields() {
+            resetSearchQuery();
+        }
     }
 
     /**
@@ -92,20 +138,29 @@ public class ItemHistory extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        dateStart = new ProjectINSY.java.swing.Date.DateChooser();
+        dateEnd = new ProjectINSY.java.swing.Date.DateChooser();
         panelMain = new javax.swing.JPanel();
         tableScroll = new javax.swing.JScrollPane();
-        tableInventory = new ProjectINSY.java.swing.Table();
+        tableHistory = new ProjectINSY.java.swing.Table();
         panelSearch = new javax.swing.JPanel();
-        searchCategory = new ProjectINSY.java.swing.ComboBoxSuggestion();
-        labelFilterCategory = new javax.swing.JLabel();
-        searchName = new ProjectINSY.java.swing.ComboBoxSuggestion();
-        labelFilterName = new javax.swing.JLabel();
-        btnSearch = new javax.swing.JButton();
-        labelFilterQuantity = new javax.swing.JLabel();
-        searchQuantityStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        labelFilterQuantityFrom = new javax.swing.JLabel();
-        labelFilterQuantityTo = new javax.swing.JLabel();
+        searchType = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterType = new javax.swing.JLabel();
+        searchHolder = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterHolder = new javax.swing.JLabel();
+        labelFilterTimestamp = new javax.swing.JLabel();
+        searchTimestampStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchTimestampEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        labelFilterTimestampFrom = new javax.swing.JLabel();
+        labelFilterTimestampTo = new javax.swing.JLabel();
+
+        dateStart.setForeground(new java.awt.Color(25, 102, 24));
+        dateStart.setDateFormat("yyyy-MM-dd");
+        dateStart.setTextRefernce(searchTimestampStart);
+
+        dateEnd.setForeground(new java.awt.Color(25, 102, 24));
+        dateEnd.setDateFormat("yyyy-MM-dd");
+        dateEnd.setTextRefernce(searchTimestampEnd);
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -120,22 +175,22 @@ public class ItemHistory extends javax.swing.JPanel {
 
         tableScroll.setBorder(null);
 
-        tableInventory.setModel(new javax.swing.table.DefaultTableModel(
+        tableHistory.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Category", "Name", "Quantity"
+                "Timestamp", "Type", "Item/s", "Description", "Latest Holder"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.Integer.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, true, true
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -146,97 +201,51 @@ public class ItemHistory extends javax.swing.JPanel {
                 return canEdit [columnIndex];
             }
         });
-        tableInventory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        tableInventory.setGridColor(new java.awt.Color(255, 255, 255));
-        tableInventory.setSelectionBackground(new java.awt.Color(25, 102, 24));
-        tableScroll.setViewportView(tableInventory);
+        tableHistory.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        tableHistory.setGridColor(new java.awt.Color(255, 255, 255));
+        tableHistory.setSelectionBackground(new java.awt.Color(25, 102, 24));
+        tableScroll.setViewportView(tableHistory);
 
         panelSearch.setBackground(new java.awt.Color(255, 255, 255));
         panelSearch.setMaximumSize(new java.awt.Dimension(1277, 71));
         panelSearch.setMinimumSize(new java.awt.Dimension(1277, 71));
 
-        searchCategory.setBorder(null);
-        searchCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchCategory.addActionListener(new java.awt.event.ActionListener() {
+        searchType.setBorder(null);
+        searchType.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchCategoryActionPerformed(evt);
+                searchTypeActionPerformed(evt);
             }
         });
 
-        labelFilterCategory.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelFilterCategory.setText("Category");
+        labelFilterType.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterType.setText("Type");
 
-        searchName.setBorder(null);
-        searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchName.addActionListener(new java.awt.event.ActionListener() {
+        searchHolder.setBorder(null);
+        searchHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchHolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchNameActionPerformed(evt);
+                searchHolderActionPerformed(evt);
             }
         });
 
-        labelFilterName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelFilterName.setText("Name");
+        labelFilterHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterHolder.setText("Latest Holder");
 
-        btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch.png"))); // NOI18N
-        btnSearch.setBorder(null);
-        btnSearch.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnSearch.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch_pressed.png"))); // NOI18N
-        btnSearch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSearchActionPerformed(evt);
-            }
-        });
+        labelFilterTimestamp.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterTimestamp.setText("Date Range");
 
-        labelFilterQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelFilterQuantity.setText("Quantity Range");
+        searchTimestampStart.setBorder(null);
+        searchTimestampStart.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
 
-        searchQuantityStart.setBorder(null);
-        searchQuantityStart.setForeground(new java.awt.Color(153, 153, 153));
-        searchQuantityStart.setText("1");
-        searchQuantityStart.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchQuantityStart.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                searchQuantityStartFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                searchQuantityStartFocusLost(evt);
-            }
-        });
-        searchQuantityStart.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                searchQuantityStartKeyReleased(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                searchQuantityStartKeyTyped(evt);
-            }
-        });
+        searchTimestampEnd.setBorder(null);
+        searchTimestampEnd.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
 
-        searchQuantityEnd.setBorder(null);
-        searchQuantityEnd.setForeground(new java.awt.Color(153, 153, 153));
-        searchQuantityEnd.setText("999999999");
-        searchQuantityEnd.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchQuantityEnd.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                searchQuantityEndFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                searchQuantityEndFocusLost(evt);
-            }
-        });
-        searchQuantityEnd.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                searchQuantityEndKeyReleased(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                searchQuantityEndKeyTyped(evt);
-            }
-        });
+        labelFilterTimestampFrom.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        labelFilterTimestampFrom.setText("From");
 
-        labelFilterQuantityFrom.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        labelFilterQuantityFrom.setText("From");
-
-        labelFilterQuantityTo.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        labelFilterQuantityTo.setText("To");
+        labelFilterTimestampTo.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        labelFilterTimestampTo.setText("To");
 
         javax.swing.GroupLayout panelSearchLayout = new javax.swing.GroupLayout(panelSearch);
         panelSearch.setLayout(panelSearchLayout);
@@ -245,25 +254,23 @@ public class ItemHistory extends javax.swing.JPanel {
             .addGroup(panelSearchLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(searchCategory, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .addComponent(labelFilterCategory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(202, 202, 202)
-                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(labelFilterName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(208, 208, 208)
-                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(panelSearchLayout.createSequentialGroup()
-                        .addComponent(labelFilterQuantityFrom)
+                        .addComponent(labelFilterTimestampFrom)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(searchQuantityStart, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(searchTimestampStart, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(labelFilterQuantityTo)
+                        .addComponent(labelFilterTimestampTo)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(searchQuantityEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(labelFilterQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 182, Short.MAX_VALUE)
-                .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(searchTimestampEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(labelFilterTimestamp, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(293, 293, 293)
+                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(labelFilterType, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(searchType, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 319, Short.MAX_VALUE)
+                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(labelFilterHolder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(searchHolder, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         panelSearchLayout.setVerticalGroup(
@@ -273,25 +280,24 @@ public class ItemHistory extends javax.swing.JPanel {
                 .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelSearchLayout.createSequentialGroup()
                         .addGap(35, 35, 35)
-                        .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(labelFilterName)
+                        .addComponent(searchHolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(labelFilterHolder)
                     .addGroup(panelSearchLayout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(btnSearch))
-                    .addGroup(panelSearchLayout.createSequentialGroup()
-                        .addComponent(labelFilterCategory)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(searchCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelSearchLayout.createSequentialGroup()
-                        .addComponent(labelFilterQuantity)
+                        .addComponent(labelFilterTimestamp)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(searchQuantityStart, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(labelFilterQuantityTo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(searchQuantityEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(labelFilterQuantityFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(searchTimestampStart, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(labelFilterTimestampTo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(searchTimestampEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(labelFilterTimestampFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelSearchLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(labelFilterType)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(searchType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
@@ -327,87 +333,30 @@ public class ItemHistory extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void searchQuantityEndKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_searchQuantityEndKeyTyped
-
-    private void searchQuantityEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyReleased
-        filterQuantityEnd.createFilter(searchQuantityEnd);
+    private void searchTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchTypeActionPerformed
         resetSearchQuery();
-        refreshTableInventory();
-    }//GEN-LAST:event_searchQuantityEndKeyReleased
+    }//GEN-LAST:event_searchTypeActionPerformed
 
-    private void searchQuantityEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusLost
-        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityEndFocusLost
-
-    private void searchQuantityEndFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusGained
-        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityEndFocusGained
-
-    private void searchQuantityStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_searchQuantityStartKeyTyped
-
-    private void searchQuantityStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyReleased
-        filterQuantityStart.createFilter(searchQuantityStart);
+    private void searchHolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchHolderActionPerformed
         resetSearchQuery();
-        refreshTableInventory();
-    }//GEN-LAST:event_searchQuantityStartKeyReleased
-
-    private void searchQuantityStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusLost
-        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityStartFocusLost
-
-    private void searchQuantityStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusGained
-        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityStartFocusGained
-
-    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
-        refreshTableInventory();
-    }//GEN-LAST:event_btnSearchActionPerformed
-
-    private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
-        filterName.createFilter(searchName);
-        resetSearchQuery();
-        refreshTableInventory();
-    }//GEN-LAST:event_searchNameActionPerformed
-
-    private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
-        Object selectedItem = searchCategory.getSelectedItem();
-        if (selectedItem != null && selectedItem.toString() != null) {
-            String selectedCategory = searchCategory.getSelectedItem().toString();
-
-            if (selectedCategory.equals(filterCategory.getDefaultString())) {
-                GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-            } else {
-                GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
-            }
-
-            searchName.insertItemAt(filterName.getDefaultString(), 0);
-            searchName.setSelectedIndex(0);
-
-            filterCategory.createFilter(searchCategory);
-            resetSearchQuery();
-            refreshTableInventory();
-        }
-    }//GEN-LAST:event_searchCategoryActionPerformed
+    }//GEN-LAST:event_searchHolderActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnSearch;
-    private javax.swing.JLabel labelFilterCategory;
-    private javax.swing.JLabel labelFilterName;
-    private javax.swing.JLabel labelFilterQuantity;
-    private javax.swing.JLabel labelFilterQuantityFrom;
-    private javax.swing.JLabel labelFilterQuantityTo;
+    private ProjectINSY.java.swing.Date.DateChooser dateEnd;
+    private ProjectINSY.java.swing.Date.DateChooser dateStart;
+    private javax.swing.JLabel labelFilterHolder;
+    private javax.swing.JLabel labelFilterTimestamp;
+    private javax.swing.JLabel labelFilterTimestampFrom;
+    private javax.swing.JLabel labelFilterTimestampTo;
+    private javax.swing.JLabel labelFilterType;
     private javax.swing.JPanel panelMain;
     private javax.swing.JPanel panelSearch;
-    private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
-    private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityStart;
-    private ProjectINSY.java.swing.Table tableInventory;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchHolder;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampEnd;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampStart;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchType;
+    private ProjectINSY.java.swing.Table tableHistory;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables
 }

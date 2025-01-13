@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="ProjectINSY.java.swing.Date.DateChooser" name="dateStart">
+      <Properties>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="18" green="66" red="19" type="rgb"/>
+        </Property>
+        <Property name="dateFormat" type="java.lang.String" value="yyyy-MM-dd"/>
+        <Property name="textRefernce" type="javax.swing.JTextField" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="searchTimestampStart"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="ProjectINSY.java.swing.Date.DateChooser" name="dateEnd">
+      <Properties>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="18" green="66" red="19" type="rgb"/>
+        </Property>
+        <Property name="dateFormat" type="java.lang.String" value="yyyy-MM-dd"/>
+        <Property name="textRefernce" type="javax.swing.JTextField" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="searchTimestampEnd"/>
+        </Property>
+      </Properties>
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1840, 900]"/>
@@ -99,17 +123,19 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="ProjectINSY.java.swing.Table" name="tableInventory">
+            <Component class="ProjectINSY.java.swing.Table" name="tableHistory">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                  <Table columnCount="3" rowCount="4">
-                    <Column editable="false" title="Category" type="java.lang.String"/>
-                    <Column editable="false" title="Name" type="java.lang.String"/>
-                    <Column editable="false" title="Quantity" type="java.lang.Integer"/>
+                  <Table columnCount="5" rowCount="4">
+                    <Column editable="false" title="Timestamp" type="java.lang.String"/>
+                    <Column editable="false" title="Type" type="java.lang.String"/>
+                    <Column editable="false" title="Item/s" type="java.lang.String"/>
+                    <Column editable="true" title="Description" type="java.lang.Object"/>
+                    <Column editable="true" title="Latest Holder" type="java.lang.Object"/>
                   </Table>
                 </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Bahnschrift" size="18" style="0"/>
+                  <Font name="Bahnschrift" size="14" style="0"/>
                 </Property>
                 <Property name="gridColor" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
@@ -140,29 +166,27 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="searchCategory" pref="400" max="32767" attributes="0"/>
-                          <Component id="labelFilterCategory" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="202" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="labelFilterName" max="32767" attributes="0"/>
-                          <Component id="searchName" min="-2" pref="400" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="208" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="labelFilterQuantityFrom" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="labelFilterTimestampFrom" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="searchQuantityStart" min="-2" pref="150" max="-2" attributes="0"/>
+                              <Component id="searchTimestampStart" min="-2" pref="150" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
-                              <Component id="labelFilterQuantityTo" min="-2" max="-2" attributes="0"/>
+                              <Component id="labelFilterTimestampTo" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="searchQuantityEnd" min="-2" pref="150" max="-2" attributes="0"/>
+                              <Component id="searchTimestampEnd" min="-2" pref="150" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="labelFilterQuantity" min="-2" pref="400" max="-2" attributes="0"/>
+                          <Component id="labelFilterTimestamp" min="-2" pref="400" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="182" max="32767" attributes="0"/>
-                      <Component id="btnSearch" min="-2" pref="20" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="293" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="labelFilterType" max="32767" attributes="0"/>
+                          <Component id="searchType" min="-2" pref="400" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="319" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="labelFilterHolder" max="32767" attributes="0"/>
+                          <Component id="searchHolder" min="-2" pref="400" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -174,38 +198,36 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="35" pref="35" max="-2" attributes="0"/>
-                              <Component id="searchName" min="-2" max="-2" attributes="0"/>
+                              <Component id="searchHolder" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="labelFilterName" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="labelFilterHolder" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Component id="btnSearch" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="labelFilterCategory" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="searchCategory" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="labelFilterQuantity" min="-2" max="-2" attributes="0"/>
+                              <Component id="labelFilterTimestamp" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                                      <Component id="searchQuantityStart" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
-                                      <Component id="labelFilterQuantityTo" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
-                                      <Component id="searchQuantityEnd" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="searchTimestampStart" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                                      <Component id="labelFilterTimestampTo" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                                      <Component id="searchTimestampEnd" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="labelFilterQuantityFrom" alignment="1" min="-2" pref="24" max="-2" attributes="0"/>
+                                  <Component id="labelFilterTimestampFrom" alignment="1" min="-2" pref="24" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="labelFilterType" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="searchType" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="searchCategory">
+            <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="searchType">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="null"/>
@@ -215,18 +237,18 @@
                 </Property>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchCategoryActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchTypeActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JLabel" name="labelFilterCategory">
+            <Component class="javax.swing.JLabel" name="labelFilterType">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Aaux ProThin OSF" size="24" style="1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Category"/>
+                <Property name="text" type="java.lang.String" value="Type"/>
               </Properties>
             </Component>
-            <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="searchName">
+            <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="searchHolder">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="null"/>
@@ -236,85 +258,46 @@
                 </Property>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchNameActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchHolderActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JLabel" name="labelFilterName">
+            <Component class="javax.swing.JLabel" name="labelFilterHolder">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Aaux ProThin OSF" size="24" style="1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Name"/>
+                <Property name="text" type="java.lang.String" value="Latest Holder"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JButton" name="btnSearch">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/ProjectINSY/resources/interface/btnSearch.png"/>
-                </Property>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="null"/>
-                </Property>
-                <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                  <Color id="Hand Cursor"/>
-                </Property>
-                <Property name="pressedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/ProjectINSY/resources/interface/btnSearch_pressed.png"/>
-                </Property>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSearchActionPerformed"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.JLabel" name="labelFilterQuantity">
+            <Component class="javax.swing.JLabel" name="labelFilterTimestamp">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Aaux ProThin OSF" size="24" style="1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Quantity Range"/>
+                <Property name="text" type="java.lang.String" value="Date Range"/>
               </Properties>
             </Component>
-            <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="searchQuantityStart">
+            <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="searchTimestampStart">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="null"/>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="99" green="99" red="99" type="rgb"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="1"/>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Bahnschrift" size="18" style="0"/>
                 </Property>
               </Properties>
-              <Events>
-                <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="searchQuantityStartFocusGained"/>
-                <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="searchQuantityStartFocusLost"/>
-                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="searchQuantityStartKeyReleased"/>
-                <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="searchQuantityStartKeyTyped"/>
-              </Events>
             </Component>
-            <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="searchQuantityEnd">
+            <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="searchTimestampEnd">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="null"/>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="99" green="99" red="99" type="rgb"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="999999999"/>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Bahnschrift" size="18" style="0"/>
                 </Property>
               </Properties>
-              <Events>
-                <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="searchQuantityEndFocusGained"/>
-                <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="searchQuantityEndFocusLost"/>
-                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="searchQuantityEndKeyReleased"/>
-                <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="searchQuantityEndKeyTyped"/>
-              </Events>
             </Component>
-            <Component class="javax.swing.JLabel" name="labelFilterQuantityFrom">
+            <Component class="javax.swing.JLabel" name="labelFilterTimestampFrom">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Bahnschrift" size="18" style="0"/>
@@ -322,7 +305,7 @@
                 <Property name="text" type="java.lang.String" value="From"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="labelFilterQuantityTo">
+            <Component class="javax.swing.JLabel" name="labelFilterTimestampTo">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Bahnschrift" size="18" style="0"/>

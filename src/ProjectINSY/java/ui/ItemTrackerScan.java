@@ -8,7 +8,13 @@ import ProjectINSY.java.Main;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
+import ProjectINSY.java.util.DatabaseUtil.HistoryFrame;
+import ProjectINSY.java.util.DatabaseUtil.HistoryType;
+import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
+import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
+import static ProjectINSY.java.util.DatabaseUtil.prepareQueryWithParameters;
 import ProjectINSY.java.util.GuiUtil;
 import static ProjectINSY.java.util.GuiUtil.enforceCharacterAmount;
 import static ProjectINSY.java.util.GuiUtil.enforceDigits;
@@ -33,6 +39,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
@@ -40,7 +47,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
 
 /**
  *
@@ -63,7 +69,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private final String PLACEHOLDER_CODE_ID = "0000";
     private final String PLACEHOLDER_LOCATION = "Enter Location";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
-    
+
     /**
      * Creates new form ItemTrackerLocation
      */
@@ -104,7 +110,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             if (!fieldCodeID.getText().isEmpty()) {
                 selectedCodeID = Integer.parseInt(fieldCodeID.getText());
                 if (!fieldCodeYear.getText().isEmpty()) {
-                    selectedCode = "Silang-" + fieldCodeYear.getText() + "-" + selectedCodeID;
+                    selectedCode = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", selectedCodeID);
                 }
             } else {
                 selectedCodeID = -1;
@@ -129,6 +135,22 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         String desc = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_desc", "stock_id", selectedCodeID);
         String location = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_location", "stock_id", selectedCodeID);
         String holder = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_holder", "stock_id", selectedCodeID);
+        String batch = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_batch", "stock_id", selectedCodeID);
+
+        String query = "SELECT COUNT(*) FROM " + Main.TB_ITEM_STOCK + " WHERE stock_batch = ?";
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = prepareQueryWithParameters(conn, query, batch); ResultSet rs = pst.executeQuery()) {
+            if (rs.next()) {
+                int num = rs.getInt("COUNT(*)");
+                String numStr = "Item";
+                if (num > 1) {
+                    numStr = "Items";
+                }
+                radioScanBatch.setText("Batch (" + num + " " + numStr + ")");
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
 
         if (!name.isEmpty() && !name.equals(fieldName.getText())) {
             String current_barcode = validateBarcode(selectedCode);
@@ -140,6 +162,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             fieldDesc.setText(desc);
             fieldLocation.setText(location);
             fieldHolder.setText(holder);
+            fieldBatch.setText(batch);
 
             fieldLocation.setForeground(Color.BLACK);
             fieldHolder.setForeground(Color.BLACK);
@@ -153,12 +176,15 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         GuiUtil.clearField(fieldCodeYear, PLACEHOLDER_CODE_YEAR);
         GuiUtil.clearField(fieldCodeID, PLACEHOLDER_CODE_ID);
 
-        GuiUtil.clearField(fieldName, "");
-        GuiUtil.clearField(fieldDesc, "");
+//        GuiUtil.clearField(fieldName, "");
+//        GuiUtil.clearField(fieldDesc, "");
+        fieldName.setText("");
+        fieldDesc.setText("");
         GuiUtil.clearField(fieldLocation, PLACEHOLDER_LOCATION);
         GuiUtil.clearField(fieldHolder, PLACEHOLDER_HOLDER);
 
         GuiUtil.resetIcon(imgBarcode);
+        radioScanBatch.setText("Batch (0 Item)");
 
         setUpdateDeleteEnable();
     }
@@ -286,7 +312,6 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     }
     //</editor-fold>
 
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -296,7 +321,11 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        fieldBatch = new javax.swing.JTextField();
         panelFields = new javax.swing.JPanel();
+        labelScanType = new javax.swing.JLabel();
+        radioScanSingle = new ProjectINSY.java.swing.RadioButtonCustom();
+        radioScanBatch = new ProjectINSY.java.swing.RadioButtonCustom();
         labelName = new javax.swing.JLabel();
         fieldName = new javax.swing.JTextField();
         fieldLocation = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
@@ -313,6 +342,8 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         jSeparator2 = new javax.swing.JSeparator();
         labelUpdate = new javax.swing.JLabel();
         btnUpdate = new javax.swing.JButton();
+        panelScan = new javax.swing.JPanel();
+        labelScan = new javax.swing.JLabel();
         panelCode = new javax.swing.JPanel();
         panelCamera = new javax.swing.JPanel();
         panelCameraControls = new javax.swing.JPanel();
@@ -327,29 +358,60 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         imageCode = new javax.swing.JLabel();
         btnSearch = new javax.swing.JButton();
 
+        fieldBatch.setText("jTextField1");
+
         setBackground(new java.awt.Color(255, 255, 255));
         setPreferredSize(new java.awt.Dimension(1836, 850));
 
         panelFields.setBackground(new java.awt.Color(255, 255, 255));
+        panelFields.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
         panelFields.setLayout(null);
 
-        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelScanType.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
+        labelScanType.setText("Update by:");
+        panelFields.add(labelScanType);
+        labelScanType.setBounds(110, 140, 180, 45);
+
+        radioScanSingle.setBackground(new java.awt.Color(25, 102, 24));
+        radioScanSingle.setSelected(true);
+        radioScanSingle.setText("Selected Item Only");
+        radioScanSingle.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        radioScanSingle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioScanSingleActionPerformed(evt);
+            }
+        });
+        panelFields.add(radioScanSingle);
+        radioScanSingle.setBounds(290, 150, 180, 30);
+
+        radioScanBatch.setBackground(new java.awt.Color(25, 102, 24));
+        radioScanBatch.setText("Batch (0 Item)");
+        radioScanBatch.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        radioScanBatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioScanBatchActionPerformed(evt);
+            }
+        });
+        panelFields.add(radioScanBatch);
+        radioScanBatch.setBounds(490, 150, 290, 30);
+
+        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelName.setText("Name");
         panelFields.add(labelName);
-        labelName.setBounds(0, 40, 173, 30);
+        labelName.setBounds(110, 230, 173, 40);
 
         fieldName.setEditable(false);
-        fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldName.setBorder(null);
         fieldName.setFocusable(false);
         fieldName.setSelectionColor(new java.awt.Color(25, 102, 24));
         panelFields.add(fieldName);
-        fieldName.setBounds(0, 80, 540, 20);
+        fieldName.setBounds(110, 280, 660, 30);
 
         fieldLocation.setBorder(null);
         fieldLocation.setForeground(new java.awt.Color(153, 153, 153));
         fieldLocation.setText("Enter Location");
-        fieldLocation.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldLocation.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldLocation.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldLocationFocusGained(evt);
@@ -359,34 +421,34 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         });
         panelFields.add(fieldLocation);
-        fieldLocation.setBounds(10, 266, 520, 30);
+        fieldLocation.setBounds(120, 530, 640, 50);
 
-        imageLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
+        imageLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldFull.png"))); // NOI18N
         panelFields.add(imageLocation);
-        imageLocation.setBounds(0, 250, 540, 60);
+        imageLocation.setBounds(110, 520, 665, 70);
 
-        labelLocation.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelLocation.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelLocation.setText("Location");
         panelFields.add(labelLocation);
-        labelLocation.setBounds(0, 220, 173, 30);
+        labelLocation.setBounds(110, 480, 173, 30);
 
         fieldDesc.setEditable(false);
-        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldDesc.setBorder(null);
         fieldDesc.setFocusable(false);
         fieldDesc.setSelectionColor(new java.awt.Color(25, 102, 24));
         panelFields.add(fieldDesc);
-        fieldDesc.setBounds(0, 170, 540, 20);
+        fieldDesc.setBounds(110, 390, 660, 30);
 
-        labelHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelHolder.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelHolder.setText("Holder");
         panelFields.add(labelHolder);
-        labelHolder.setBounds(290, 330, 173, 30);
+        labelHolder.setBounds(440, 620, 173, 30);
 
         fieldHolder.setBorder(null);
         fieldHolder.setForeground(new java.awt.Color(153, 153, 153));
         fieldHolder.setText("Enter Holder");
-        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldHolder.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldHolder.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 fieldHolderFocusGained(evt);
@@ -396,30 +458,30 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         });
         panelFields.add(fieldHolder);
-        fieldHolder.setBounds(300, 370, 230, 40);
+        fieldHolder.setBounds(450, 670, 310, 50);
 
         panelBarcode.setBackground(new java.awt.Color(255, 255, 255));
         panelBarcode.setLayout(null);
 
         imgBarcode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         panelBarcode.add(imgBarcode);
-        imgBarcode.setBounds(0, 0, 250, 90);
+        imgBarcode.setBounds(0, 40, 250, 90);
 
         panelFields.add(panelBarcode);
-        panelBarcode.setBounds(10, 340, 250, 90);
+        panelBarcode.setBounds(120, 590, 250, 90);
 
         imageHolder1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelFields.add(imageHolder1);
-        imageHolder1.setBounds(290, 360, 340, 70);
+        imageHolder1.setBounds(440, 660, 340, 70);
 
-        labelDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelDesc.setText("Description");
         panelFields.add(labelDesc);
-        labelDesc.setBounds(0, 130, 173, 30);
+        labelDesc.setBounds(110, 340, 200, 40);
         panelFields.add(jSeparator1);
-        jSeparator1.setBounds(0, 200, 540, 10);
+        jSeparator1.setBounds(110, 430, 660, 10);
         panelFields.add(jSeparator2);
-        jSeparator2.setBounds(0, 110, 540, 10);
+        jSeparator2.setBounds(110, 320, 660, 10);
 
         labelUpdate.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelUpdate.setForeground(new java.awt.Color(255, 255, 255));
@@ -427,7 +489,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         labelUpdate.setText("Update");
         labelUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelFields.add(labelUpdate);
-        labelUpdate.setBounds(350, 570, 130, 30);
+        labelUpdate.setBounds(370, 760, 130, 30);
 
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint.png"))); // NOI18N
         btnUpdate.setBorder(null);
@@ -441,9 +503,43 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         });
         panelFields.add(btnUpdate);
-        btnUpdate.setBounds(340, 560, 150, 50);
+        btnUpdate.setBounds(360, 750, 150, 50);
+
+        panelScan.setBackground(new java.awt.Color(25, 102, 24));
+
+        labelScan.setBackground(new java.awt.Color(25, 102, 24));
+        labelScan.setFont(new java.awt.Font("Bebas", 0, 64)); // NOI18N
+        labelScan.setForeground(new java.awt.Color(255, 255, 255));
+        labelScan.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelScan.setText("change location");
+        labelScan.setOpaque(true);
+
+        javax.swing.GroupLayout panelScanLayout = new javax.swing.GroupLayout(panelScan);
+        panelScan.setLayout(panelScanLayout);
+        panelScanLayout.setHorizontalGroup(
+            panelScanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 910, Short.MAX_VALUE)
+            .addGroup(panelScanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(panelScanLayout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(labelScan)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
+        panelScanLayout.setVerticalGroup(
+            panelScanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 80, Short.MAX_VALUE)
+            .addGroup(panelScanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(panelScanLayout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(labelScan)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
+
+        panelFields.add(panelScan);
+        panelScan.setBounds(0, 10, 910, 80);
 
         panelCode.setBackground(new java.awt.Color(255, 255, 255));
+        panelCode.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
         panelCode.setLayout(null);
 
         panelCamera.setBackground(new java.awt.Color(0, 0, 0));
@@ -452,7 +548,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         panelCamera.setPreferredSize(new java.awt.Dimension(800, 600));
         panelCamera.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
         panelCode.add(panelCamera);
-        panelCamera.setBounds(0, 190, 800, 600);
+        panelCamera.setBounds(40, 190, 800, 600);
 
         panelCameraControls.setBackground(new java.awt.Color(255, 255, 255));
         panelCameraControls.setLayout(null);
@@ -486,19 +582,19 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         radioAutoclose.setBounds(390, 10, 402, 27);
 
         panelCode.add(panelCameraControls);
-        panelCameraControls.setBounds(0, 110, 810, 50);
+        panelCameraControls.setBounds(40, 110, 800, 50);
 
-        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelCode.setText("Enter or Scan Code:");
         panelCode.add(labelCode);
-        labelCode.setBounds(30, 40, 210, 30);
+        labelCode.setBounds(30, 40, 320, 30);
 
-        fieldCodeSilang.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldCodeSilang.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldCodeSilang.setText("-");
         panelCode.add(fieldCodeSilang);
-        fieldCodeSilang.setBounds(420, 40, 10, 20);
+        fieldCodeSilang.setBounds(550, 40, 12, 30);
 
-        fieldCodeYear.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldCodeYear.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldCodeYear.setForeground(new java.awt.Color(153, 153, 153));
         fieldCodeYear.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         fieldCodeYear.setText("00");
@@ -518,14 +614,14 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         });
         panelCode.add(fieldCodeYear);
-        fieldCodeYear.setBounds(380, 40, 40, 23);
+        fieldCodeYear.setBounds(500, 40, 40, 30);
 
-        fieldCodeSilang1.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldCodeSilang1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldCodeSilang1.setText("Silang  -");
         panelCode.add(fieldCodeSilang1);
-        fieldCodeSilang1.setBounds(310, 40, 70, 20);
+        fieldCodeSilang1.setBounds(400, 40, 100, 30);
 
-        fieldCodeID.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldCodeID.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldCodeID.setForeground(new java.awt.Color(153, 153, 153));
         fieldCodeID.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         fieldCodeID.setText("0000");
@@ -545,11 +641,11 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         });
         panelCode.add(fieldCodeID);
-        fieldCodeID.setBounds(430, 40, 70, 23);
+        fieldCodeID.setBounds(570, 40, 70, 30);
 
         imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelCode.add(imageCode);
-        imageCode.setBounds(280, 20, 333, 70);
+        imageCode.setBounds(370, 20, 333, 70);
 
         btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch.png"))); // NOI18N
         btnSearch.setBorder(null);
@@ -561,25 +657,26 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         });
         panelCode.add(btnSearch);
-        btnSearch.setBounds(640, 50, 140, 25);
+        btnSearch.setBounds(730, 50, 140, 25);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(171, 171, 171)
-                .addComponent(panelCode, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(42, 42, 42)
-                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 633, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(190, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(panelCode, javax.swing.GroupLayout.PREFERRED_SIZE, 901, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 905, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelCode, javax.swing.GroupLayout.DEFAULT_SIZE, 866, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 752, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(panelFields, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 844, Short.MAX_VALUE)
+                    .addComponent(panelCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -605,18 +702,45 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
-                null,
-                "Confirm Update?",
-                "Warning: Stock Update",
-                JOptionPane.YES_NO_OPTION
+                    null,
+                    "Confirm Update?",
+                    "Warning: Stock Update",
+                    JOptionPane.YES_NO_OPTION
             );
 
             if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_location = ?, stock_holder = ? WHERE stock_id = ?";
+                String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_location = ?, stock_holder = ?";
+                int scanTypeID = selectedCodeID;
+                String selectedCodeEnd = selectedCode;
+
+                if (radioScanSingle.isSelected()) {
+                    query += " WHERE stock_id = ?";
+                } else {
+                    query += " WHERE stock_batch = ?";
+                    scanTypeID = Integer.parseInt(fieldBatch.getText());
+
+                    PreparedStatement pst = conn.prepareStatement("SELECT stock_code FROM " + Main.TB_ITEM_STOCK + " WHERE stock_batch = " + scanTypeID + " ORDER BY stock_code DESC LIMIT 1");
+                    ResultSet rs = pst.executeQuery();
+
+                    if (rs.next()) {
+                        selectedCodeEnd = rs.getString("stock_code");
+                    }
+                }
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setString(1, stock_location);
                 pst.setString(2, stock_holder);
-                pst.setInt(3, selectedCodeID);
+                pst.setInt(3, scanTypeID);
+
+                // HISTORY : TRACKER-UPDATE
+                String history_desc = "";
+                String old_location = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_location", "stock_id", selectedCodeID);
+                String old_holder = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_holder", "stock_id", selectedCodeID);
+
+                history_desc += createHistoryDesc(old_location, stock_location, "Location");
+                history_desc += createHistoryDesc(old_holder, stock_holder, "Holder");
+
+                insertHistory(HistoryFrame.TRACKER, HistoryType.UPDATE, selectedCode, selectedCodeEnd, history_desc, stock_holder);
+
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -626,6 +750,8 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
+
+        repopulateSuggestions();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnWebcamControlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnWebcamControlActionPerformed
@@ -662,11 +788,28 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         searchItem();
     }//GEN-LAST:event_btnSearchActionPerformed
 
+    private void radioScanSingleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioScanSingleActionPerformed
+        if (radioScanSingle.isSelected()) {
+            radioScanBatch.setSelected(false);
+        } else {
+            radioScanSingle.setSelected(true);
+        }
+    }//GEN-LAST:event_radioScanSingleActionPerformed
+
+    private void radioScanBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioScanBatchActionPerformed
+        if (radioScanBatch.isSelected()) {
+            radioScanSingle.setSelected(false);
+        } else {
+            radioScanBatch.setSelected(true);
+        }
+    }//GEN-LAST:event_radioScanBatchActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JToggleButton btnWebcamControl;
+    private javax.swing.JTextField fieldBatch;
     private javax.swing.JTextField fieldCodeID;
     private javax.swing.JLabel fieldCodeSilang;
     private javax.swing.JLabel fieldCodeSilang1;
@@ -687,12 +830,17 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private javax.swing.JLabel labelHolder;
     private javax.swing.JLabel labelLocation;
     private javax.swing.JLabel labelName;
+    private javax.swing.JLabel labelScan;
+    private javax.swing.JLabel labelScanType;
     private javax.swing.JLabel labelUpdate;
     private javax.swing.JPanel panelBarcode;
     private javax.swing.JPanel panelCamera;
     private javax.swing.JPanel panelCameraControls;
     private javax.swing.JPanel panelCode;
     private javax.swing.JPanel panelFields;
+    private javax.swing.JPanel panelScan;
     private ProjectINSY.java.swing.RadioButtonCustom radioAutoclose;
+    private ProjectINSY.java.swing.RadioButtonCustom radioScanBatch;
+    private ProjectINSY.java.swing.RadioButtonCustom radioScanSingle;
     // End of variables declaration//GEN-END:variables
 }

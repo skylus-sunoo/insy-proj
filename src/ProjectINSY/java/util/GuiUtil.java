@@ -129,6 +129,10 @@ public class GuiUtil {
             if (hasMisc) {
                 sortedItems.remove("Miscellaneous");
             }
+            boolean hasSupplyRoom = sortedItems.contains("Supply Room");
+            if (hasSupplyRoom) {
+                sortedItems.remove("Supply Room");
+            }
 
             Collections.sort(sortedItems, String.CASE_INSENSITIVE_ORDER);
             if (hasMisc) {
@@ -136,6 +140,9 @@ public class GuiUtil {
             }
             if (hasNA) {
                 sortedItems.add(0, "N/A"); // ensures N/A is index 0
+            }
+            if (hasSupplyRoom) {
+                sortedItems.add(0, "Supply Room");
             }
 
             comboBox.removeAllItems();

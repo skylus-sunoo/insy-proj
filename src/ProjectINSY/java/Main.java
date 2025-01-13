@@ -51,6 +51,8 @@ public class Main extends javax.swing.JFrame {
     public static String TB_CATALOG_ITEM = "tb_catalog_item";
     public static String TB_ITEM_BATCH = "tb_item_batch";
     public static String TB_ITEM_STOCK = "tb_item_stock";
+    public static String TB_ITEM_HISTORY = "tb_item_history";
+    public static String TB_ITEM_REQUEST = "tb_item_request";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Session">
     private static int userSessionID = -1;
@@ -105,11 +107,11 @@ public class Main extends javax.swing.JFrame {
     public ItemHistory getItemHistory() {
         return ItemHistory;
     }
-    
+
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Color Scheme">
     public static Color accentGreen = new Color(25, 102, 24);
-    public static Color accentViolet = new Color(84,34,102);
+    public static Color accentViolet = new Color(84, 34, 102);
     //</editor-fold>
 
     public static String filterMaxNumber = "999999999";
@@ -205,7 +207,7 @@ public class Main extends javax.swing.JFrame {
             animator.start();
         }
     }
-    
+
     public void showHeaderMenu(boolean show) {
         header.showHeaderMenu(show);
     }
@@ -230,6 +232,7 @@ public class Main extends javax.swing.JFrame {
             }
             case ItemManagement form -> {
                 form.repopulateNameComboBox();
+                form.repopulateFilterComboBox();
                 form.refreshTableInventory();
             }
             case ItemCatalog form -> {
@@ -242,6 +245,8 @@ public class Main extends javax.swing.JFrame {
 //                form.ItemTrackerLocation.refreshTableInventory();
             }
             case ItemHistory form -> {
+                form.repopulateComboBox();
+                form.resetSearchQuery();
             }
             default -> {
             }

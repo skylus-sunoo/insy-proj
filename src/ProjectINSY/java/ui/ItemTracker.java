@@ -25,7 +25,7 @@ public class ItemTracker extends javax.swing.JPanel {
         
         setTransparentFrame(ItemTracker.this, panelBody);
         setTransparentFrame(btnFormLocation, btnFormScan);
-
+        
         switchTrackerForm(ItemTrackerLocation);
     }
     
@@ -37,6 +37,7 @@ public class ItemTracker extends javax.swing.JPanel {
             btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));
             
             ItemTrackerLocation.refreshTableInventory();
+            ItemTrackerLocation.repopulateFilterComboBox();
         } else {
             btnFormLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));
             btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker_active.png")));

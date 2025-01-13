@@ -44,7 +44,7 @@ public class TableUtil {
         STOCK_LOCATION,
         CATALOG_CATEGORY,
         CATALOG_ITEM,
-        SUPPLY_HISTORY,
+        ITEM_HISTORY,
         ITEM_LIST,
     };
 
@@ -219,6 +219,24 @@ public class TableUtil {
                                 break;
                             }
                             //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="ITEM HISTORY">
+                            case ITEM_HISTORY: {
+                                String timestamp = rs.getString("history_timestamp");
+                                String type = rs.getString("history_frame") + "-" + rs.getString("history_type");
+                                String code = rs.getString("history_item_code_start");
+                                if (!code.equals(rs.getString("history_item_code_end"))) {
+                                    String[] parts = rs.getString("history_item_code_end").split("-");
+                                    code += "-" + parts[2];
+                                }
+                                String desc = rs.getString("history_desc");
+                                String user = rs.getString("history_user");
+
+                                model.addRow(new Object[]{
+                                    timestamp, type, code, desc, user
+                                });
+                                break;
+                            }
+                            //</editor-fold>
                             default:
                                 break;
                         }
@@ -227,6 +245,8 @@ public class TableUtil {
                     MessageUtil.paneDatabaseError(e);
                 }
             }
+
+            resetTableSort(tableName);
 
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
@@ -293,5 +313,26 @@ public class TableUtil {
 
     public static boolean fieldHasValue(JTextField field) {
         return !field.getText().trim().isEmpty();
+    }
+
+    public static void resetTableSort(JTable table) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        if (model.getRowCount() > 0) {
+            Object[][] data = new Object[model.getRowCount()][model.getColumnCount()];
+
+            for (int i = 0; i < model.getRowCount(); i++) {
+                for (int j = 0; j < model.getColumnCount(); j++) {
+                    data[i][j] = model.getValueAt(i, j);
+                }
+            }
+
+            Object[][] originalData = new Object[data.length][data[0].length];
+            for (int i = 0; i < data.length; i++) {
+                System.arraycopy(data[i], 0, originalData[i], 0, data[i].length);
+            }
+
+            TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+            table.setRowSorter(sorter);
+        }
     }
 }
