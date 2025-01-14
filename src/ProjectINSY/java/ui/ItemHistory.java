@@ -5,25 +5,14 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
-import ProjectINSY.java.model.Filter;
-import ProjectINSY.java.model.Filter.FilterComparator;
-import ProjectINSY.java.model.Filter.FilterOrder;
 import ProjectINSY.java.util.GuiUtil;
-import static ProjectINSY.java.util.GuiUtil.enforceDigits;
-import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import ProjectINSY.java.util.TableUtil;
-import ProjectINSY.java.util.TableUtil.EnumAlignment;
 import static ProjectINSY.java.util.TableUtil.defaultTable;
-import static ProjectINSY.java.util.TableUtil.fieldHasValue;
-import static ProjectINSY.java.util.TableUtil.fixedColumnAll;
-import static ProjectINSY.java.util.TableUtil.getComboSelected;
-import static ProjectINSY.java.util.TableUtil.getFieldString;
-import static ProjectINSY.java.util.TableUtil.isDefaultComboItem;
-import static ProjectINSY.java.util.TableUtil.resetDefaultComboItem;
-import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
-import static ProjectINSY.java.util.TableUtil.sorterNumbers;
-import java.awt.Color;
+import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
+import static ProjectINSY.java.util.GuiUtil.getComboSelected;
+import static ProjectINSY.java.util.GuiUtil.getFieldString;
+import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JTable;
@@ -51,7 +40,7 @@ public class ItemHistory extends javax.swing.JPanel {
         tableHistory.getColumnModel().getColumn(0).setPreferredWidth(200);
         tableHistory.getColumnModel().getColumn(1).setPreferredWidth(200);
         tableHistory.getColumnModel().getColumn(2).setPreferredWidth(250);
-        tableHistory.getColumnModel().getColumn(3).setPreferredWidth(974);
+        tableHistory.getColumnModel().getColumn(3).setPreferredWidth(966);
         tableHistory.getColumnModel().getColumn(4).setPreferredWidth(200);
 
 //        setColumnHorizontalAligment(tableInventory, 2, EnumAlignment.LEFT);
@@ -70,10 +59,7 @@ public class ItemHistory extends javax.swing.JPanel {
 
     public void repopulateComboBox() {
         GuiUtil.repopulateComboBox(searchType, "history_frame_type", "SELECT CONCAT(history_frame,'-', history_type) AS history_frame_type FROM " + Main.TB_ITEM_HISTORY);
-        resetDefaultComboItem(searchType);
-
         GuiUtil.repopulateComboBox(searchHolder, "history_user", "SELECT history_user FROM " + Main.TB_ITEM_HISTORY);
-        resetDefaultComboItem(searchHolder);
     }
 
     public void resetSearchQuery() {
@@ -183,7 +169,7 @@ public class ItemHistory extends javax.swing.JPanel {
                 {null, null, null, null, null}
             },
             new String [] {
-                "Timestamp", "Type", "Item/s", "Description", "Latest Holder"
+                "Timestamp", "Type", "Item/s Identifier", "Description", "Associated User"
             }
         ) {
             Class[] types = new Class [] {

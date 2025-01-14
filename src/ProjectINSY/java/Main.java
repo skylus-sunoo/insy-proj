@@ -79,6 +79,7 @@ public class Main extends javax.swing.JFrame {
     //<editor-fold defaultstate="collapsed" desc="UI Forms">
     private final LogIn LogIn = new LogIn(this);
     private final ItemStock ItemStock = new ItemStock();
+    private final ItemRequest ItemRequest = new ItemRequest();
     private final ItemManagement ItemManagement = new ItemManagement();
     private final ItemCatalog ItemCatalog = new ItemCatalog();
     private final ItemTracker ItemTracker = new ItemTracker();
@@ -90,6 +91,10 @@ public class Main extends javax.swing.JFrame {
 
     public ItemStock getItemStock() {
         return ItemStock;
+    }
+
+    public ItemRequest getItemRequest() {
+        return ItemRequest;
     }
 
     public ItemManagement getItemManagement() {
@@ -229,6 +234,10 @@ public class Main extends javax.swing.JFrame {
             case ItemStock form -> {
                 form.repopulateComboBox();
                 form.refreshTableInventory();
+            }
+            case ItemRequest form -> {
+                form.repopulateFilterComboBox();
+                form.refreshTable();
             }
             case ItemManagement form -> {
                 form.repopulateNameComboBox();

@@ -36,7 +36,6 @@ public class ItemTracker extends javax.swing.JPanel {
             btnFormLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker_active.png")));
             btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));
             
-            ItemTrackerLocation.refreshTableInventory();
             ItemTrackerLocation.repopulateFilterComboBox();
         } else {
             btnFormLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));

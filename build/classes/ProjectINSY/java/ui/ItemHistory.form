@@ -129,9 +129,9 @@
                   <Table columnCount="5" rowCount="4">
                     <Column editable="false" title="Timestamp" type="java.lang.String"/>
                     <Column editable="false" title="Type" type="java.lang.String"/>
-                    <Column editable="false" title="Item/s" type="java.lang.String"/>
+                    <Column editable="false" title="Item/s Identifier" type="java.lang.String"/>
                     <Column editable="true" title="Description" type="java.lang.Object"/>
-                    <Column editable="true" title="Latest Holder" type="java.lang.Object"/>
+                    <Column editable="true" title="Associated User" type="java.lang.Object"/>
                   </Table>
                 </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">

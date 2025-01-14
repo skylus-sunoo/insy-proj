@@ -7,10 +7,10 @@ package ProjectINSY.java.ui;
 import ProjectINSY.java.Main;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
-import static ProjectINSY.java.util.DatabaseUtil.getColumnFromLastRow;
-import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
+import static ProjectINSY.java.util.DatabaseUtil.createObjectCode;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
+import static ProjectINSY.java.util.DatabaseUtil.setColumnValueByString;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
@@ -615,9 +616,12 @@ public class ItemCatalog extends javax.swing.JPanel {
                 // HISTORY : CATALOG-ADD
                 String history_desc = createHistoryDesc(category_name, "Category Name");
 
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, "", "", history_desc, "");
-                
                 pst.executeUpdate();
+
+                String category_idStr = createObjectCode(pst.getGeneratedKeys(), "Catalog-C-", Main.TB_CATALOG_CATEGORY, "category_code", "category_id");
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, category_idStr, category_idStr, history_desc, "");
+
                 JOptionPane.showMessageDialog(this, "Category Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearCategoryFields();
@@ -661,8 +665,9 @@ public class ItemCatalog extends javax.swing.JPanel {
                     // HISTORY : CATALOG-UPDATE
                     String history_desc = createHistoryDesc(category_name_original, category_name, "Category Name");
 
-                    insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, "", "", history_desc, "");
-                    
+                    String category_idStr = getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category", "category_name", category_name_original);
+                    insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, category_idStr, category_idStr, history_desc, "");
+
                     pst.executeUpdate();
                     JOptionPane.showMessageDialog(this, "Category Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -693,13 +698,15 @@ public class ItemCatalog extends javax.swing.JPanel {
                 String query = "DELETE FROM " + Main.TB_CATALOG_CATEGORY + " WHERE category_name = ?";
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setString(1, category_name);
-                pst.executeUpdate();
 
                 // HISTORY : CATALOG-DELETE
                 String history_desc = createHistoryDesc(category_name, "Category Name");
 
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, "", "", history_desc, "");
+                String category_idStr = getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_code", "category_name", category_name);
 
+                pst.executeUpdate();
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, category_idStr, category_idStr, history_desc, "");
                 JOptionPane.showMessageDialog(this, "Category Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearCategoryFields();
@@ -732,9 +739,12 @@ public class ItemCatalog extends javax.swing.JPanel {
                 history_desc += createHistoryDesc(item_category, "Category");
                 history_desc += createHistoryDesc(item_uom, "UOM");
 
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, "", "", history_desc, "");
-
                 pst.executeUpdate();
+
+                String item_idStr = createObjectCode(pst.getGeneratedKeys(), "Catalog-I-", Main.TB_CATALOG_ITEM, "item_code", "item_id");
+
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, item_idStr, item_idStr, history_desc, "");
+
                 JOptionPane.showMessageDialog(this, "Item Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();
@@ -774,13 +784,26 @@ public class ItemCatalog extends javax.swing.JPanel {
 
                 String old_category = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", item_name_original);
                 String old_uom = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_uom", "item_name", item_name_original);
-                
+
                 history_desc += createHistoryDesc(item_name_original, item_name, "Item Name");
                 history_desc += createHistoryDesc(old_category, item_category, "Category");
                 history_desc += createHistoryDesc(old_uom, item_uom, "UOM");
 
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, "", "", history_desc, "");
-                
+                if (!old_category.equals(item_category)) {
+                    int category_id = Integer.parseInt(getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_id", "category_name", item_category));
+                    String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name_original);
+
+                    if (item_idStr.contains("-")) {
+                        String[] parts = item_idStr.split("-");
+                        item_idStr = parts[0] + "-" + parts[1] + "-" + category_id + "-" + parts[3];
+                    }
+
+                    setColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_idStr, item_name_original);
+                }
+
+                String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name_original);
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, item_idStr, item_idStr, history_desc, "");
+
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Item Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -811,9 +834,11 @@ public class ItemCatalog extends javax.swing.JPanel {
                 // HISTORY : CATALOG-DELETE
                 String history_desc = createHistoryDesc(item_name, "Item Name");
 
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, "", "", history_desc, "");
-                
+                String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name);
+
                 pst.executeUpdate();
+                
+                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, item_idStr, item_idStr, history_desc, "");
                 JOptionPane.showMessageDialog(this, "Item Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();

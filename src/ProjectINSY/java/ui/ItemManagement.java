@@ -5,7 +5,6 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
-import ProjectINSY.java.model.Filter;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.generatePDFFromBarcode;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
@@ -48,12 +47,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
-import static ProjectINSY.java.util.TableUtil.fieldHasValue;
+import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
 import static ProjectINSY.java.util.TableUtil.floatRoundOff;
-import static ProjectINSY.java.util.TableUtil.getComboSelected;
-import static ProjectINSY.java.util.TableUtil.getFieldString;
-import static ProjectINSY.java.util.TableUtil.isDefaultComboItem;
-import static ProjectINSY.java.util.TableUtil.resetDefaultComboItem;
+import static ProjectINSY.java.util.GuiUtil.getComboSelected;
+import static ProjectINSY.java.util.GuiUtil.getFieldString;
+import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -302,16 +300,9 @@ public class ItemManagement extends javax.swing.JPanel {
 
     public void repopulateFilterComboBox() {
         GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        resetDefaultComboItem(searchCategory);
-
         GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        resetDefaultComboItem(searchName);
-
         GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        resetDefaultComboItem(searchDesc);
-
         GuiUtil.repopulateComboBox(searchBenefactor, "stock_benefactor", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
-        resetDefaultComboItem(searchBenefactor);
     }
 
     public void refreshTableFromDate() {
@@ -1571,42 +1562,16 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_fieldDescFocusGained
 
     private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
-        Object selectedItem = searchCategory.getSelectedItem();
-        if (selectedItem != null && selectedItem.toString() != null) {
-            String selectedCategory = searchCategory.getSelectedItem().toString();
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
 
-            if (isDefaultComboItem(searchCategory)) {
-                GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-            } else {
-                GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
-                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
-            }
-
-            resetDefaultComboItem(searchName);
-
-            resetFilter();
-        }
+        resetFilter();
     }//GEN-LAST:event_searchCategoryActionPerformed
 
     private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
-        Object selectedItem = searchName.getSelectedItem();
-        if (selectedItem != null && selectedItem.toString() != null) {
-            String selectedCategory = searchCategory.getSelectedItem().toString();
-            String selectedName = searchName.getSelectedItem().toString();
-
-            if (!isDefaultComboItem(searchCategory) && isDefaultComboItem(searchName)) {
-                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_category = '" + selectedCategory + "'");
-            } else if (isDefaultComboItem(searchName)) {
-                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-            } else {
-                GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK + " WHERE stock_name = '" + selectedName + "'");
-            }
-
-            resetDefaultComboItem(searchDesc);
-
-            resetFilter();
-        }
+        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        
+        resetFilter();
     }//GEN-LAST:event_searchNameActionPerformed
 
     private void searchDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchDescActionPerformed

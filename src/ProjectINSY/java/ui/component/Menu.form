@@ -21,7 +21,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="panelBody" alignment="0" max="32767" attributes="0"/>
+          <Component id="panelBody" alignment="0" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -44,44 +44,57 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="imageLogo" min="-2" pref="333" max="-2" attributes="0"/>
-              <Group type="102" attributes="0">
-                  <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                  <Component id="separatorLogo" min="-2" pref="321" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" attributes="0">
-                  <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
-                  <Component id="btnItemStock" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="138" pref="138" max="-2" attributes="0"/>
-                  <Component id="pointerItemStock" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" attributes="0">
-                  <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
-                  <Component id="btnItemManagement" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="48" pref="48" max="-2" attributes="0"/>
-                  <Component id="pointerItemManagement" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" attributes="0">
-                  <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
-                  <Component id="btnItemCatalog" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="109" pref="109" max="-2" attributes="0"/>
-                  <Component id="pointerItemCatalog" min="-2" max="-2" attributes="0"/>
-              </Group>
               <Group type="102" attributes="0">
                   <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
                   <Component id="btnItemTracker" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="108" pref="108" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
                   <Component id="pointerItemTracker" min="-2" max="-2" attributes="0"/>
               </Group>
               <Group type="102" attributes="0">
-                  <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
-                  <Component id="btnItemHistory" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="114" pref="114" max="-2" attributes="0"/>
-                  <Component id="pointerItemHistory" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="imageLogo" min="-2" pref="333" max="-2" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                          <Component id="separatorLogo" min="-2" pref="321" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
+                          <Component id="btnItemStock" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="138" pref="138" max="-2" attributes="0"/>
+                          <Component id="pointerItemStock" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
+                          <Component id="btnItemRequest" min="-2" pref="171" max="-2" attributes="0"/>
+                          <EmptySpace min="108" pref="108" max="-2" attributes="0"/>
+                          <Component id="pointerItemRequest" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
+                          <Component id="btnItemManagement" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="48" pref="48" max="-2" attributes="0"/>
+                          <Component id="pointerItemManagement" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
+                          <Component id="btnItemCatalog" min="-2" pref="171" max="-2" attributes="0"/>
+                          <EmptySpace min="108" pref="108" max="-2" attributes="0"/>
+                          <Component id="pointerItemCatalog" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
+                          <Component id="btnItemHistory" min="-2" pref="171" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
+                          <Component id="btnLogOut" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
               </Group>
-              <Group type="102" attributes="0">
-                  <EmptySpace min="28" pref="28" max="-2" attributes="0"/>
-                  <Component id="btnLogOut" min="-2" max="-2" attributes="0"/>
+              <Group type="102" alignment="1" attributes="0">
+                  <EmptySpace max="32767" attributes="0"/>
+                  <Component id="pointerItemHistory" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -98,6 +111,11 @@
                   </Group>
                   <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="btnItemRequest" min="-2" pref="50" max="-2" attributes="0"/>
+                      <Component id="pointerItemRequest" min="-2" pref="50" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="btnItemManagement" min="-2" pref="50" max="-2" attributes="0"/>
                       <Component id="pointerItemManagement" min="-2" pref="50" max="-2" attributes="0"/>
                   </Group>
@@ -108,15 +126,15 @@
                   </Group>
                   <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btnItemTracker" min="-2" max="-2" attributes="0"/>
-                      <Component id="pointerItemTracker" min="-2" pref="44" max="-2" attributes="0"/>
+                      <Component id="btnItemTracker" min="-2" pref="50" max="-2" attributes="0"/>
+                      <Component id="pointerItemTracker" min="-2" pref="50" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btnItemHistory" min="-2" max="-2" attributes="0"/>
-                      <Component id="pointerItemHistory" min="-2" pref="44" max="-2" attributes="0"/>
+                      <Component id="btnItemHistory" min="-2" pref="50" max="-2" attributes="0"/>
+                      <Component id="pointerItemHistory" min="-2" pref="50" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="267" pref="267" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="199" max="-2" attributes="0"/>
                   <Component id="btnLogOut" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -160,6 +178,27 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnItemStockActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnItemRequest">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Bebas" size="36" style="0"/>
+            </Property>
+            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="18" green="66" red="19" type="rgb"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="ITEM Request"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="null"/>
+            </Property>
+            <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+              <Color id="Hand Cursor"/>
+            </Property>
+            <Property name="horizontalAlignment" type="int" value="2"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnItemRequestActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnItemManagement">
@@ -247,6 +286,13 @@
           </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="pointerItemStock">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/ProjectINSY/resources/interface/menuPointer.png"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="pointerItemRequest">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/ProjectINSY/resources/interface/menuPointer.png"/>

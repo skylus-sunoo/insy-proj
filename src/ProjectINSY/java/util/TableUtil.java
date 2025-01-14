@@ -46,6 +46,7 @@ public class TableUtil {
         CATALOG_ITEM,
         ITEM_HISTORY,
         ITEM_LIST,
+        ITEM_REQUEST,
     };
 
     public static ImageIcon blobToImage(ResultSet rs, String column_name) throws SQLException {
@@ -144,6 +145,20 @@ public class TableUtil {
                 try {
                     if (null != tableEnum) {
                         switch (tableEnum) {
+                            //<editor-fold defaultstate="collapsed" desc="ITEM REQUEST">
+                            case ITEM_REQUEST: {
+                                String timestamp = rs.getString("request_timestamp");
+                                String name = rs.getString("request_name");
+                                String item = rs.getString("request_item");
+                                String desc = rs.getString("request_desc");
+                                int quantity = rs.getInt("request_quantity");
+                                String status = rs.getString("request_status");
+                                model.addRow(new Object[]{
+                                    timestamp, item, desc, name, quantity, status
+                                });
+                                break;
+                            }
+                            //</editor-fold>
                             //<editor-fold defaultstate="collapsed" desc="STOCK DISTINCT">
                             case STOCK_DISTINCT: {
                                 String category = rs.getString("stock_category");
@@ -286,33 +301,6 @@ public class TableUtil {
                 jComboBox.setSelectedItem(tableRow[i]);
             }
         }
-    }
-
-    public static String getComboSelected(JComboBox combo) {
-        if (combo.getSelectedItem() == null) {
-            return "";
-        }
-        return combo.getSelectedItem().toString();
-    }
-
-    public static boolean isDefaultComboItem(JComboBox combo) {
-        if (combo.getSelectedItem() == null) {
-            return false;
-        }
-        return combo.getSelectedItem().toString().equals(combo.getItemAt(0));
-    }
-
-    public static void resetDefaultComboItem(JComboBox combo) {
-        combo.insertItemAt("- - - - -", 0);
-        combo.setSelectedIndex(0);
-    }
-
-    public static String getFieldString(JTextField field) {
-        return field.getText().trim().toString();
-    }
-
-    public static boolean fieldHasValue(JTextField field) {
-        return !field.getText().trim().isEmpty();
     }
 
     public static void resetTableSort(JTable table) {

@@ -162,6 +162,8 @@ public class GuiUtil {
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
+
+        resetDefaultComboItem(comboBox);
     }
 
     public static void repopulateSuggestions(TextFieldSuggestion field, String columnName, String query) {
@@ -207,10 +209,10 @@ public class GuiUtil {
             evt.consume();
         }
     }
-    
+
     public static void enforceCharacterAmount(KeyEvent evt, int amount) {
         char c = evt.getKeyChar();
-        
+
         String currentText = ((javax.swing.JTextField) evt.getSource()).getText();
         if (currentText.length() >= amount && c != KeyEvent.VK_BACK_SPACE) {
             evt.consume();
@@ -297,5 +299,70 @@ public class GuiUtil {
         }
 
         return result.toString();
+    }
+
+    public static String getComboSelected(JComboBox combo) {
+        if (combo.getSelectedItem() == null) {
+            return "";
+        }
+        return combo.getSelectedItem().toString();
+    }
+
+    public static boolean isDefaultComboItem(JComboBox combo) {
+        if (combo.getSelectedItem() == null) {
+            return false;
+        }
+        return combo.getSelectedItem().toString().equals(combo.getItemAt(0));
+    }
+
+    public static void resetDefaultComboItem(JComboBox combo) {
+        combo.removeItem("- - - - -");
+        combo.insertItemAt("- - - - -", 0);
+        combo.setSelectedIndex(0);
+    }
+
+    public static String getFieldString(JTextField field) {
+        return field.getText().trim();
+    }
+
+    public static boolean fieldHasValue(JTextField field) {
+        return !field.getText().trim().isEmpty();
+    }
+
+    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox childCombo, String parentColumnName, String childColumnName, String baseQuery) {
+        Object selectedItemObj = parentCombo.getSelectedItem();
+        if (selectedItemObj == null || selectedItemObj.toString().trim().isEmpty()) {
+            return;
+        }
+
+        String selectedItem = parentCombo.getSelectedItem().toString();
+
+        if (!isDefaultComboItem(parentCombo)) {
+            baseQuery += " WHERE " + parentColumnName + " = '" + selectedItem + "'";
+        }
+
+        repopulateComboBox(childCombo, childColumnName, baseQuery);
+
+        resetDefaultComboItem(childCombo);
+    }
+
+    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox grandParentCombo, JComboBox childCombo, String parentColumnName, String grandParentColumnName, String childColumnName, String baseQuery) {
+        Object selectedItemObj = parentCombo.getSelectedItem();
+        if (selectedItemObj == null || selectedItemObj.toString().trim().isEmpty()) {
+            return;
+        }
+
+        String selectedItem = parentCombo.getSelectedItem().toString();
+        String selectedItemGrand = grandParentCombo.getSelectedItem().toString();
+
+        if (!isDefaultComboItem(grandParentCombo) && isDefaultComboItem(parentCombo)) {
+            baseQuery += " WHERE " + grandParentColumnName + " = '" + selectedItemGrand + "'";
+        } else if (!isDefaultComboItem(parentCombo)) {
+            baseQuery += " WHERE " + parentColumnName + " = '" + selectedItem + "'";
+        }
+
+        repopulateComboBox(childCombo, childColumnName, baseQuery);
+
+        resetDefaultComboItem(childCombo);
     }
 }

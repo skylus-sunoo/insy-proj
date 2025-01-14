@@ -15,6 +15,9 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 public class DatabaseUtil {
 
@@ -77,6 +80,32 @@ public class DatabaseUtil {
         return newBatchId;
     }
 
+    public static void setColumnValueByString(String table_name, String column_name_to_set, String column_name_to_search, String update, String id) {
+        String query = "UPDATE " + table_name + " SET " + column_name_to_set + " = ? WHERE " + column_name_to_search + " = ?";
+
+        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, update);
+            ps.setString(2, id);
+            
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }
+
+    public static void setColumnValueByInt(String table_name, String column_name_to_set, String column_name_to_search, String update, int id) {
+        String query = "UPDATE " + table_name + " SET " + column_name_to_set + " = ? WHERE " + column_name_to_search + " = ?";
+
+        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, update);
+            ps.setInt(2, id);
+            
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }
+
     public static String getColumnValueByString(String table_name, String column_name_to_get, String column_name_to_search, String id) {
         String column_value = "";
         String query = "SELECT " + column_name_to_get + " FROM " + table_name + " WHERE " + column_name_to_search + " = ?";
@@ -116,7 +145,7 @@ public class DatabaseUtil {
     }
 
     public enum HistoryFrame {
-        CATALOG, MANAGEMENT, TRACKER
+        REQUEST, CATALOG, MANAGEMENT, TRACKER
     }
 
     public enum HistoryType {
@@ -174,26 +203,137 @@ public class DatabaseUtil {
 
         return column_value;
     }
-}
 
-//    -- Step 1: Get the highest category_id value
-//    SET @max_id = (SELECT MAX(category_id) FROM tb_catalog_category);
+    public static String createObjectCode(ResultSet rs, String objectStr, String dbName, String objectCodeColumn, String objectGeneratedKeyColumn) {
+        try {
+            if (rs.next()) {
+                String objectCode = objectStr;
+                if (objectCode.equals("Catalog-I-")) {
+                    objectCode += getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_id", "category_name", getColumnValueByInt(Main.TB_CATALOG_ITEM, "item_category", "item_id", rs.getInt(1))) + "-" + rs.getInt(1);
+                } else {
+                    objectCode += rs.getInt(1);
+                }
+                try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+                    String query = "UPDATE " + dbName + " SET " + objectCodeColumn + " = ? WHERE " + objectGeneratedKeyColumn + " = ?";
+                    PreparedStatement pst = conn.prepareStatement(query);
+                    pst.setString(1, objectCode);
+                    pst.setInt(2, rs.getInt(1));
+
+                    pst.executeUpdate();
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseUtil.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                return objectCode;
+            }
+        } catch (SQLException e) {
+            MessageUtil.paneDatabaseError(e);
+        }
+
+        return objectStr;
+    }
+
+    public static void resetObjectCode() {
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            PreparedStatement pst = conn.prepareStatement("""
+                                                          UPDATE tb_catalog_item i 
+                                                          JOIN tb_catalog_category c 
+                                                          ON i.item_category = c.category_name 
+                                                          SET i.item_code = CONCAT('Catalog-I-', c.category_id, '-', i.item_id)
+                                                          """);
+            pst.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            PreparedStatement pst = conn.prepareStatement("""
+                                                          UPDATE tb_catalog_category 
+                                                          SET category_code = CONCAT('Catalog-C-', category_id);
+                                                          """);
+            pst.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void normalizeID() {
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            PreparedStatement pst = conn.prepareStatement("""
+                                                          SET @max_id = (SELECT MAX(item_id) FROM tb_catalog_item);
+                                                          UPDATE tb_catalog_item SET item_id = item_id + @max_id;
+                                                          SET @counter = 0;
+                                                          UPDATE tb_catalog_item 
+                                                          JOIN ( 
+                                                              SELECT item_id, @counter := @counter + 1 AS new_item_id 
+                                                              FROM tb_catalog_item 
+                                                              ORDER BY item_id
+                                                          ) AS temp 
+                                                          ON tb_catalog_item.item_id = temp.item_id 
+                                                          SET tb_catalog_item.item_id = temp.new_item_id;
+                                                          
+                                                          SET @new_auto_increment = @counter + 1;
+                                                          
+                                                          SET @sql = CONCAT('ALTER TABLE tb_catalog_item AUTO_INCREMENT = ', @new_auto_increment);
+                                                          PREPARE stmt FROM @sql;
+                                                          EXECUTE stmt;
+                                                          DEALLOCATE PREPARE stmt;
+                                                          """);
+            pst.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            PreparedStatement pst = conn.prepareStatement("""
+                                                          SET @max_category_id = (SELECT MAX(category_id) FROM tb_catalog_category);
+                                                          UPDATE tb_catalog_category SET category_id = category_id + @max_category_id;
+                                                          SET @counter = 0;
+                                                          UPDATE tb_catalog_category 
+                                                          JOIN ( 
+                                                              SELECT category_id, @counter := @counter + 1 AS new_category_id 
+                                                              FROM tb_catalog_category 
+                                                              ORDER BY category_id
+                                                          ) AS temp 
+                                                          ON tb_catalog_category.category_id = temp.category_id 
+                                                          SET tb_catalog_category.category_id = temp.new_category_id;
+                                                          
+                                                          SET @new_auto_increment = @counter + 1;
+                                                          
+                                                          SET @sql = CONCAT('ALTER TABLE tb_catalog_category AUTO_INCREMENT = ', @new_auto_increment);
+                                                          PREPARE stmt FROM @sql;
+                                                          EXECUTE stmt;
+                                                          DEALLOCATE PREPARE stmt;
+                                                          """);
+            pst.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        resetObjectCode();
+    }
+
+//    public void DisplayData() {
+//        DefaultTableModel model;
+//        try {
+//            Connection con = Connector.getConnection();
+//            String sql = "SELECT * FROM guestmanage";
+//            PreparedStatement st = con.prepareStatement(sql);
+//            ResultSet rs = st.executeQuery(sql);
 //
-//    -- Step 2: Update category_id values by adding the highest category_id value to each
-//    UPDATE tb_catalog_category SET category_id = category_id + @max_id;
-//
-//    -- Step 3: Reset the category_id values according to alphabetical order of category_name
-//    SET @row_num = 0;
-//    UPDATE tb_catalog_category t
-//    JOIN (
-//        SELECT category_id, @row_num := @row_num + 1 AS new_category_id
-//        FROM tb_catalog_category
-//        ORDER BY category_name
-//    ) AS ordered_table
-//    ON t.category_id = ordered_table.category_id
-//    SET t.category_id = ordered_table.new_category_id;
-//
-//    -- Step 4: Alter the AUTO_INCREMENT value to match the number of rows in the table
-//    SET @count = (SELECT COUNT(*) FROM tb_catalog_category);
-//    SET @auto_increment_value = @count + 1;
-//    ALTER TABLE tb_catalog_category AUTO_INCREMENT = @auto_increment_value;
+//            while (rs.next()) {
+//                int Guestid = rs.getInt("guestid");
+//                int IdNumber = rs.getInt("idnum");
+//                String Name = rs.getString("guestname");
+//                int Contact = rs.getInt("contact");
+//                String Email = rs.getString("email");
+//                String Address = rs.getString("address");
+//                Object[] obj = {Guestid, IdNumber, Name, Contact, Email, Address};
+//                model = (DefaultTableModel) guesttable.getModel();
+//                model.addRow(obj);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+}

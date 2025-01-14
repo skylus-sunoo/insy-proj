@@ -12,8 +12,13 @@ import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
 public class MessageUtil {
+
     public static void paneDatabaseError(SQLException e) {
-        JOptionPane.showMessageDialog(null, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        if (e.getErrorCode() == 1451) {
+            JOptionPane.showMessageDialog(null, "Item cannot be deleted as it is referenced in another table.", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
         e.printStackTrace(System.out);
     }
 

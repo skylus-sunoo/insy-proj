@@ -22,6 +22,7 @@ import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
+import ProjectINSY.java.util.SoundUtil;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
@@ -66,7 +67,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private int selectedCodeID = -1;
 
     private final String PLACEHOLDER_CODE_YEAR = "00";
-    private final String PLACEHOLDER_CODE_ID = "0000";
+    private final String PLACEHOLDER_CODE_ID = "000000";
     private final String PLACEHOLDER_LOCATION = "Enter Location";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
 
@@ -156,7 +157,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             String current_barcode = validateBarcode(selectedCode);
             ImageIcon barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
             imgBarcode.setIcon(barcodeIcon);
-//            SoundUtil.playSound(SoundUtil.SOUND_SCANNED);
+            SoundUtil.playSound(SoundUtil.SOUND_SCANNED);
 
             fieldName.setText(name);
             fieldDesc.setText(desc);
@@ -624,7 +625,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         fieldCodeID.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldCodeID.setForeground(new java.awt.Color(153, 153, 153));
         fieldCodeID.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        fieldCodeID.setText("0000");
+        fieldCodeID.setText("000000");
         fieldCodeID.setBorder(null);
         fieldCodeID.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldCodeID.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -641,7 +642,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         });
         panelCode.add(fieldCodeID);
-        fieldCodeID.setBounds(570, 40, 70, 30);
+        fieldCodeID.setBounds(570, 40, 100, 30);
 
         imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelCode.add(imageCode);
