@@ -161,7 +161,9 @@
                           </Group>
                           <Component id="labelFilterQuantity" min="-2" pref="400" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="208" max="32767" attributes="0"/>
+                      <EmptySpace pref="22" max="32767" attributes="0"/>
+                      <Component id="radioCurrent" min="-2" pref="180" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -180,16 +182,19 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchCategory" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="labelFilterQuantity" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                                      <Component id="searchQuantityStart" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
-                                      <Component id="labelFilterQuantityTo" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
-                                      <Component id="searchQuantityEnd" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" alignment="0" groupAlignment="1" attributes="0">
+                              <Component id="radioCurrent" min="-2" pref="61" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="labelFilterQuantity" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                          <Component id="searchQuantityStart" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                                          <Component id="labelFilterQuantityTo" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                                          <Component id="searchQuantityEnd" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="labelFilterQuantityFrom" alignment="1" min="-2" pref="24" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="labelFilterQuantityFrom" alignment="1" min="-2" pref="24" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -307,6 +312,21 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="To"/>
               </Properties>
+            </Component>
+            <Component class="ProjectINSY.java.swing.RadioButtonCustom" name="radioCurrent">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="18" green="66" red="19" type="rgb"/>
+                </Property>
+                <Property name="selected" type="boolean" value="true"/>
+                <Property name="text" type="java.lang.String" value="Current Stock"/>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Arial" size="20" style="1"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="radioCurrentActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

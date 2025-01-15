@@ -246,8 +246,8 @@ public class Main extends javax.swing.JFrame {
                 form.refreshItemTable();
             }
             case ItemTracker form -> {
-//                form.ItemTrackerScan.repopulateSuggestions();
-//                form.ItemTrackerLocation.refreshTableInventory();
+                form.ItemTrackerLocation.repopulateFilterComboBox();
+                form.ItemTrackerScan.repopulateSuggestions();
                 form.ItemTrackerScan.setScannerFocus();
             }
             case ItemHistory form -> {

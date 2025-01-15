@@ -60,6 +60,9 @@ public class ItemStock extends ItemPanel {
         if (!isDefaultComboItem(searchName)) {
             filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
         }
+        if (radioCurrent.isSelected()) {
+            filterWHERE += "AND stock_location = 'Supply Room' ";
+        }
 
         filterHAVING = " ";
         if (fieldHasValue(searchQuantityStart)) {
@@ -85,12 +88,13 @@ public class ItemStock extends ItemPanel {
         GuiUtil.repopulateComboBox(searchCategory, "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
         GuiUtil.repopulateComboBox(searchName, "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
-        
+
         refreshItemTable();
     }
 
     @Override
-    public void repopulateComboBox() {}
+    public void repopulateComboBox() {
+    }
     //</editor-fold>
 
     /**
@@ -115,6 +119,7 @@ public class ItemStock extends ItemPanel {
         searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
         labelFilterQuantityFrom = new javax.swing.JLabel();
         labelFilterQuantityTo = new javax.swing.JLabel();
+        radioCurrent = new ProjectINSY.java.swing.RadioButtonCustom();
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -237,6 +242,16 @@ public class ItemStock extends ItemPanel {
         labelFilterQuantityTo.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         labelFilterQuantityTo.setText("To");
 
+        radioCurrent.setBackground(new java.awt.Color(25, 102, 24));
+        radioCurrent.setSelected(true);
+        radioCurrent.setText("Current Stock");
+        radioCurrent.setFont(new java.awt.Font("Arial", 1, 20)); // NOI18N
+        radioCurrent.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioCurrentActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelSearchLayout = new javax.swing.GroupLayout(panelSearch);
         panelSearch.setLayout(panelSearchLayout);
         panelSearchLayout.setHorizontalGroup(
@@ -261,7 +276,9 @@ public class ItemStock extends ItemPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(searchQuantityEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(labelFilterQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(208, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addComponent(radioCurrent, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         panelSearchLayout.setVerticalGroup(
             panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -276,15 +293,17 @@ public class ItemStock extends ItemPanel {
                         .addComponent(labelFilterCategory)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(searchCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelSearchLayout.createSequentialGroup()
-                        .addComponent(labelFilterQuantity)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(searchQuantityStart, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(labelFilterQuantityTo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(searchQuantityEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(labelFilterQuantityFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(radioCurrent, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(panelSearchLayout.createSequentialGroup()
+                            .addComponent(labelFilterQuantity)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(searchQuantityStart, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(labelFilterQuantityTo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(searchQuantityEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(labelFilterQuantityFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -373,6 +392,10 @@ public class ItemStock extends ItemPanel {
         refreshItemTable();
     }//GEN-LAST:event_searchNameItemStateChanged
 
+    private void radioCurrentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioCurrentActionPerformed
+        refreshItemTable();
+    }//GEN-LAST:event_radioCurrentActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel labelFilterCategory;
@@ -382,6 +405,7 @@ public class ItemStock extends ItemPanel {
     private javax.swing.JLabel labelFilterQuantityTo;
     private javax.swing.JPanel panelMain;
     private javax.swing.JPanel panelSearch;
+    private ProjectINSY.java.swing.RadioButtonCustom radioCurrent;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
     private static ProjectINSY.java.swing.ComboBoxSuggestion searchName;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityEnd;
