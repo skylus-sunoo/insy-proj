@@ -232,30 +232,26 @@ public class Main extends javax.swing.JFrame {
 
         switch (com) {
             case ItemStock form -> {
-                form.repopulateComboBox();
-                form.refreshTableInventory();
+                form.repopulateFilterComboBox();
             }
             case ItemRequest form -> {
                 form.repopulateFilterComboBox();
-                form.refreshTable();
             }
             case ItemManagement form -> {
-                form.repopulateNameComboBox();
+                form.repopulateComboBox();
                 form.repopulateFilterComboBox();
-                form.refreshTableInventory();
             }
             case ItemCatalog form -> {
-                form.refreshTableCategory();
-                form.repopulateCategoryComboBox();
-                form.refreshTableItem();
+                form.repopulateComboBox();
+                form.refreshItemTable();
             }
             case ItemTracker form -> {
 //                form.ItemTrackerScan.repopulateSuggestions();
 //                form.ItemTrackerLocation.refreshTableInventory();
+                form.ItemTrackerScan.setScannerFocus();
             }
             case ItemHistory form -> {
-                form.repopulateComboBox();
-                form.resetSearchQuery();
+                form.repopulateFilterComboBox();
             }
             default -> {
             }

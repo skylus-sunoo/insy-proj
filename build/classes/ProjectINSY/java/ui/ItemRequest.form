@@ -118,7 +118,7 @@
                     <Column editable="false" title="Timestamp" type="java.lang.Object"/>
                     <Column editable="false" title="Item" type="java.lang.Object"/>
                     <Column editable="false" title="Description" type="java.lang.Object"/>
-                    <Column editable="false" title="Name" type="java.lang.Object"/>
+                    <Column editable="false" title="Requestor" type="java.lang.Object"/>
                     <Column editable="false" title="Quantity" type="java.lang.Integer"/>
                     <Column editable="false" title="Status in Supply Room" type="java.lang.Object"/>
                   </Table>
@@ -875,7 +875,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchItemActionPerformed"/>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="searchItemItemStateChanged"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JSeparator" name="jSeparator2">
@@ -898,7 +898,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchDescActionPerformed"/>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="searchDescItemStateChanged"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JSeparator" name="jSeparator3">
@@ -921,7 +921,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchNameActionPerformed"/>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="searchNameItemStateChanged"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JSeparator" name="jSeparator4">
@@ -1010,7 +1010,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchStatusActionPerformed"/>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="searchStatusItemStateChanged"/>
                       </Events>
                     </Component>
                     <Container class="javax.swing.JPanel" name="panelClearFilter">

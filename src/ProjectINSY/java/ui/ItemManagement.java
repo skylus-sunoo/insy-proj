@@ -5,6 +5,7 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.generatePDFFromBarcode;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
@@ -63,41 +64,8 @@ import javax.swing.JTable;
  *
  * @author admin
  */
-public class ItemManagement extends javax.swing.JPanel {
+public class ItemManagement extends ItemPanel {
 
-    private String filterWHERE = " ", filterHAVING = " ";
-    public String currentSearchQuery = "SELECT stock_id, stock_batch, "
-            + "stock_category, "
-            + "stock_name, "
-            + "stock_desc, "
-            + "stock_price, "
-            + "(stock_price * COUNT(*)) AS stock_price_batch, "
-            + "stock_dod, "
-            + "stock_benefactor, "
-            + "CONCAT( "
-            + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
-            + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
-            + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
-            + "    CASE "
-            + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
-            + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
-            + "    END "
-            + ") AS stock_code, "
-            + "COUNT(*) AS stock_quantity "
-            + "FROM " + Main.TB_ITEM_STOCK + " "
-            + "WHERE 1 "
-            + filterWHERE
-            + "GROUP BY stock_batch "
-            + "HAVING 1 "
-            + filterHAVING
-            + "ORDER BY stock_timestamp DESC";
-
-    private final String PLACEHOLDER_CODE = "Enter Code (XXXX)";
-    private final String PLACEHOLDER_DESC = "Enter Description";
-    private final String PLACEHOLDER_PRICE = "Enter Price";
-    private final String PLACEHOLDER_DOD = "Enter Delivery Date";
-    private final String PLACEHOLDER_QTY = "1";
-    private final String PLACEHOLDER_BENEFACTOR = "Enter Benefactor";
     private String current_barcode = null;
     private ImageIcon barcodeIcon;
     private int batchQuantity = -1;
@@ -107,6 +75,32 @@ public class ItemManagement extends javax.swing.JPanel {
      */
     public ItemManagement() {
         initComponents();
+
+        currentSearchQuery = "SELECT stock_id, stock_batch, "
+                + "stock_category, "
+                + "stock_name, "
+                + "stock_desc, "
+                + "stock_price, "
+                + "(stock_price * COUNT(*)) AS stock_price_batch, "
+                + "stock_dod, "
+                + "stock_benefactor, "
+                + "CONCAT( "
+                + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
+                + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
+                + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
+                + "    CASE "
+                + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
+                + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
+                + "    END "
+                + ") AS stock_code, "
+                + "COUNT(*) AS stock_quantity "
+                + "FROM " + Main.TB_ITEM_STOCK + " "
+                + "WHERE 1 "
+                + filterWHERE
+                + "GROUP BY stock_batch "
+                + "HAVING 1 "
+                + filterHAVING
+                + "ORDER BY stock_timestamp DESC";
 
         setScrollBarCustom(tableScroll);
         setScrollBarCustom(scrollMain);
@@ -145,6 +139,114 @@ public class ItemManagement extends javax.swing.JPanel {
 //        sorterNumbers(tableInventory, 3);
 //        sorterNumbers(tableInventory, 4);
     }
+
+    //<editor-fold defaultstate="collapsed" desc="Item Panel">
+    @Override
+    public void refreshItemTable() {
+        filterWHERE = " ";
+        if (!isDefaultComboItem(searchCategory)) {
+            filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
+        }
+        if (!isDefaultComboItem(searchName)) {
+            filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
+        }
+        if (!isDefaultComboItem(searchDesc)) {
+            filterWHERE += "AND stock_desc = '" + getComboSelected(searchDesc) + "' ";
+        }
+        if (!isDefaultComboItem(searchBenefactor)) {
+            filterWHERE += "AND stock_benefactor = '" + getComboSelected(searchBenefactor) + "' ";
+        }
+        if (fieldHasValue(searchDateStart)) {
+            filterWHERE += "AND stock_dod >= '" + getFieldString(searchDateStart) + "' ";
+        }
+        if (fieldHasValue(searchDateEnd)) {
+            filterWHERE += "AND stock_dod <= '" + getFieldString(searchDateEnd) + "' ";
+        }
+
+        filterHAVING = " ";
+        if (fieldHasValue(searchPriceStart)) {
+            filterHAVING += "AND stock_price >= '" + getFieldString(searchPriceStart) + "' ";
+        }
+        if (fieldHasValue(searchPriceEnd)) {
+            filterHAVING += "AND stock_price <= '" + getFieldString(searchPriceEnd) + "' ";
+        }
+        if (fieldHasValue(searchQuantityStart)) {
+            filterHAVING += "AND stock_quantity >= '" + getFieldString(searchQuantityStart) + "' ";
+        }
+        if (fieldHasValue(searchQuantityEnd)) {
+            filterHAVING += "AND stock_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
+        }
+
+        if (radioBatches.isSelected()) {
+            currentSearchQuery = "SELECT stock_timestamp, stock_id, stock_batch, "
+                    + "stock_category, "
+                    + "stock_name, "
+                    + "stock_desc, "
+                    + "stock_price, "
+                    + "(stock_price * COUNT(*)) AS stock_price_batch, "
+                    + "stock_dod, "
+                    + "stock_benefactor, "
+                    + "CONCAT( "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
+                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
+                    + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
+                    + "    CASE "
+                    + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
+                    + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
+                    + "    END "
+                    + ") AS stock_code, "
+                    + "COUNT(*) AS stock_quantity "
+                    + "FROM " + Main.TB_ITEM_STOCK + " "
+                    + "WHERE 1 "
+                    + filterWHERE
+                    + "GROUP BY stock_batch "
+                    + "HAVING 1 "
+                    + filterHAVING
+                    + "ORDER BY stock_timestamp DESC";
+        } else {
+            currentSearchQuery = "SELECT *, 1 AS stock_quantity FROM "
+                    + Main.TB_ITEM_STOCK + " "
+                    + "WHERE 1 "
+                    + filterWHERE
+                    + "HAVING 1 "
+                    + filterHAVING
+                    + " ORDER BY stock_timestamp DESC";
+        }
+
+        currentSearchQuery = cleanSpaces(currentSearchQuery);
+        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
+
+        String query = "SELECT DISTINCT stock_benefactor FROM " + Main.TB_ITEM_STOCK;
+
+        fieldBenefactor.clearItemSuggestion();
+        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                fieldBenefactor.addItemSuggestion(rs.getString("stock_benefactor"));
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+    }
+
+    @Override
+    public void repopulateFilterComboBox() {
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateComboBox(searchCategory, "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchName, "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchDesc, "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchBenefactor, "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }
+
+    @Override
+    public void repopulateComboBox() {
+        GuiUtil.repopulateComboBox(comboName, "SELECT item_name FROM " + Main.TB_CATALOG_ITEM);
+    }
+    //</editor-fold>
 
     public void selectTableStock(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableInventory, selectedRow);
@@ -214,135 +316,21 @@ public class ItemManagement extends javax.swing.JPanel {
                 btnUpdate.setEnabled(fieldQuantity.getText().equals(PLACEHOLDER_QTY));
             }
 
-            refreshTableFromDate();
-
-            resetSearchQuery();
-            refreshTableInventory();
-        }
-    }
-
-    //<editor-fold defaultstate="collapsed" desc="Filter Methods">
-    public void resetFilter() {
-        filterWHERE = " ";
-        if (!isDefaultComboItem(searchCategory)) {
-            filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
-        }
-        if (!isDefaultComboItem(searchName)) {
-            filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
-        }
-        if (!isDefaultComboItem(searchDesc)) {
-            filterWHERE += "AND stock_desc = '" + getComboSelected(searchDesc) + "' ";
-        }
-        if (!isDefaultComboItem(searchBenefactor)) {
-            filterWHERE += "AND stock_benefactor = '" + getComboSelected(searchBenefactor) + "' ";
-        }
-        if (fieldHasValue(searchDateStart)) {
-            filterWHERE += "AND stock_dod >= '" + getFieldString(searchDateStart) + "' ";
-        }
-        if (fieldHasValue(searchDateEnd)) {
-            filterWHERE += "AND stock_dod <= '" + getFieldString(searchDateEnd) + "' ";
-        }
-
-        filterHAVING = " ";
-        if (fieldHasValue(searchPriceStart)) {
-            filterHAVING += "AND stock_price >= '" + getFieldString(searchPriceStart) + "' ";
-        }
-        if (fieldHasValue(searchPriceEnd)) {
-            filterHAVING += "AND stock_price <= '" + getFieldString(searchPriceEnd) + "' ";
-        }
-        if (fieldHasValue(searchQuantityStart)) {
-            filterHAVING += "AND stock_quantity >= '" + getFieldString(searchQuantityStart) + "' ";
-        }
-        if (fieldHasValue(searchQuantityEnd)) {
-            filterHAVING += "AND stock_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
-        }
-
-        refreshTableInventory();
-    }
-
-    private void resetSearchQuery() {
-        if (radioBatches.isSelected()) {
-            currentSearchQuery = "SELECT stock_timestamp, stock_id, stock_batch, "
-                    + "stock_category, "
-                    + "stock_name, "
-                    + "stock_desc, "
-                    + "stock_price, "
-                    + "(stock_price * COUNT(*)) AS stock_price_batch, "
-                    + "stock_dod, "
-                    + "stock_benefactor, "
-                    + "CONCAT( "
-                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
-                    + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
-                    + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
-                    + "    CASE "
-                    + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
-                    + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
-                    + "    END "
-                    + ") AS stock_code, "
-                    + "COUNT(*) AS stock_quantity "
-                    + "FROM " + Main.TB_ITEM_STOCK + " "
-                    + "WHERE 1 "
-                    + filterWHERE
-                    + "GROUP BY stock_batch "
-                    + "HAVING 1 "
-                    + filterHAVING
-                    + "ORDER BY stock_timestamp DESC";
-        } else {
-            currentSearchQuery = "SELECT *, 1 AS stock_quantity FROM "
-                    + Main.TB_ITEM_STOCK + " "
-                    + "WHERE 1 "
-                    + filterWHERE
-                    + "HAVING 1 "
-                    + filterHAVING
-                    + " ORDER BY stock_timestamp DESC";
-        }
-    }
-
-    public void repopulateFilterComboBox() {
-        GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchBenefactor, "stock_benefactor", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
-    }
-
-    public void refreshTableFromDate() {
-        String date_filter = searchDateEnd.getText();
-        if (date_filter.matches(Main.validDatePattern)) {
-            try {
-                LocalDate.parse(date_filter);
-                resetFilter();
-            } catch (DateTimeParseException e) {
+            String date_filter = searchDateEnd.getText();
+            if (date_filter.matches(Main.validDatePattern)) {
+                try {
+                    LocalDate.parse(date_filter);
+                } catch (DateTimeParseException e) {
+                }
             }
-        }
-        date_filter = searchDateStart.getText();
-        if (date_filter.matches(Main.validDatePattern)) {
-            try {
-                LocalDate.parse(date_filter);
-                resetFilter();
-            } catch (DateTimeParseException e) {
+            date_filter = searchDateStart.getText();
+            if (date_filter.matches(Main.validDatePattern)) {
+                try {
+                    LocalDate.parse(date_filter);
+                } catch (DateTimeParseException e) {
+                }
             }
-        }
-    }
-    //</editor-fold>
-
-    public void refreshTableInventory() {
-        resetSearchQuery();
-
-        currentSearchQuery = cleanSpaces(currentSearchQuery);
-        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
-//        System.out.println(currentSearchQuery);
-
-        String query = "SELECT DISTINCT stock_benefactor FROM " + Main.TB_ITEM_STOCK;
-
-        fieldBenefactor.clearItemSuggestion();
-        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                fieldBenefactor.addItemSuggestion(rs.getString("stock_benefactor"));
-            }
-        } catch (SQLException e) {
-            paneDatabaseError(e);
+            refreshItemTable();
         }
     }
 
@@ -369,10 +357,6 @@ public class ItemManagement extends javax.swing.JPanel {
         fieldDOD.setForeground(Color.BLACK);
         TableUtil.clearSelectedTableRow(tableInventory);
         setUpdateDeleteEnable();
-    }
-
-    public void repopulateNameComboBox() {
-        GuiUtil.repopulateComboBox(comboName, "item_name", "SELECT item_name FROM " + Main.TB_CATALOG_ITEM);
     }
 
     public static boolean isGroupedByBatches() {
@@ -897,9 +881,9 @@ public class ItemManagement extends javax.swing.JPanel {
 
         searchCategory.setBorder(null);
         searchCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchCategoryActionPerformed(evt);
+        searchCategory.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchCategoryItemStateChanged(evt);
             }
         });
         panelFilters.add(searchCategory);
@@ -912,9 +896,9 @@ public class ItemManagement extends javax.swing.JPanel {
 
         searchName.setBorder(null);
         searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchNameActionPerformed(evt);
+        searchName.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchNameItemStateChanged(evt);
             }
         });
         panelFilters.add(searchName);
@@ -927,9 +911,9 @@ public class ItemManagement extends javax.swing.JPanel {
 
         searchDesc.setBorder(null);
         searchDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchDesc.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchDescActionPerformed(evt);
+        searchDesc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchDescItemStateChanged(evt);
             }
         });
         panelFilters.add(searchDesc);
@@ -1064,9 +1048,9 @@ public class ItemManagement extends javax.swing.JPanel {
 
         searchBenefactor.setBorder(null);
         searchBenefactor.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchBenefactor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchBenefactorActionPerformed(evt);
+        searchBenefactor.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchBenefactorItemStateChanged(evt);
             }
         });
         panelFilters.add(searchBenefactor);
@@ -1279,7 +1263,7 @@ public class ItemManagement extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Stock Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearFields();
-                refreshTableInventory();
+                refreshItemTable();
             }
         } catch (SQLException e) {
             paneDatabaseError(e);
@@ -1359,7 +1343,7 @@ public class ItemManagement extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearFields();
-                refreshTableInventory();
+                refreshItemTable();
             }
 
         } catch (SQLException e) {
@@ -1501,7 +1485,7 @@ public class ItemManagement extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "(" + stock_quantity + ") Stock/s Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearFields();
-            refreshTableInventory();
+            refreshItemTable();
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
         } catch (ParseException ex) {
@@ -1561,23 +1545,6 @@ public class ItemManagement extends javax.swing.JPanel {
         setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldDescFocusGained
 
-    private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-
-        resetFilter();
-    }//GEN-LAST:event_searchCategoryActionPerformed
-
-    private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        
-        resetFilter();
-    }//GEN-LAST:event_searchNameActionPerformed
-
-    private void searchDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchDescActionPerformed
-        resetFilter();
-    }//GEN-LAST:event_searchDescActionPerformed
-
     private void searchPriceStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceStartFocusGained
         setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_searchPriceStartFocusGained
@@ -1587,7 +1554,7 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_searchPriceStartFocusLost
 
     private void searchPriceStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceStartKeyReleased
-        resetFilter();
+        refreshItemTable();
     }//GEN-LAST:event_searchPriceStartKeyReleased
 
     private void searchPriceStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceStartKeyTyped
@@ -1603,7 +1570,7 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_searchPriceEndFocusLost
 
     private void searchPriceEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceEndKeyReleased
-        resetFilter();
+        refreshItemTable();
     }//GEN-LAST:event_searchPriceEndKeyReleased
 
     private void searchPriceEndKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchPriceEndKeyTyped
@@ -1619,7 +1586,7 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_searchQuantityStartFocusLost
 
     private void searchQuantityStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyReleased
-        resetFilter();
+        refreshItemTable();
     }//GEN-LAST:event_searchQuantityStartKeyReleased
 
     private void searchQuantityStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyTyped
@@ -1635,19 +1602,15 @@ public class ItemManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_searchQuantityEndFocusLost
 
     private void searchQuantityEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyReleased
-        resetFilter();
+        refreshItemTable();
     }//GEN-LAST:event_searchQuantityEndKeyReleased
 
     private void searchQuantityEndKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyTyped
         enforceDigits(evt);
     }//GEN-LAST:event_searchQuantityEndKeyTyped
 
-    private void searchBenefactorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBenefactorActionPerformed
-        resetFilter();
-    }//GEN-LAST:event_searchBenefactorActionPerformed
-
     private void radioBatchesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchesActionPerformed
-        refreshTableInventory();
+        refreshItemTable();
         if (radioBatches.isSelected()) {
             tableInventory.getColumnModel().getColumn(3).setHeaderValue("Unit Price / Total Price");
         } else {
@@ -1677,8 +1640,51 @@ public class ItemManagement extends javax.swing.JPanel {
         setDefaultField(searchDateEnd, Main.filterMaxDate, GuiUtil.FieldFocus.LOST, Color.BLACK);
         searchDateEnd.setForeground(Color.BLACK);
 
-        resetFilter();
+        refreshItemTable();
     }//GEN-LAST:event_btnClearFilterActionPerformed
+
+    private void searchCategoryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchCategoryItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchBenefactor, "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchCategoryItemStateChanged
+
+    private void searchNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchNameItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchBenefactor, "stock_name", "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchNameItemStateChanged
+
+    private void searchDescItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchDescItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchDescItemStateChanged
+
+    private void searchBenefactorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchBenefactorItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchBenefactorItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;

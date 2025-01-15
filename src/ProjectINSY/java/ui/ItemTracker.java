@@ -42,6 +42,7 @@ public class ItemTracker extends javax.swing.JPanel {
             btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker_active.png")));
             
             ItemTrackerScan.repopulateSuggestions();
+            ItemTrackerScan.setScannerFocus();
         }
     }
 

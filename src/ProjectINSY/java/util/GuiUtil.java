@@ -14,6 +14,7 @@ import ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import java.awt.Color;
 import java.awt.Image;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -109,6 +110,12 @@ public class GuiUtil {
         tableScroll.setHorizontalScrollBar(sp);
     }
 
+    public static void repopulateComboBox(JComboBox comboBox, String query) {
+        String[] parts = query.split(" ");
+        
+        repopulateComboBox(comboBox, parts[1], query);
+    }
+
     public static void repopulateComboBox(JComboBox comboBox, String columnName, String query) {
         Set<String> uniqueItems = new HashSet<>();
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = DatabaseUtil.prepareQuery(conn, query); ResultSet rs = pst.executeQuery()) {
@@ -164,6 +171,56 @@ public class GuiUtil {
         }
 
         resetDefaultComboItem(comboBox);
+    }
+
+    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox childCombo, String parentColumnName, String baseQuery) {
+        String[] parts = baseQuery.split(" ");
+        
+        repopulateAssociatedComboBox(parentCombo, childCombo, parentColumnName, parts[1], baseQuery);
+    }
+
+    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox childCombo, String parentColumnName, String childColumnName, String baseQuery) {
+        Object selectedItemObj = parentCombo.getSelectedItem();
+        if (selectedItemObj == null || selectedItemObj.toString().trim().isEmpty()) {
+            return;
+        }
+
+        String selectedItem = parentCombo.getSelectedItem().toString();
+
+        if (!isDefaultComboItem(parentCombo)) {
+            baseQuery += " WHERE " + parentColumnName + " = '" + selectedItem + "'";
+        }
+
+        repopulateComboBox(childCombo, childColumnName, baseQuery);
+
+        resetDefaultComboItem(childCombo);
+    }
+
+
+    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox grandParentCombo, JComboBox childCombo, String parentColumnName, String grandParentColumnName, String baseQuery) {
+        String[] parts = baseQuery.split(" ");
+        
+        repopulateAssociatedComboBox(parentCombo, grandParentCombo, childCombo, parentColumnName, grandParentColumnName, parts[1], baseQuery);
+    }
+    
+    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox grandParentCombo, JComboBox childCombo, String parentColumnName, String grandParentColumnName, String childColumnName, String baseQuery) {
+        Object selectedItemObj = parentCombo.getSelectedItem();
+        if (selectedItemObj == null || selectedItemObj.toString().trim().isEmpty()) {
+            return;
+        }
+
+        String selectedItem = parentCombo.getSelectedItem().toString();
+        String selectedItemGrand = grandParentCombo.getSelectedItem().toString();
+
+        if (!isDefaultComboItem(grandParentCombo) && isDefaultComboItem(parentCombo)) {
+            baseQuery += " WHERE " + grandParentColumnName + " = '" + selectedItemGrand + "'";
+        } else if (!isDefaultComboItem(parentCombo)) {
+            baseQuery += " WHERE " + parentColumnName + " = '" + selectedItem + "'";
+        }
+
+        repopulateComboBox(childCombo, childColumnName, baseQuery);
+
+        resetDefaultComboItem(childCombo);
     }
 
     public static void repopulateSuggestions(TextFieldSuggestion field, String columnName, String query) {
@@ -327,42 +384,5 @@ public class GuiUtil {
 
     public static boolean fieldHasValue(JTextField field) {
         return !field.getText().trim().isEmpty();
-    }
-
-    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox childCombo, String parentColumnName, String childColumnName, String baseQuery) {
-        Object selectedItemObj = parentCombo.getSelectedItem();
-        if (selectedItemObj == null || selectedItemObj.toString().trim().isEmpty()) {
-            return;
-        }
-
-        String selectedItem = parentCombo.getSelectedItem().toString();
-
-        if (!isDefaultComboItem(parentCombo)) {
-            baseQuery += " WHERE " + parentColumnName + " = '" + selectedItem + "'";
-        }
-
-        repopulateComboBox(childCombo, childColumnName, baseQuery);
-
-        resetDefaultComboItem(childCombo);
-    }
-
-    public static void repopulateAssociatedComboBox(JComboBox parentCombo, JComboBox grandParentCombo, JComboBox childCombo, String parentColumnName, String grandParentColumnName, String childColumnName, String baseQuery) {
-        Object selectedItemObj = parentCombo.getSelectedItem();
-        if (selectedItemObj == null || selectedItemObj.toString().trim().isEmpty()) {
-            return;
-        }
-
-        String selectedItem = parentCombo.getSelectedItem().toString();
-        String selectedItemGrand = grandParentCombo.getSelectedItem().toString();
-
-        if (!isDefaultComboItem(grandParentCombo) && isDefaultComboItem(parentCombo)) {
-            baseQuery += " WHERE " + grandParentColumnName + " = '" + selectedItemGrand + "'";
-        } else if (!isDefaultComboItem(parentCombo)) {
-            baseQuery += " WHERE " + parentColumnName + " = '" + selectedItem + "'";
-        }
-
-        repopulateComboBox(childCombo, childColumnName, baseQuery);
-
-        resetDefaultComboItem(childCombo);
     }
 }

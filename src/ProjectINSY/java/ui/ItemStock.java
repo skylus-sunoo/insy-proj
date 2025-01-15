@@ -5,6 +5,7 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.util.GuiUtil;
 import static ProjectINSY.java.util.GuiUtil.enforceDigits;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
@@ -13,8 +14,8 @@ import ProjectINSY.java.util.TableUtil;
 import ProjectINSY.java.util.TableUtil.EnumAlignment;
 import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
-import static ProjectINSY.java.util.TableUtil.fixedColumnAll;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
+import static ProjectINSY.java.util.TableUtil.fixedColumnAll;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
 import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
@@ -25,21 +26,20 @@ import java.awt.Color;
  *
  * @author admin
  */
-public class ItemStock extends javax.swing.JPanel {
-
-    private String filterWHERE = " ", filterHAVING = " ";
-    public String currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
-            + Main.TB_ITEM_STOCK
-            + " WHERE 1 "
-            + filterWHERE
-            + "GROUP BY stock_category, stock_name HAVING 1 "
-            + filterHAVING;
+public class ItemStock extends ItemPanel {
 
     /**
      * Creates new form LogIn
      */
     public ItemStock() {
         initComponents();
+
+        currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
+                + Main.TB_ITEM_STOCK
+                + " WHERE 1 "
+                + filterWHERE
+                + "GROUP BY stock_category, stock_name HAVING 1 "
+                + filterHAVING;
 
         setScrollBarCustom(tableScroll);
 
@@ -50,16 +50,9 @@ public class ItemStock extends javax.swing.JPanel {
         sorterNumbers(tableInventory, 2);
     }
 
-    public void refreshTableInventory() {
-        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DISTINCT);
-    }
-
-    public void repopulateComboBox() {
-        GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-    }
-
-    private void resetSearchQuery() {
+    //<editor-fold defaultstate="collapsed" desc="Item Panel">
+    @Override
+    public void refreshItemTable() {
         filterWHERE = " ";
         if (!isDefaultComboItem(searchCategory)) {
             filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
@@ -83,8 +76,22 @@ public class ItemStock extends javax.swing.JPanel {
                 + "GROUP BY stock_category, stock_name HAVING 1 "
                 + filterHAVING;
 
-        refreshTableInventory();
+        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DISTINCT);
     }
+
+    @Override
+    public void repopulateFilterComboBox() {
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateComboBox(searchCategory, "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchName, "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        enableUpdatingComboBoxes();
+        
+        refreshItemTable();
+    }
+
+    @Override
+    public void repopulateComboBox() {}
+    //</editor-fold>
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -159,9 +166,9 @@ public class ItemStock extends javax.swing.JPanel {
 
         searchCategory.setBorder(null);
         searchCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchCategoryActionPerformed(evt);
+        searchCategory.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchCategoryItemStateChanged(evt);
             }
         });
 
@@ -170,9 +177,9 @@ public class ItemStock extends javax.swing.JPanel {
 
         searchName.setBorder(null);
         searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchNameActionPerformed(evt);
+        searchName.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchNameItemStateChanged(evt);
             }
         });
 
@@ -319,7 +326,7 @@ public class ItemStock extends javax.swing.JPanel {
     }//GEN-LAST:event_searchQuantityEndKeyTyped
 
     private void searchQuantityEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyReleased
-        resetSearchQuery();
+        refreshItemTable();
     }//GEN-LAST:event_searchQuantityEndKeyReleased
 
     private void searchQuantityEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusLost
@@ -335,7 +342,7 @@ public class ItemStock extends javax.swing.JPanel {
     }//GEN-LAST:event_searchQuantityStartKeyTyped
 
     private void searchQuantityStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyReleased
-        resetSearchQuery();
+        refreshItemTable();
     }//GEN-LAST:event_searchQuantityStartKeyReleased
 
     private void searchQuantityStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusLost
@@ -346,14 +353,25 @@ public class ItemStock extends javax.swing.JPanel {
         setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_searchQuantityStartFocusGained
 
-    private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
-        resetSearchQuery();
-    }//GEN-LAST:event_searchNameActionPerformed
+    private void searchCategoryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchCategoryItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
 
-    private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
+        disableUpdatingComboBoxes();
         GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        resetSearchQuery();
-    }//GEN-LAST:event_searchCategoryActionPerformed
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchCategoryItemStateChanged
+
+    private void searchNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchNameItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchNameItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

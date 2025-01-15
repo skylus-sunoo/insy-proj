@@ -5,6 +5,7 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.util.GuiUtil;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import ProjectINSY.java.util.TableUtil;
@@ -23,15 +24,15 @@ import javax.swing.event.DocumentListener;
  *
  * @author admin
  */
-public class ItemHistory extends javax.swing.JPanel {
-
-    public String currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_HISTORY, filterWHERE = "";
+public class ItemHistory extends ItemPanel {
 
     /**
      * Creates new form LogIn
      */
     public ItemHistory() {
         initComponents();
+        
+        currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_HISTORY;
 
         setScrollBarCustom(tableScroll);
 
@@ -43,9 +44,6 @@ public class ItemHistory extends javax.swing.JPanel {
         tableHistory.getColumnModel().getColumn(3).setPreferredWidth(966);
         tableHistory.getColumnModel().getColumn(4).setPreferredWidth(200);
 
-//        setColumnHorizontalAligment(tableInventory, 2, EnumAlignment.LEFT);
-//        fixedColumnAll(tableInventory);
-//        sorterNumbers(tableInventory, 2);
         String[] parts = getFieldString(searchTimestampStart).split("-");
         String month_start = parts[0] + "-" + parts[1] + "-01";
         searchTimestampStart.setText(month_start);
@@ -53,16 +51,9 @@ public class ItemHistory extends javax.swing.JPanel {
         searchTimestampEnd.getDocument().addDocumentListener(new FieldChangeListener());
     }
 
-    public void refreshTableInventory() {
-        TableUtil.refreshTable(tableHistory, currentSearchQuery, TableUtil.TableEnum.ITEM_HISTORY);
-    }
-
-    public void repopulateComboBox() {
-        GuiUtil.repopulateComboBox(searchType, "history_frame_type", "SELECT CONCAT(history_frame,'-', history_type) AS history_frame_type FROM " + Main.TB_ITEM_HISTORY);
-        GuiUtil.repopulateComboBox(searchHolder, "history_user", "SELECT history_user FROM " + Main.TB_ITEM_HISTORY);
-    }
-
-    public void resetSearchQuery() {
+    //<editor-fold defaultstate="collapsed" desc="Item Panel">
+    @Override
+    public void refreshItemTable() {
         filterWHERE = "";
         if (!isDefaultComboItem(searchType)) {
             String[] parts = getComboSelected(searchType).split("-");
@@ -84,9 +75,23 @@ public class ItemHistory extends javax.swing.JPanel {
                 + Main.TB_ITEM_HISTORY + " WHERE 1 "
                 + filterWHERE
                 + "ORDER BY history_timestamp DESC";
-
-        refreshTableInventory();
+        
+        TableUtil.refreshTable(tableHistory, currentSearchQuery, TableUtil.TableEnum.ITEM_HISTORY);
     }
+
+    @Override
+    public void repopulateFilterComboBox() {
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateComboBox(searchType, "history_frame_type", "SELECT CONCAT(history_frame,'-', history_type) AS history_frame_type FROM " + Main.TB_ITEM_HISTORY);
+        GuiUtil.repopulateComboBox(searchHolder, "SELECT history_user FROM " + Main.TB_ITEM_HISTORY);
+        enableUpdatingComboBoxes();
+        
+        refreshItemTable();
+    }
+
+    @Override
+    public void repopulateComboBox() {}
+    //</editor-fold>
 
     private class FieldChangeListener implements DocumentListener, ActionListener {
 
@@ -111,7 +116,7 @@ public class ItemHistory extends javax.swing.JPanel {
         }
 
         private void checkFields() {
-            resetSearchQuery();
+            refreshItemTable();
         }
     }
 
@@ -198,9 +203,9 @@ public class ItemHistory extends javax.swing.JPanel {
 
         searchType.setBorder(null);
         searchType.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchType.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchTypeActionPerformed(evt);
+        searchType.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchTypeItemStateChanged(evt);
             }
         });
 
@@ -209,9 +214,9 @@ public class ItemHistory extends javax.swing.JPanel {
 
         searchHolder.setBorder(null);
         searchHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchHolder.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchHolderActionPerformed(evt);
+        searchHolder.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchHolderItemStateChanged(evt);
             }
         });
 
@@ -319,13 +324,13 @@ public class ItemHistory extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void searchTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchTypeActionPerformed
-        resetSearchQuery();
-    }//GEN-LAST:event_searchTypeActionPerformed
+    private void searchTypeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchTypeItemStateChanged
+        refreshItemTable();
+    }//GEN-LAST:event_searchTypeItemStateChanged
 
-    private void searchHolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchHolderActionPerformed
-        resetSearchQuery();
-    }//GEN-LAST:event_searchHolderActionPerformed
+    private void searchHolderItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchHolderItemStateChanged
+        refreshItemTable();
+    }//GEN-LAST:event_searchHolderItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

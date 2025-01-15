@@ -4,10 +4,10 @@
  */
 package ProjectINSY.java.ui;
 
+import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.Main;
 import ProjectINSY.java.util.DatabaseUtil;
 import ProjectINSY.java.util.GuiUtil;
-import static ProjectINSY.java.util.GuiUtil.repopulateComboBox;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
@@ -25,16 +25,15 @@ import javax.swing.DefaultComboBoxModel;
  *
  * @author admin
  */
-public class ItemTrackerLocation extends javax.swing.JPanel {
-
-    public String filterWHERE = "";
-    public String currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " ORDER BY stock_id ASC";
+public class ItemTrackerLocation extends ItemPanel {
 
     /**
      * Creates new form ItemTrackerLocation
      */
     public ItemTrackerLocation() {
         initComponents();
+        
+        currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " ORDER BY stock_id ASC";
         
         setTransparentFrame(btnClearFilter);
 
@@ -43,12 +42,10 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
         defaultTable(tableLocation);
         tableLocation.getColumnModel().getColumn(0).setPreferredWidth(10);
     }
-
-    public void refreshTableInventory() {
-        TableUtil.refreshTable(tableLocation, currentSearchQuery, TableUtil.TableEnum.STOCK_LOCATION);
-    }
-
-    public void resetSearchQuery() {
+    
+    //<editor-fold defaultstate="collapsed" desc="Item Panel">
+    @Override
+    public void refreshItemTable() {
         filterWHERE = "";
         if (!isDefaultComboItem(searchCategory)) {
             filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
@@ -65,14 +62,14 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
         if (!isDefaultComboItem(searchHolder)) {
             filterWHERE += "AND stock_holder = '" + getComboSelected(searchHolder) + "' ";
         }
-
+        
         currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " WHERE 1 " + filterWHERE + "ORDER BY stock_id ASC";
-
+        
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             String query = "SELECT COUNT(*) FROM " + Main.TB_ITEM_STOCK + " WHERE 1 " + filterWHERE;
             PreparedStatement pst = conn.prepareStatement(query);
             ResultSet rs = pst.executeQuery();
-
+            
             if (rs.next()) {
                 labelNumItem.setText("(" + rs.getInt("Count(*)") + ") Items Found");
                 if (rs.getInt("Count(*)") == 0) {
@@ -82,22 +79,33 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
-
-        refreshTableInventory();
+        
+        TableUtil.refreshTable(tableLocation, currentSearchQuery, TableUtil.TableEnum.STOCK_LOCATION);
     }
-
+    
+    @Override
     public void repopulateFilterComboBox() {
-        GuiUtil.repopulateComboBox(searchCategory, "stock_category", "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchName, "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchDesc, "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchLoc, "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateComboBox(searchCategory, "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchName, "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchDesc, "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchLoc, "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
         if (((DefaultComboBoxModel) searchLoc.getModel()).getIndexOf("Supply Room") < 0) {
             searchLoc.insertItemAt("Supply Room", 1);
         }
         searchLoc.setSelectedItem("Supply Room");
-        GuiUtil.repopulateComboBox(searchHolder, "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateComboBox(searchHolder, "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        enableUpdatingComboBoxes();
+        
+        refreshItemTable();
     }
-
+    
+    @Override
+    public void repopulateComboBox() {
+        
+    }
+    //</editor-fold>
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -188,9 +196,9 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
 
         searchCategory.setBorder(null);
         searchCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchCategoryActionPerformed(evt);
+        searchCategory.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchCategoryItemStateChanged(evt);
             }
         });
         panelFilters.add(searchCategory);
@@ -203,9 +211,9 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
 
         searchName.setBorder(null);
         searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchNameActionPerformed(evt);
+        searchName.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchNameItemStateChanged(evt);
             }
         });
         panelFilters.add(searchName);
@@ -218,9 +226,9 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
 
         searchDesc.setBorder(null);
         searchDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchDesc.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchDescActionPerformed(evt);
+        searchDesc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchDescItemStateChanged(evt);
             }
         });
         panelFilters.add(searchDesc);
@@ -233,9 +241,9 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
 
         searchHolder.setBorder(null);
         searchHolder.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchHolder.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchHolderActionPerformed(evt);
+        searchHolder.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchHolderItemStateChanged(evt);
             }
         });
         panelFilters.add(searchHolder);
@@ -276,9 +284,9 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
 
         searchLoc.setBorder(null);
         searchLoc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchLoc.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchLocActionPerformed(evt);
+        searchLoc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchLocItemStateChanged(evt);
             }
         });
         panelFilters.add(searchLoc);
@@ -311,43 +319,66 @@ public class ItemTrackerLocation extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void searchCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchCategoryActionPerformed
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-
-        resetSearchQuery();
-    }//GEN-LAST:event_searchCategoryActionPerformed
-
-    private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchLoc, "stock_name", "stock_category", "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchHolder, "stock_name", "stock_category", "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
-
-        resetSearchQuery();
-    }//GEN-LAST:event_searchNameActionPerformed
-
-    private void searchDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchDescActionPerformed
-        resetSearchQuery();
-    }//GEN-LAST:event_searchDescActionPerformed
-
-    private void searchHolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchHolderActionPerformed
-        resetSearchQuery();
-    }//GEN-LAST:event_searchHolderActionPerformed
-
     private void btnClearFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearFilterActionPerformed
         searchCategory.setSelectedIndex(0);
         searchName.setSelectedIndex(0);
         searchDesc.setSelectedIndex(0);
         searchLoc.setSelectedIndex(0);
         searchHolder.setSelectedIndex(0);
-
-        resetSearchQuery();
     }//GEN-LAST:event_btnClearFilterActionPerformed
 
-    private void searchLocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchLocActionPerformed
-        resetSearchQuery();
-    }//GEN-LAST:event_searchLocActionPerformed
+    private void searchCategoryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchCategoryItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
 
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchLoc, "stock_category", "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchHolder, "stock_category", "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        enableUpdatingComboBoxes();
+        
+        refreshItemTable();
+    }//GEN-LAST:event_searchCategoryItemStateChanged
+
+    private void searchNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchNameItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchLoc, "stock_name", "stock_category", "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
+        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchHolder, "stock_name", "stock_category", "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        enableUpdatingComboBoxes();
+        
+        refreshItemTable();
+    }//GEN-LAST:event_searchNameItemStateChanged
+
+    private void searchDescItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchDescItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchDescItemStateChanged
+
+    private void searchLocItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchLocItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchLocItemStateChanged
+
+    private void searchHolderItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchHolderItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchHolderItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClearFilter;

@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -70,6 +71,8 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private final String PLACEHOLDER_CODE_ID = "000000";
     private final String PLACEHOLDER_LOCATION = "Enter Location";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
+
+    private boolean isUpdating = false;
 
     /**
      * Creates new form ItemTrackerLocation
@@ -108,10 +111,36 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         }
 
         private void checkFields() {
-            if (!fieldCodeID.getText().isEmpty()) {
-                selectedCodeID = Integer.parseInt(fieldCodeID.getText());
-                if (!fieldCodeYear.getText().isEmpty()) {
-                    selectedCode = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", selectedCodeID);
+            if (isUpdating) {
+                return;
+            }
+
+            String codeIDText = fieldCodeID.getText();
+
+            if (!codeIDText.isEmpty()) {
+                if (codeIDText.contains("Silang-")) {
+                    isUpdating = true;
+
+                    SwingUtilities.invokeLater(() -> {
+                        String[] parts = codeIDText.split("-");
+
+                        if (parts.length >= 2) {
+                            fieldCodeYear.setText(parts[1]);
+                            fieldCodeYear.setForeground(Color.BLACK);
+                            fieldCodeID.setText(parts[2]);
+                        }
+
+                        isUpdating = false;
+                    });
+                } else {
+                    try {
+                        selectedCodeID = Integer.parseInt(codeIDText);
+                        if (!fieldCodeYear.getText().isEmpty()) {
+                            selectedCode = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", selectedCodeID);
+                        }
+                    } catch (NumberFormatException ex) {
+                        selectedCodeID = -1;
+                    }
                 }
             } else {
                 selectedCodeID = -1;
@@ -131,7 +160,17 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         GuiUtil.repopulateSuggestions(fieldHolder, "stock_holder", "SELECT DISTINCT stock_holder FROM " + Main.TB_ITEM_STOCK);
     }
 
+    public void setScannerFocus() {
+        fieldCodeID.requestFocusInWindow();
+    }
+
     public void searchItem() {
+        String codeIDText = fieldCodeID.getText();
+        if (!codeIDText.isEmpty()) {
+            selectedCodeID = Integer.parseInt(codeIDText);
+            selectedCode = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", selectedCodeID);
+        }
+
         String name = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_name", "stock_id", selectedCodeID);
         String desc = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_desc", "stock_id", selectedCodeID);
         String location = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_location", "stock_id", selectedCodeID);
@@ -157,7 +196,6 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             String current_barcode = validateBarcode(selectedCode);
             ImageIcon barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
             imgBarcode.setIcon(barcodeIcon);
-            SoundUtil.playSound(SoundUtil.SOUND_SCANNED);
 
             fieldName.setText(name);
             fieldDesc.setText(desc);
@@ -167,6 +205,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
 
             fieldLocation.setForeground(Color.BLACK);
             fieldHolder.setForeground(Color.BLACK);
+            SoundUtil.playSound(SoundUtil.SOUND_SCANNED);
         }
     }
 

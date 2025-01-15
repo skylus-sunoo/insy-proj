@@ -5,6 +5,7 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
 import static ProjectINSY.java.util.DatabaseUtil.createObjectCode;
@@ -26,7 +27,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
@@ -37,18 +37,16 @@ import javax.swing.event.ListSelectionEvent;
  *
  * @author admin
  */
-public class ItemCatalog extends javax.swing.JPanel {
-
-    public String currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK;
-
-    private final String PLACEHOLDER_CATEGORY = "Enter Category";
-    private final String PLACEHOLDER_NAME = "Enter Name";
+public class ItemCatalog extends ItemPanel {
 
     /**
      * Creates new form LogIn
      */
     public ItemCatalog() {
         initComponents();
+
+        currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK;
+
         setScrollBarCustom(scrollCategory);
         setScrollBarCustom(tableScroll);
 
@@ -81,6 +79,23 @@ public class ItemCatalog extends javax.swing.JPanel {
         comboUOM.addItem("SET");
         comboUOM.addItem("UNIT");
     }
+
+    //<editor-fold defaultstate="collapsed" desc="Item Panel">
+    @Override
+    public void refreshItemTable() {
+        TableUtil.refreshTable(tableItem, "SELECT * FROM " + Main.TB_CATALOG_ITEM + " ORDER BY item_name ASC", TableUtil.TableEnum.CATALOG_ITEM);
+        TableUtil.refreshTable(tableCategory, "SELECT * FROM " + Main.TB_CATALOG_CATEGORY + " ORDER BY category_name ASC", TableUtil.TableEnum.CATALOG_CATEGORY);
+    }
+
+    @Override
+    public void repopulateFilterComboBox() {
+    }
+
+    @Override
+    public void repopulateComboBox() {
+        GuiUtil.repopulateComboBox(comboCategory, "SELECT category_name FROM " + Main.TB_CATALOG_CATEGORY);
+    }
+    //</editor-fold>
 
     public void selectTableCategory(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableCategory, selectedRow);
@@ -131,10 +146,6 @@ public class ItemCatalog extends javax.swing.JPanel {
         }
     }
 
-    public void refreshTableCategory() {
-        TableUtil.refreshTable(tableCategory, "SELECT * FROM " + Main.TB_CATALOG_CATEGORY + " ORDER BY category_name ASC", TableUtil.TableEnum.CATALOG_CATEGORY);
-    }
-
     public void setUpdateDeleteEnableCategory() {
         resetBtnEnability(fieldCategoryID, btnUpdateCategory, btnDeleteCategory);
     }
@@ -144,10 +155,6 @@ public class ItemCatalog extends javax.swing.JPanel {
         GuiUtil.clearField(fieldCategoryName, PLACEHOLDER_CATEGORY);
         TableUtil.clearSelectedTableRow(tableCategory);
         setUpdateDeleteEnableCategory();
-    }
-
-    public void refreshTableItem() {
-        TableUtil.refreshTable(tableItem, "SELECT * FROM " + Main.TB_CATALOG_ITEM + " ORDER BY item_name ASC", TableUtil.TableEnum.CATALOG_ITEM);
     }
 
     public void setUpdateDeleteEnableItem() {
@@ -160,10 +167,6 @@ public class ItemCatalog extends javax.swing.JPanel {
         GuiUtil.clearField(fieldName, PLACEHOLDER_NAME);
         TableUtil.clearSelectedTableRow(tableItem);
         setUpdateDeleteEnableItem();
-    }
-
-    public void repopulateCategoryComboBox() {
-        GuiUtil.repopulateComboBox(comboCategory, "category_name", "SELECT category_name FROM " + Main.TB_CATALOG_CATEGORY);
     }
 
     /**
@@ -625,8 +628,8 @@ public class ItemCatalog extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Category Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearCategoryFields();
-                refreshTableCategory();
-                repopulateCategoryComboBox();
+                refreshItemTable();
+                repopulateComboBox();
             } else {
                 JOptionPane.showMessageDialog(this, "This category already exists!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -672,8 +675,8 @@ public class ItemCatalog extends javax.swing.JPanel {
                     JOptionPane.showMessageDialog(this, "Category Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                     clearCategoryFields();
-                    refreshTableCategory();
-                    repopulateCategoryComboBox();
+                    refreshItemTable();
+                    repopulateComboBox();
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "This category already exists!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -710,8 +713,8 @@ public class ItemCatalog extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Category Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearCategoryFields();
-                refreshTableCategory();
-                repopulateCategoryComboBox();
+                refreshItemTable();
+                repopulateComboBox();
             }
         } catch (SQLException e) {
             paneDatabaseError(e);
@@ -748,7 +751,7 @@ public class ItemCatalog extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Item Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();
-                refreshTableItem();
+                refreshItemTable();
             } else {
                 JOptionPane.showMessageDialog(this, "This item already exists!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -808,7 +811,7 @@ public class ItemCatalog extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Item Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();
-                refreshTableItem();
+                refreshItemTable();
             }
         } catch (SQLException e) {
             paneDatabaseError(e);
@@ -837,12 +840,12 @@ public class ItemCatalog extends javax.swing.JPanel {
                 String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name);
 
                 pst.executeUpdate();
-                
+
                 insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, item_idStr, item_idStr, history_desc, "");
                 JOptionPane.showMessageDialog(this, "Item Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();
-                refreshTableItem();
+                refreshItemTable();
             }
         } catch (SQLException e) {
             paneDatabaseError(e);

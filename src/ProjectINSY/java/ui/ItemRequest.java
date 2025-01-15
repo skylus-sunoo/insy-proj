@@ -5,6 +5,8 @@
 package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
+import ProjectINSY.java.model.ItemPanel;
+import ProjectINSY.java.swing.TableHighlighter;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
 import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
@@ -46,17 +48,9 @@ import javax.swing.event.ListSelectionEvent;
  *
  * @author admin
  */
-public class ItemRequest extends javax.swing.JPanel {
+public class ItemRequest extends ItemPanel {
 
-    private String filterWHERE = "";
-    public String currentSearchQuery = "SELECT * FROM "
-            + Main.TB_ITEM_REQUEST + " WHERE 1 "
-            + filterWHERE
-            + " ORDER BY request_id DESC";
-
-    private final String PLACEHOLDER_NAME = "Enter Name";
-    private final String PLACEHOLDER_DESC = "Enter Description";
-    private final String PLACEHOLDER_QTY = "1";
+    TableHighlighter TableHighlighter = new TableHighlighter(5);
 
     /**
      * Creates new form LogIn
@@ -64,13 +58,17 @@ public class ItemRequest extends javax.swing.JPanel {
     public ItemRequest() {
         initComponents();
 
+        currentSearchQuery = "SELECT * FROM "
+                + Main.TB_ITEM_REQUEST + " WHERE 1 "
+                + filterWHERE
+                + " ORDER BY request_id DESC";
+
         setScrollBarCustom(tableScroll);
 
         setTransparentFrame(ItemRequest.this);
         setTransparentFrame(btnCreateRequest, btnFilter, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
 
         fieldItem.getDocument().addDocumentListener(new FieldChangeListener());
-        fieldDesc.getDocument().addDocumentListener(new FieldChangeListener());
         fieldName.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
 
@@ -90,6 +88,59 @@ public class ItemRequest extends javax.swing.JPanel {
 
         switchRequestForm(btnCreateRequest);
     }
+
+    //<editor-fold defaultstate="collapsed" desc="Item Panel">
+    @Override
+    public void refreshItemTable() {
+        filterWHERE = "";
+        if (!isDefaultComboItem(searchItem)) {
+            filterWHERE += "AND request_item = '" + getComboSelected(searchItem) + "' ";
+        }
+        if (!isDefaultComboItem(searchDesc)) {
+            filterWHERE += "AND request_desc = '" + getComboSelected(searchDesc) + "' ";
+        }
+        if (!isDefaultComboItem(searchName)) {
+            filterWHERE += "AND request_name = '" + getComboSelected(searchName) + "' ";
+        }
+        if (!isDefaultComboItem(searchStatus)) {
+            filterWHERE += "AND request_status = '" + getComboSelected(searchStatus) + "' ";
+        }
+        if (fieldHasValue(searchQuantityStart)) {
+            filterWHERE += "AND request_quantity >= '" + getFieldString(searchQuantityStart) + "' ";
+        }
+        if (fieldHasValue(searchQuantityEnd)) {
+            filterWHERE += "AND request_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
+        }
+
+        currentSearchQuery = "SELECT * FROM "
+                + Main.TB_ITEM_REQUEST + " WHERE 1 "
+                + filterWHERE
+                + " ORDER BY request_id DESC";
+
+        TableUtil.refreshTable(tableRequest, currentSearchQuery, TableUtil.TableEnum.ITEM_REQUEST);
+
+        for (int i = 0; i < tableRequest.getColumnCount(); i++) {
+            tableRequest.getColumnModel().getColumn(i).setCellRenderer(TableHighlighter);
+        }
+    }
+
+    @Override
+    public void repopulateFilterComboBox() {
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateComboBox(searchItem, "SELECT request_item FROM " + Main.TB_ITEM_REQUEST);
+        GuiUtil.repopulateComboBox(searchDesc, "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
+        GuiUtil.repopulateComboBox(searchName, "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
+        GuiUtil.repopulateComboBox(searchStatus, "SELECT request_status FROM " + Main.TB_ITEM_REQUEST);
+        searchStatus.setSelectedItem("PENDING");
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }
+
+    @Override
+    public void repopulateComboBox() {
+    }
+    //</editor-fold>
 
     public void selectTableRequest(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableRequest, selectedRow);
@@ -125,8 +176,6 @@ public class ItemRequest extends javax.swing.JPanel {
         private void checkFields() {
             btnAdd.setEnabled(!fieldItem.getText().trim().isEmpty()
                     && !fieldItem.getText().trim().equals(PLACEHOLDER_NAME)
-                    && !fieldDesc.getText().trim().isEmpty()
-                    && !fieldDesc.getText().trim().equals(PLACEHOLDER_DESC)
                     && !fieldName.getText().trim().isEmpty()
                     && !fieldName.getText().trim().equals(PLACEHOLDER_NAME)
                     && !fieldQuantity.getText().trim().isEmpty());
@@ -145,46 +194,6 @@ public class ItemRequest extends javax.swing.JPanel {
 
             repopulateFilterComboBox();
         }
-    }
-
-    public void refreshTable() {
-        resetSearchQuery();
-        TableUtil.refreshTable(tableRequest, currentSearchQuery, TableUtil.TableEnum.ITEM_REQUEST);
-    }
-
-    public void repopulateFilterComboBox() {
-        GuiUtil.repopulateComboBox(searchItem, "request_item", "SELECT request_item FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateComboBox(searchDesc, "request_desc", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateComboBox(searchName, "request_name", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateComboBox(searchStatus, "request_status", "SELECT request_status FROM " + Main.TB_ITEM_REQUEST);
-        searchStatus.setSelectedItem("PENDING");
-    }
-
-    private void resetSearchQuery() {
-        filterWHERE = "";
-        if (!isDefaultComboItem(searchItem)) {
-            filterWHERE += "AND request_item = '" + getComboSelected(searchItem) + "' ";
-        }
-        if (!isDefaultComboItem(searchDesc)) {
-            filterWHERE += "AND request_desc = '" + getComboSelected(searchDesc) + "' ";
-        }
-        if (!isDefaultComboItem(searchName)) {
-            filterWHERE += "AND request_name = '" + getComboSelected(searchName) + "' ";
-        }
-        if (!isDefaultComboItem(searchStatus)) {
-            filterWHERE += "AND request_status = '" + getComboSelected(searchStatus) + "' ";
-        }
-        if (fieldHasValue(searchQuantityStart)) {
-            filterWHERE += "AND request_quantity >= '" + getFieldString(searchQuantityStart) + "' ";
-        }
-        if (fieldHasValue(searchQuantityEnd)) {
-            filterWHERE += "AND request_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
-        }
-
-        currentSearchQuery = "SELECT * FROM "
-                + Main.TB_ITEM_REQUEST + " WHERE 1 "
-                + filterWHERE
-                + " ORDER BY request_id DESC";
     }
 
     public void clearFields() {
@@ -295,7 +304,7 @@ public class ItemRequest extends javax.swing.JPanel {
                 {null, null, null, null, null, null}
             },
             new String [] {
-                "Timestamp", "Item", "Description", "Name", "Quantity", "Status in Supply Room"
+                "Timestamp", "Item", "Description", "Requestor", "Quantity", "Status in Supply Room"
             }
         ) {
             Class[] types = new Class [] {
@@ -565,9 +574,9 @@ public class ItemRequest extends javax.swing.JPanel {
 
         searchItem.setBorder(null);
         searchItem.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchItemActionPerformed(evt);
+        searchItem.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchItemItemStateChanged(evt);
             }
         });
 
@@ -576,9 +585,9 @@ public class ItemRequest extends javax.swing.JPanel {
 
         searchDesc.setBorder(null);
         searchDesc.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchDesc.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchDescActionPerformed(evt);
+        searchDesc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchDescItemStateChanged(evt);
             }
         });
 
@@ -587,9 +596,9 @@ public class ItemRequest extends javax.swing.JPanel {
 
         searchName.setBorder(null);
         searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchNameActionPerformed(evt);
+        searchName.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchNameItemStateChanged(evt);
             }
         });
 
@@ -649,9 +658,9 @@ public class ItemRequest extends javax.swing.JPanel {
 
         searchStatus.setBorder(null);
         searchStatus.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchStatus.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchStatusActionPerformed(evt);
+        searchStatus.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchStatusItemStateChanged(evt);
             }
         });
 
@@ -838,7 +847,7 @@ public class ItemRequest extends javax.swing.JPanel {
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         String request_item = fieldItem.getText();
-        String request_desc = fieldDesc.getText();
+        String request_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
         String request_quantity = fieldQuantity.getText();
         String request_name = fieldName.getText();
 
@@ -868,7 +877,7 @@ public class ItemRequest extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Request Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearFields();
-            refreshTable();
+            refreshItemTable();
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
         }
@@ -878,7 +887,7 @@ public class ItemRequest extends javax.swing.JPanel {
         int request_id = Integer.parseInt(fieldID.getText());
         String request_idStr = "Request-" + request_id;
         String request_item = fieldItem.getText();
-        String request_desc = fieldDesc.getText();
+        String request_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
         String request_quantity = fieldQuantity.getText();
         String request_name = fieldName.getText();
         String request_status = comboStatus.getSelectedItem().toString();
@@ -914,7 +923,7 @@ public class ItemRequest extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Request Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearFields();
-            refreshTable();
+            refreshItemTable();
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
@@ -952,7 +961,7 @@ public class ItemRequest extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Request Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearFields();
-                refreshTable();
+                refreshItemTable();
             }
         } catch (SQLException e) {
             paneDatabaseError(e);
@@ -963,20 +972,6 @@ public class ItemRequest extends javax.swing.JPanel {
         enforceDigits(evt);
     }//GEN-LAST:event_fieldQuantityKeyTyped
 
-    private void searchItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchItemActionPerformed
-        GuiUtil.repopulateAssociatedComboBox(searchItem, searchDesc, "request_item", "request_desc", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
-
-        refreshTable();
-    }//GEN-LAST:event_searchItemActionPerformed
-
-    private void searchDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchDescActionPerformed
-        refreshTable();
-    }//GEN-LAST:event_searchDescActionPerformed
-
-    private void searchNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNameActionPerformed
-        refreshTable();
-    }//GEN-LAST:event_searchNameActionPerformed
-
     private void searchQuantityStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusGained
         setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_searchQuantityStartFocusGained
@@ -986,7 +981,7 @@ public class ItemRequest extends javax.swing.JPanel {
     }//GEN-LAST:event_searchQuantityStartFocusLost
 
     private void searchQuantityStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyReleased
-        refreshTable();
+        refreshItemTable();
     }//GEN-LAST:event_searchQuantityStartKeyReleased
 
     private void searchQuantityStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyTyped
@@ -1002,16 +997,12 @@ public class ItemRequest extends javax.swing.JPanel {
     }//GEN-LAST:event_searchQuantityEndFocusLost
 
     private void searchQuantityEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyReleased
-        refreshTable();
+        refreshItemTable();
     }//GEN-LAST:event_searchQuantityEndKeyReleased
 
     private void searchQuantityEndKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyTyped
         enforceDigits(evt);
     }//GEN-LAST:event_searchQuantityEndKeyTyped
-
-    private void searchStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchStatusActionPerformed
-        refreshTable();
-    }//GEN-LAST:event_searchStatusActionPerformed
 
     private void btnClearFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearFilterActionPerformed
         searchItem.setSelectedIndex(0);
@@ -1024,6 +1015,47 @@ public class ItemRequest extends javax.swing.JPanel {
         searchQuantityEnd.setText("");
         setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_btnClearFilterActionPerformed
+
+    private void searchItemItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchItemItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateAssociatedComboBox(searchItem, searchDesc, "request_item", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
+        GuiUtil.repopulateAssociatedComboBox(searchItem, searchName, "request_item", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchItemItemStateChanged
+
+    private void searchDescItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchDescItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateAssociatedComboBox(searchDesc, searchName, "request_desc", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchDescItemStateChanged
+
+    private void searchNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchNameItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchNameItemStateChanged
+
+    private void searchStatusItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchStatusItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchStatusItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
