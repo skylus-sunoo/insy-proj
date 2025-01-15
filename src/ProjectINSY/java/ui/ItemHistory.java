@@ -16,6 +16,9 @@ import static ProjectINSY.java.util.GuiUtil.getFieldString;
 import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JTable;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -31,7 +34,7 @@ public class ItemHistory extends ItemPanel {
      */
     public ItemHistory() {
         initComponents();
-        
+
         currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_HISTORY;
 
         setScrollBarCustom(tableScroll);
@@ -49,6 +52,16 @@ public class ItemHistory extends ItemPanel {
         searchTimestampStart.setText(month_start);
         searchTimestampStart.getDocument().addDocumentListener(new FieldChangeListener());
         searchTimestampEnd.getDocument().addDocumentListener(new FieldChangeListener());
+        
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = formatter.parse(month_start);
+
+            dateStart.setSelectedDate(date);
+        } catch (ParseException e) {
+            e.printStackTrace(System.out);
+        }
+
     }
 
     //<editor-fold defaultstate="collapsed" desc="Item Panel">
@@ -75,7 +88,7 @@ public class ItemHistory extends ItemPanel {
                 + Main.TB_ITEM_HISTORY + " WHERE 1 "
                 + filterWHERE
                 + "ORDER BY history_timestamp DESC";
-        
+
         TableUtil.refreshTable(tableHistory, currentSearchQuery, TableUtil.TableEnum.ITEM_HISTORY);
     }
 
@@ -85,12 +98,13 @@ public class ItemHistory extends ItemPanel {
         GuiUtil.repopulateComboBox(searchType, "history_frame_type", "SELECT CONCAT(history_frame,'-', history_type) AS history_frame_type FROM " + Main.TB_ITEM_HISTORY);
         GuiUtil.repopulateComboBox(searchHolder, "SELECT history_user FROM " + Main.TB_ITEM_HISTORY);
         enableUpdatingComboBoxes();
-        
+
         refreshItemTable();
     }
 
     @Override
-    public void repopulateComboBox() {}
+    public void repopulateComboBox() {
+    }
     //</editor-fold>
 
     private class FieldChangeListener implements DocumentListener, ActionListener {
