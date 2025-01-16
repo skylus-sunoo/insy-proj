@@ -372,12 +372,12 @@ public class ItemManagement extends ItemPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fieldID = new javax.swing.JTextField();
         dateDOD = new ProjectINSY.java.swing.Date.DateChooser();
-        fieldID2 = new javax.swing.JTextField();
         dateStart = new ProjectINSY.java.swing.Date.DateChooser();
         dateEnd = new ProjectINSY.java.swing.Date.DateChooser();
         fieldQuantitySelected = new javax.swing.JTextField();
+        fieldID2 = new javax.swing.JTextField();
+        fieldID = new javax.swing.JTextField();
         panelMain = new javax.swing.JPanel();
         scrollMain = new javax.swing.JScrollPane();
         panelBody = new javax.swing.JPanel();
@@ -1136,7 +1136,7 @@ public class ItemManagement extends ItemPanel {
                 .addContainerGap()
                 .addComponent(panelFilters, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1497, Short.MAX_VALUE))
+                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1498, Short.MAX_VALUE))
             .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelBodyLayout.createSequentialGroup()
                     .addContainerGap()
@@ -1281,12 +1281,6 @@ public class ItemManagement extends ItemPanel {
             JOptionPane.showMessageDialog(this, "Stock quantity cannot be updated! \n\nPlease just use 'Add' or 'Delete' to update the new stock quantity.", "Update Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        //        if (!fieldCode.getText().equals(PLACEHOLDER_CODE)) {
-        //            fieldCode.setText("");
-        //            setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
-        //            JOptionPane.showMessageDialog(this, "Stock code are not allowed to be updated.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-        //            return;
-        //        }
 
         int stock_id = Integer.parseInt(fieldID.getText());
         int stock_batch_end = Integer.parseInt(fieldID2.getText());
@@ -1340,6 +1334,28 @@ public class ItemManagement extends ItemPanel {
                 insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.UPDATE, selectedCode, selectedCodeEnd, history_desc, stock_holder);
 
                 pst.executeUpdate();
+
+                for (int i = 0; i < Integer.parseInt(fieldQuantitySelected.getText()); i++) {
+                    query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?";
+                    pst = conn.prepareStatement(query);
+
+                    int id = i + stock_id;
+                    String code;
+
+                    // Silang Code Change
+                    if (!old_deliveryDate.equals(stock_deliveryDate)) {
+                        String parts[] = stock_deliveryDate.split("");
+                        code = Main.BRANCH_CAMPUS + "-" + parts[2] + "" + parts[3] + "-" + id;
+                    } else {
+                        code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", id);
+                    }
+                    pst.setString(1, code);
+                    pst.setInt(2, id);
+
+                    pst.executeUpdate();
+
+                }
+
                 JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearFields();

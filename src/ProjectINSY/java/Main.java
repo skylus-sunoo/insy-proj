@@ -7,7 +7,6 @@ package ProjectINSY.java;
 import ProjectINSY.java.ui.*;
 import ProjectINSY.java.ui.component.MenuLayout;
 import static ProjectINSY.java.util.GuiUtil.setForm;
-import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.SessionUtil.isLoggedIn;
 import java.awt.Color;
 import java.awt.Toolkit;
@@ -53,6 +52,7 @@ public class Main extends javax.swing.JFrame {
     public static String TB_ITEM_STOCK = "tb_item_stock";
     public static String TB_ITEM_HISTORY = "tb_item_history";
     public static String TB_ITEM_REQUEST = "tb_item_request";
+    public static String TB_ITEM_REPORT = "tb_item_report";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Session">
     private static int userSessionID = -1;
@@ -80,6 +80,7 @@ public class Main extends javax.swing.JFrame {
     private final LogIn LogIn = new LogIn(this);
     private final ItemStock ItemStock = new ItemStock();
     private final ItemRequest ItemRequest = new ItemRequest();
+    private final ItemReport ItemReport = new ItemReport();
     private final ItemManagement ItemManagement = new ItemManagement();
     private final ItemCatalog ItemCatalog = new ItemCatalog();
     private final ItemTracker ItemTracker = new ItemTracker();
@@ -95,6 +96,10 @@ public class Main extends javax.swing.JFrame {
 
     public ItemRequest getItemRequest() {
         return ItemRequest;
+    }
+
+    public ItemReport getItemReport() {
+        return ItemReport;
     }
 
     public ItemManagement getItemManagement() {
@@ -235,6 +240,9 @@ public class Main extends javax.swing.JFrame {
                 form.repopulateFilterComboBox();
             }
             case ItemRequest form -> {
+                form.repopulateFilterComboBox();
+            }
+            case ItemReport form -> {
                 form.repopulateFilterComboBox();
             }
             case ItemManagement form -> {

@@ -55,7 +55,7 @@ import javax.swing.event.DocumentListener;
  * @author admin
  */
 public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, ThreadFactory {
-
+    
     private WebcamPanel panel = null;
     private Webcam webcam = null;
     private boolean isWebcamRunning = false;  // Flag to track the webcam state
@@ -63,15 +63,15 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
 
     private final int WEBCAM_HEIGHT = 800;
     private final int WEBCAM_WIDTH = 600;
-
+    
     private String selectedCode = null;
     private int selectedCodeID = -1;
-
+    
     private final String PLACEHOLDER_CODE_YEAR = "00";
     private final String PLACEHOLDER_CODE_ID = "000000";
     private final String PLACEHOLDER_LOCATION = "Enter Location";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
-
+    
     private boolean isUpdating = false;
 
     /**
@@ -79,7 +79,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
      */
     public ItemTrackerScan() {
         initComponents();
-
+        
         setTransparentFrame(btnWebcamControl, btnSearch, btnUpdate);
         fieldCodeID.getDocument().addDocumentListener(new FieldChangeListener());
         fieldName.getDocument().addDocumentListener(new FieldChangeListener());
@@ -87,49 +87,49 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         fieldLocation.getDocument().addDocumentListener(new FieldChangeListener());
         fieldHolder.getDocument().addDocumentListener(new FieldChangeListener());
     }
-
+    
     private class FieldChangeListener implements DocumentListener, ActionListener {
-
+        
         @Override
         public void insertUpdate(DocumentEvent e) {
             checkFields();
         }
-
+        
         @Override
         public void removeUpdate(DocumentEvent e) {
             checkFields();
         }
-
+        
         @Override
         public void changedUpdate(DocumentEvent e) {
             checkFields();
         }
-
+        
         @Override
         public void actionPerformed(ActionEvent e) {
             checkFields();
         }
-
+        
         private void checkFields() {
             if (isUpdating) {
                 return;
             }
-
+            
             String codeIDText = fieldCodeID.getText();
-
+            
             if (!codeIDText.isEmpty()) {
                 if (codeIDText.contains("Silang-")) {
                     isUpdating = true;
-
+                    
                     SwingUtilities.invokeLater(() -> {
                         String[] parts = codeIDText.split("-");
-
+                        
                         if (parts.length >= 2) {
                             fieldCodeYear.setText(parts[1]);
                             fieldCodeYear.setForeground(Color.BLACK);
                             fieldCodeID.setText(parts[2]);
                         }
-
+                        
                         isUpdating = false;
                     });
                 } else {
@@ -145,7 +145,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             } else {
                 selectedCodeID = -1;
             }
-
+            
             btnUpdate.setEnabled(!fieldName.getText().isEmpty()
                     && !fieldLocation.getText().isEmpty()
                     && !fieldLocation.getText().equals(PLACEHOLDER_LOCATION)
@@ -154,31 +154,31 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             );
         }
     }
-
+    
     public void repopulateSuggestions() {
         GuiUtil.repopulateSuggestions(fieldLocation, "stock_location", "SELECT DISTINCT stock_location FROM " + Main.TB_ITEM_STOCK);
         GuiUtil.repopulateSuggestions(fieldHolder, "stock_holder", "SELECT DISTINCT stock_holder FROM " + Main.TB_ITEM_STOCK);
     }
-
+    
     public void setScannerFocus() {
         fieldCodeID.requestFocusInWindow();
     }
-
+    
     public void searchItem() {
         String codeIDText = fieldCodeID.getText();
         if (!codeIDText.isEmpty()) {
             selectedCodeID = Integer.parseInt(codeIDText);
             selectedCode = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", selectedCodeID);
         }
-
+        
         String name = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_name", "stock_id", selectedCodeID);
         String desc = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_desc", "stock_id", selectedCodeID);
         String location = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_location", "stock_id", selectedCodeID);
         String holder = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_holder", "stock_id", selectedCodeID);
         String batch = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_batch", "stock_id", selectedCodeID);
-
+        
         String query = "SELECT COUNT(*) FROM " + Main.TB_ITEM_STOCK + " WHERE stock_batch = ?";
-
+        
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = prepareQueryWithParameters(conn, query, batch); ResultSet rs = pst.executeQuery()) {
             if (rs.next()) {
                 int num = rs.getInt("COUNT(*)");
@@ -191,28 +191,32 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
-
-        if (!name.isEmpty() && !name.equals(fieldName.getText())) {
+        
+        if (!codeIDText.isEmpty() && !codeIDText.equals(fieldLastCode.getText())) {
             String current_barcode = validateBarcode(selectedCode);
+            if (current_barcode == null) {
+                return;
+            }
             ImageIcon barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
             imgBarcode.setIcon(barcodeIcon);
-
             fieldName.setText(name);
             fieldDesc.setText(desc);
             fieldLocation.setText(location);
             fieldHolder.setText(holder);
             fieldBatch.setText(batch);
-
+            
             fieldLocation.setForeground(Color.BLACK);
             fieldHolder.setForeground(Color.BLACK);
             SoundUtil.playSound(SoundUtil.SOUND_SCANNED);
+            
+            fieldLastCode.setText(codeIDText);
         }
     }
-
+    
     private void clearFields() {
         selectedCode = null;
         selectedCodeID = -1;
-
+        
         GuiUtil.clearField(fieldCodeYear, PLACEHOLDER_CODE_YEAR);
         GuiUtil.clearField(fieldCodeID, PLACEHOLDER_CODE_ID);
 
@@ -222,13 +226,16 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         fieldDesc.setText("");
         GuiUtil.clearField(fieldLocation, PLACEHOLDER_LOCATION);
         GuiUtil.clearField(fieldHolder, PLACEHOLDER_HOLDER);
-
+        
+        GuiUtil.clearField(fieldBatch, "");
+        GuiUtil.clearField(fieldLastCode, "");
+        
         GuiUtil.resetIcon(imgBarcode);
         radioScanBatch.setText("Batch (0 Item)");
-
+        
         setUpdateDeleteEnable();
     }
-
+    
     public void setUpdateDeleteEnable() {
         resetBtnEnability(fieldName, btnUpdate);
     }
@@ -240,31 +247,31 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             System.out.println("No webcams found!");
             return;
         }
-
+        
         webcam = webcams.get(0);
         Dimension size = WebcamResolution.VGA.getSize();
         webcam.setViewSize(size);
-
+        
         panel = new WebcamPanel(webcam);
         panel.setPreferredSize(size);
         panel.setFPSDisplayed(true);
-
+        
         panelCamera.add(panel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, WEBCAM_HEIGHT, WEBCAM_WIDTH));
         panelCamera.revalidate();
         panelCamera.repaint();
     }
-
+    
     private void startWebcam() {
         if (webcam == null) {
             initWebcam();
         }
-
+        
         if (!isWebcamRunning) {
             if (webcam != null && !webcam.isOpen()) {
                 webcam.open();
             }
             isWebcamRunning = true;
-
+            
             if (captureThread != null && captureThread.isAlive()) {
                 captureThread.interrupt();
             }
@@ -273,19 +280,19 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             captureThread.start();
         }
     }
-
+    
     private void stopWebcam() {
         if (webcam != null && webcam.isOpen()) {
             webcam.close();
         }
         webcam = null;
         isWebcamRunning = false;
-
+        
         if (captureThread != null && captureThread.isAlive()) {
             captureThread.interrupt();
         }
     }
-
+    
     private void toggleWebcam() {
         if (isWebcamRunning) {
             stopWebcam();
@@ -293,7 +300,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             startWebcam();
         }
     }
-
+    
     @Override
     public void run() {
         while (isWebcamRunning) {
@@ -303,38 +310,38 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
 //                Logger.getLogger(ItemTracker.class.getName()).log(Level.SEVERE, null, ex);
                 break;
             }
-
+            
             if (webcam.isOpen()) {
                 Result result = null;
                 BufferedImage image = null;
-
+                
                 image = webcam.getImage();
                 if (image == null) {
                     continue;
                 }
-
+                
                 LuminanceSource source = new BufferedImageLuminanceSource(image);
                 BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-
+                
                 try {
                     result = new MultiFormatReader().decode(bitmap);
                 } catch (NotFoundException ex) {
 //                    Logger.getLogger(ItemTracker.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
+                
                 if (result != null) {
                     selectedCode = result.getText();
                     if (selectedCode.contains("-")) {
                         String[] parts = selectedCode.split("-");
                         fieldCodeYear.setText(parts[1]);
                         fieldCodeID.setText(parts[2]);
-
+                        
                         fieldCodeYear.setForeground(Color.BLACK);
                         fieldCodeID.setForeground(Color.BLACK);
                     }
-
+                    
                     searchItem();
-
+                    
                     if (radioAutoclose.isSelected()) {
                         stopWebcam();
                     }
@@ -342,12 +349,12 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
             }
         }
     }
-
+    
     @Override
     public Thread newThread(Runnable r) {
         Thread t = new Thread(r, "My Thread");
         t.setDaemon(true);
-
+        
         return t;
     }
     //</editor-fold>
@@ -362,6 +369,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private void initComponents() {
 
         fieldBatch = new javax.swing.JTextField();
+        fieldLastCode = new javax.swing.JTextField();
         panelFields = new javax.swing.JPanel();
         labelScanType = new javax.swing.JLabel();
         radioScanSingle = new ProjectINSY.java.swing.RadioButtonCustom();
@@ -399,6 +407,8 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         btnSearch = new javax.swing.JButton();
 
         fieldBatch.setText("jTextField1");
+
+        fieldLastCode.setText("jTextField1");
 
         setBackground(new java.awt.Color(255, 255, 255));
         setPreferredSize(new java.awt.Dimension(1836, 850));
@@ -739,7 +749,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         String stock_location = fieldLocation.getText();
         String stock_holder = fieldHolder.getText();
-
+        
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
                     null,
@@ -747,21 +757,21 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
                     "Warning: Stock Update",
                     JOptionPane.YES_NO_OPTION
             );
-
+            
             if (warnUser == JOptionPane.YES_OPTION) {
                 String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_location = ?, stock_holder = ?";
                 int scanTypeID = selectedCodeID;
                 String selectedCodeEnd = selectedCode;
-
+                
                 if (radioScanSingle.isSelected()) {
                     query += " WHERE stock_id = ?";
                 } else {
                     query += " WHERE stock_batch = ?";
                     scanTypeID = Integer.parseInt(fieldBatch.getText());
-
+                    
                     PreparedStatement pst = conn.prepareStatement("SELECT stock_code FROM " + Main.TB_ITEM_STOCK + " WHERE stock_batch = " + scanTypeID + " ORDER BY stock_code DESC LIMIT 1");
                     ResultSet rs = pst.executeQuery();
-
+                    
                     if (rs.next()) {
                         selectedCodeEnd = rs.getString("stock_code");
                     }
@@ -775,22 +785,22 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
                 String history_desc = "";
                 String old_location = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_location", "stock_id", selectedCodeID);
                 String old_holder = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_holder", "stock_id", selectedCodeID);
-
+                
                 history_desc += createHistoryDesc(old_location, stock_location, "Location");
                 history_desc += createHistoryDesc(old_holder, stock_holder, "Holder");
-
+                
                 insertHistory(HistoryFrame.TRACKER, HistoryType.UPDATE, selectedCode, selectedCodeEnd, history_desc, stock_holder);
-
+                
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
+                
                 clearFields();
             }
-
+            
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
-
+        
         repopulateSuggestions();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
@@ -856,6 +866,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private javax.swing.JTextField fieldCodeYear;
     private javax.swing.JTextField fieldDesc;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldHolder;
+    private javax.swing.JTextField fieldLastCode;
     private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldLocation;
     private javax.swing.JTextField fieldName;
     private javax.swing.JLabel imageCode;

@@ -61,7 +61,7 @@ public class ItemRequest extends ItemPanel {
         currentSearchQuery = "SELECT * FROM "
                 + Main.TB_ITEM_REQUEST + " WHERE 1 "
                 + filterWHERE
-                + " ORDER BY request_id DESC";
+                + " ORDER BY request_timestamp ASC";
 
         setScrollBarCustom(tableScroll);
 
@@ -115,7 +115,7 @@ public class ItemRequest extends ItemPanel {
         currentSearchQuery = "SELECT * FROM "
                 + Main.TB_ITEM_REQUEST + " WHERE 1 "
                 + filterWHERE
-                + " ORDER BY request_id DESC";
+                + " ORDER BY request_timestamp ASC";
 
         TableUtil.refreshTable(tableRequest, currentSearchQuery, TableUtil.TableEnum.ITEM_REQUEST);
 
@@ -131,6 +131,8 @@ public class ItemRequest extends ItemPanel {
         GuiUtil.repopulateComboBox(searchDesc, "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
         GuiUtil.repopulateComboBox(searchName, "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
         GuiUtil.repopulateComboBox(searchStatus, "SELECT request_status FROM " + Main.TB_ITEM_REQUEST);
+        searchStatus.removeItem("PENDING");
+        searchStatus.insertItemAt("PENDING", 1);
         searchStatus.setSelectedItem("PENDING");
         enableUpdatingComboBoxes();
 

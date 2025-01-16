@@ -47,6 +47,7 @@ public class TableUtil {
         ITEM_HISTORY,
         ITEM_LIST,
         ITEM_REQUEST,
+        ITEM_REPORT,
     };
 
     public static ImageIcon blobToImage(ResultSet rs, String column_name) throws SQLException {
@@ -155,6 +156,18 @@ public class TableUtil {
                                 String status = rs.getString("request_status");
                                 model.addRow(new Object[]{
                                     timestamp, item, desc, name, quantity, status
+                                });
+                                break;
+                            }
+                            //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="ITEM REPORT">
+                            case ITEM_REPORT: {
+                                String code = rs.getString("report_code");
+                                String name = rs.getString("stock_name");
+                                String desc = rs.getString("stock_desc");
+                                String condition = rs.getString("report_condition");
+                                model.addRow(new Object[]{
+                                    code, name, desc, condition
                                 });
                                 break;
                             }
