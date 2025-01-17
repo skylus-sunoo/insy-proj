@@ -144,7 +144,7 @@ public class DatabaseUtil {
     }
 
     public enum HistoryFrame {
-        REQUEST, CATALOG, MANAGEMENT, TRACKER
+        REPORT, REQUEST, CATALOG, MANAGEMENT, TRACKER
     }
 
     public enum HistoryType {

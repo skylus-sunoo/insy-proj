@@ -34,16 +34,17 @@ public class TableHighlighter extends DefaultTableCellRenderer {
                 new Color(191, 191, 255, 100);
             case "DENIED" ->
                 new Color(255, 191, 191, 100);
+                
             case "DAMAGED" ->
-                new Color(255, 191, 191, 100);
-            case "IN MAINTENANCE" ->
                 new Color(255, 191, 191, 100);
             case "LOST/STOLEN" ->
                 new Color(255, 191, 191, 100);
-            case "OBSOLETE" ->
-                new Color(255, 191, 191, 100);
+            case "IN MAINTENANCE" ->
+                new Color(255, 191, 127, 100);
             case "UNSERVICABLE" ->
-                new Color(255, 191, 191, 100);
+                new Color(255, 127, 191, 100);
+            case "OBSOLETE" ->
+                new Color(63, 63, 63, 100);
             default ->
                 table.getBackground();
         };

@@ -9,8 +9,8 @@ import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.swing.TableHighlighter;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
-import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
+import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
@@ -20,20 +20,15 @@ import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
-import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
 import static ProjectINSY.java.util.TableUtil.defaultTable;
-import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
-import static ProjectINSY.java.util.GuiUtil.getComboSelected;
-import static ProjectINSY.java.util.GuiUtil.getFieldString;
-import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
+import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
@@ -48,29 +43,29 @@ public class ItemReport extends ItemPanel {
 
     TableHighlighter TableHighlighter = new TableHighlighter(3);
 
+    private final String PLACEHOLDER_CODE = "Silang-00-000000";
+
     /**
      * Creates new form LogIn
      */
     public ItemReport() {
         initComponents();
 
-        currentSearchQuery = "SELECT r.report_code, s.stock_name, s.stock_desc, r.report_condition FROM " 
-                + Main.TB_ITEM_REQUEST 
-                + " r JOIN " 
-                + Main.TB_ITEM_STOCK 
-                + " s ON r.report_code = s.stock_code " 
-                + " WHERE 1 " 
+        currentSearchQuery = "SELECT r.report_code, s.stock_name, s.stock_desc, r.report_condition FROM "
+                + Main.TB_ITEM_REQUEST
+                + " r JOIN "
+                + Main.TB_ITEM_STOCK
+                + " s ON r.report_code = s.stock_code "
+                + " WHERE 1 "
                 + filterWHERE
                 + " ORDER BY request_timestamp DESC";
 
         setScrollBarCustom(tableScroll);
 
         setTransparentFrame(ItemReport.this);
-        setTransparentFrame(btnCreateRequest, btnFilter, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
+        setTransparentFrame(btnCreateReport, btnFilter, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
 
-//        fieldItem.getDocument().addDocumentListener(new FieldChangeListener());
-//        fieldName.getDocument().addDocumentListener(new FieldChangeListener());
-        fieldCode.getDocument().addDocumentListener(new FieldChangeListener());
+        fieldName.getDocument().addDocumentListener(new FieldChangeListener());
 
         defaultTable(tableRequest);
         tableRequest.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
@@ -82,7 +77,7 @@ public class ItemReport extends ItemPanel {
             }
         });
 
-        switchRequestForm(btnCreateRequest);
+        switchRequestForm(btnCreateReport);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Item Panel">
@@ -108,12 +103,12 @@ public class ItemReport extends ItemPanel {
 //            filterWHERE += "AND request_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
 //        }
 
-        currentSearchQuery = "SELECT r.report_code, s.stock_name, s.stock_desc, r.report_condition FROM " 
+        currentSearchQuery = "SELECT r.report_code, s.stock_name, s.stock_desc, r.report_condition FROM "
                 + Main.TB_ITEM_REPORT
-                + " r JOIN " 
-                + Main.TB_ITEM_STOCK 
-                + " s ON r.report_code = s.stock_code " 
-                + " WHERE 1 " 
+                + " r JOIN "
+                + Main.TB_ITEM_STOCK
+                + " s ON r.report_code = s.stock_code "
+                + " WHERE 1 "
                 + filterWHERE
                 + " ORDER BY report_timestamp DESC";
 
@@ -127,15 +122,15 @@ public class ItemReport extends ItemPanel {
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateComboBox(searchItem, "SELECT s.stock_name FROM " 
+        GuiUtil.repopulateComboBox(searchName, "SELECT s.stock_name FROM "
                 + Main.TB_ITEM_REPORT
-                + " r JOIN " 
-                + Main.TB_ITEM_STOCK 
+                + " r JOIN "
+                + Main.TB_ITEM_STOCK
                 + " s ON r.report_code = s.stock_code");
-        GuiUtil.repopulateComboBox(searchDesc, "SELECT s.stock_desc FROM " 
+        GuiUtil.repopulateComboBox(searchDesc, "SELECT s.stock_desc FROM "
                 + Main.TB_ITEM_REPORT
-                + " r JOIN " 
-                + Main.TB_ITEM_STOCK 
+                + " r JOIN "
+                + Main.TB_ITEM_STOCK
                 + " s ON r.report_code = s.stock_code");
         GuiUtil.repopulateComboBox(searchCondition, "SELECT report_condition FROM " + Main.TB_ITEM_REPORT);
         enableUpdatingComboBoxes();
@@ -150,11 +145,34 @@ public class ItemReport extends ItemPanel {
 
     public void selectTableRequest(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableRequest, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldCode, fieldName, fieldDesc, comboCondition);
+        TableUtil.linkFieldsToTable(tableRow, fieldSelectedCode, fieldName, fieldDesc, comboCondition);
 
-//        fieldID.setText(getColumnValueByString(Main.TB_ITEM_REQUEST, "request_id", "request_timestamp", fieldTimestamp.getText()));
+        String codeText = fieldSelectedCode.getText();
+        fieldID.setText(getColumnValueByString(Main.TB_ITEM_REPORT, "report_id", "report_code", codeText));
 
         setUpdateDeleteEnableItem();
+    }
+
+    public void searchItem() {
+        String codeText = fieldCode.getText();
+        fieldSelectedCode.setText("None");
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            if (codeText.isEmpty() || !DatabaseUtil.recordExists(conn, Main.TB_ITEM_STOCK, "stock_code", codeText)) {
+                return;
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+
+        String name = getColumnValueByString(Main.TB_ITEM_STOCK, "stock_name", "stock_code", codeText);
+        String desc = getColumnValueByString(Main.TB_ITEM_STOCK, "stock_desc", "stock_code", codeText);
+
+        fieldID.setText(getColumnValueByString(Main.TB_ITEM_STOCK, "stock_id", "stock_code", codeText));
+        fieldSelectedCode.setText(codeText);
+
+        fieldName.setText(name);
+        fieldDesc.setText(desc);
     }
 
     private class FieldChangeListener implements DocumentListener, ActionListener {
@@ -186,27 +204,37 @@ public class ItemReport extends ItemPanel {
     }
 
     public void switchRequestForm(JComponent com) {
-        if (com == btnCreateRequest) {
+        if (com == btnCreateReport) {
             tabRequest.setSelectedIndex(0);
-            btnCreateRequest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
+            btnCreateReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
             btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png")));
+
+            setScannerFocus();
         } else {
             tabRequest.setSelectedIndex(1);
             btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
-            btnCreateRequest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png")));
+            btnCreateReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png")));
 
             repopulateFilterComboBox();
         }
     }
 
+    public void setScannerFocus() {
+        fieldCode.requestFocusInWindow();
+    }
+
     public void clearFields() {
         GuiUtil.clearField(fieldID, "");
         GuiUtil.clearField(fieldTimestamp, "");
-        GuiUtil.clearField(fieldCode, "");
-        GuiUtil.clearField(fieldDesc, PLACEHOLDER_NAME);
-        GuiUtil.clearField(fieldName, PLACEHOLDER_DESC);
+        fieldSelectedCode.setText("None");
+        GuiUtil.clearField(fieldCode, PLACEHOLDER_CODE);
+        GuiUtil.clearField(fieldName, "");
+        GuiUtil.clearField(fieldDesc, "");
         GuiUtil.clearComboBox(comboCondition);
         TableUtil.clearSelectedTableRow(tableRequest);
+
+        fieldName.setForeground(Color.BLACK);
+        fieldDesc.setForeground(Color.BLACK);
         setUpdateDeleteEnableItem();
     }
 
@@ -231,7 +259,7 @@ public class ItemReport extends ItemPanel {
         panelTab = new javax.swing.JPanel();
         tabButtons = new javax.swing.JPanel();
         labelFormLocation = new javax.swing.JLabel();
-        btnCreateRequest = new javax.swing.JButton();
+        btnCreateReport = new javax.swing.JButton();
         labelFormLocation1 = new javax.swing.JLabel();
         btnFilter = new javax.swing.JButton();
         tabRequest = new javax.swing.JTabbedPane();
@@ -257,31 +285,24 @@ public class ItemReport extends ItemPanel {
         jSeparator6 = new javax.swing.JSeparator();
         fieldDesc = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
+        labelSelectedCode = new javax.swing.JLabel();
+        fieldSelectedCode = new javax.swing.JTextField();
+        btnSearch = new javax.swing.JButton();
+        labelScanInfo1 = new javax.swing.JLabel();
+        labelScanInfo = new javax.swing.JLabel();
         panelFilter = new javax.swing.JPanel();
         labelFilterItem = new javax.swing.JLabel();
-        searchItem = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        searchName = new ProjectINSY.java.swing.ComboBoxSuggestion();
         jSeparator2 = new javax.swing.JSeparator();
         labelFilterDesc = new javax.swing.JLabel();
         searchDesc = new ProjectINSY.java.swing.ComboBoxSuggestion();
         jSeparator3 = new javax.swing.JSeparator();
-        labelFilterName = new javax.swing.JLabel();
-        searchName = new ProjectINSY.java.swing.ComboBoxSuggestion();
-        jSeparator4 = new javax.swing.JSeparator();
-        labelFilterQuantity = new javax.swing.JLabel();
-        labelFilterQuantityFrom = new javax.swing.JLabel();
-        searchQuantityStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        labelFilterQuantityTo = new javax.swing.JLabel();
-        searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
         jSeparator5 = new javax.swing.JSeparator();
-        labelFilterStatus = new javax.swing.JLabel();
+        labelFilterCondition = new javax.swing.JLabel();
         searchCondition = new ProjectINSY.java.swing.ComboBoxSuggestion();
         panelClearFilter = new javax.swing.JPanel();
         labelCleaFilter = new javax.swing.JLabel();
         btnClearFilter = new javax.swing.JButton();
-
-        fieldID.setText("jTextField1");
-
-        fieldTimestamp.setText("jTextField1");
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -333,17 +354,17 @@ public class ItemReport extends ItemPanel {
         labelFormLocation.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         tabButtons.add(labelFormLocation, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, -1, 270, 40));
 
-        btnCreateRequest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png"))); // NOI18N
-        btnCreateRequest.setBorder(null);
-        btnCreateRequest.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnCreateRequest.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png"))); // NOI18N
-        btnCreateRequest.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png"))); // NOI18N
-        btnCreateRequest.addActionListener(new java.awt.event.ActionListener() {
+        btnCreateReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png"))); // NOI18N
+        btnCreateReport.setBorder(null);
+        btnCreateReport.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnCreateReport.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png"))); // NOI18N
+        btnCreateReport.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png"))); // NOI18N
+        btnCreateReport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCreateRequestActionPerformed(evt);
+                btnCreateReportActionPerformed(evt);
             }
         });
-        tabButtons.add(btnCreateRequest, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, -4, -1, 50));
+        tabButtons.add(btnCreateReport, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, -4, -1, 50));
 
         labelFormLocation1.setFont(new java.awt.Font("Bebas", 0, 24)); // NOI18N
         labelFormLocation1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -370,19 +391,21 @@ public class ItemReport extends ItemPanel {
 
         labelDesc.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelDesc.setText("Description");
-        panelBody.add(labelDesc, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 270, -1, -1));
+        panelBody.add(labelDesc, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 520, -1, -1));
 
         labelItem.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelItem.setText("Item Name");
-        panelBody.add(labelItem, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 150, -1, -1));
+        panelBody.add(labelItem, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 400, -1, -1));
 
         labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelCode.setText("Code");
-        panelBody.add(labelCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, -1, -1));
+        labelCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelCode.setText("Enter or Scan Code:");
+        panelBody.add(labelCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 80, 240, -1));
 
         fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         fieldCode.setForeground(new java.awt.Color(153, 153, 153));
-        fieldCode.setText("1");
+        fieldCode.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        fieldCode.setText("Silang-00-000000");
         fieldCode.setBorder(null);
         fieldCode.setSelectionColor(new java.awt.Color(25, 102, 24));
         fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -393,29 +416,24 @@ public class ItemReport extends ItemPanel {
                 fieldCodeFocusLost(evt);
             }
         });
-        fieldCode.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                fieldCodeKeyTyped(evt);
-            }
-        });
-        panelBody.add(fieldCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 90, 220, 30));
+        panelBody.add(fieldCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 130, 220, 30));
 
         imageCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf_small.png"))); // NOI18N
-        panelBody.add(imageCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 80, 260, -1));
+        panelBody.add(imageCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 120, 260, -1));
 
         labelCondition.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelCondition.setText("Condition");
-        panelBody.add(labelCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 40, -1, -1));
+        panelBody.add(labelCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 290, -1, -1));
 
         comboCondition.setBorder(null);
         comboCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "DAMAGED", "IN MAINTENANCE", "LOST/STOLEN", "OBSOLETE", "UNSERVICABLE" }));
         comboCondition.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        panelBody.add(comboCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 90, 220, -1));
+        panelBody.add(comboCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 340, 510, -1));
 
         imageCondition.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        imageCondition.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf_small.png"))); // NOI18N
-        panelBody.add(imageCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 80, 260, -1));
+        imageCondition.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
+        panelBody.add(imageCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 330, 540, -1));
 
         panelCRUD.setBackground(new java.awt.Color(255, 255, 255));
         panelCRUD.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -495,23 +513,54 @@ public class ItemReport extends ItemPanel {
         });
         panelCRUD.add(btnDelete, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 30, 100, 40));
 
-        panelBody.add(panelCRUD, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 450, 560, 110));
+        panelBody.add(panelCRUD, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 660, 560, 110));
 
         fieldName.setEditable(false);
         fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldName.setBorder(null);
         fieldName.setFocusable(false);
         fieldName.setSelectionColor(new java.awt.Color(25, 102, 24));
-        panelBody.add(fieldName, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 190, 530, -1));
-        panelBody.add(jSeparator6, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 230, 530, 10));
+        panelBody.add(fieldName, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 440, 530, -1));
+        panelBody.add(jSeparator6, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 480, 530, 10));
 
         fieldDesc.setEditable(false);
         fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldDesc.setBorder(null);
         fieldDesc.setFocusable(false);
         fieldDesc.setSelectionColor(new java.awt.Color(25, 102, 24));
-        panelBody.add(fieldDesc, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 310, 530, -1));
-        panelBody.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 350, 530, 10));
+        panelBody.add(fieldDesc, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 560, 530, -1));
+        panelBody.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 600, 530, 10));
+
+        labelSelectedCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelSelectedCode.setText("Code: ");
+        panelBody.add(labelSelectedCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 210, -1, -1));
+
+        fieldSelectedCode.setEditable(false);
+        fieldSelectedCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        fieldSelectedCode.setText("None");
+        fieldSelectedCode.setBorder(null);
+        fieldSelectedCode.setFocusable(false);
+        fieldSelectedCode.setSelectionColor(new java.awt.Color(25, 102, 24));
+        panelBody.add(fieldSelectedCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 210, 460, 30));
+
+        btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch.png"))); // NOI18N
+        btnSearch.setBorder(null);
+        btnSearch.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSearch.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnSearch_pressed.png"))); // NOI18N
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
+        panelBody.add(btnSearch, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 130, -1, -1));
+
+        labelScanInfo1.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelScanInfo1.setText("When scanning a new barcode, ensure");
+        panelBody.add(labelScanInfo1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, -1, -1));
+
+        labelScanInfo.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
+        labelScanInfo.setText("that the field above is selected and empty.");
+        panelBody.add(labelScanInfo, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 30, -1, -1));
 
         tabRequest.addTab("tab1", panelBody);
 
@@ -520,11 +569,11 @@ public class ItemReport extends ItemPanel {
         labelFilterItem.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelFilterItem.setText("Item Name");
 
-        searchItem.setBorder(null);
-        searchItem.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchItem.addItemListener(new java.awt.event.ItemListener() {
+        searchName.setBorder(null);
+        searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchName.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                searchItemItemStateChanged(evt);
+                searchNameItemStateChanged(evt);
             }
         });
 
@@ -539,70 +588,8 @@ public class ItemReport extends ItemPanel {
             }
         });
 
-        labelFilterName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelFilterName.setText("Requestor");
-
-        searchName.setBorder(null);
-        searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        searchName.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                searchNameItemStateChanged(evt);
-            }
-        });
-
-        labelFilterQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelFilterQuantity.setText("Quantity Range");
-
-        labelFilterQuantityFrom.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
-        labelFilterQuantityFrom.setText("From");
-
-        searchQuantityStart.setBorder(null);
-        searchQuantityStart.setForeground(new java.awt.Color(153, 153, 153));
-        searchQuantityStart.setText("1");
-        searchQuantityStart.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
-        searchQuantityStart.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                searchQuantityStartFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                searchQuantityStartFocusLost(evt);
-            }
-        });
-        searchQuantityStart.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                searchQuantityStartKeyReleased(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                searchQuantityStartKeyTyped(evt);
-            }
-        });
-
-        labelFilterQuantityTo.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
-        labelFilterQuantityTo.setText("To");
-
-        searchQuantityEnd.setBorder(null);
-        searchQuantityEnd.setForeground(new java.awt.Color(153, 153, 153));
-        searchQuantityEnd.setText("999999999");
-        searchQuantityEnd.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
-        searchQuantityEnd.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                searchQuantityEndFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                searchQuantityEndFocusLost(evt);
-            }
-        });
-        searchQuantityEnd.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                searchQuantityEndKeyReleased(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                searchQuantityEndKeyTyped(evt);
-            }
-        });
-
-        labelFilterStatus.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelFilterStatus.setText("Status");
+        labelFilterCondition.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterCondition.setText("Condition");
 
         searchCondition.setBorder(null);
         searchCondition.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
@@ -637,81 +624,48 @@ public class ItemReport extends ItemPanel {
         panelFilter.setLayout(panelFilterLayout);
         panelFilterLayout.setHorizontalGroup(
             panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(panelClearFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelFilterLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator2)
-                    .addComponent(searchItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(searchName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(labelFilterItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(labelFilterDesc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(searchDesc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator3)
-                    .addComponent(labelFilterName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(searchName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jSeparator4)
                     .addGroup(panelFilterLayout.createSequentialGroup()
-                        .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(labelFilterQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(panelFilterLayout.createSequentialGroup()
-                                .addComponent(labelFilterQuantityFrom)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(searchQuantityStart, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(labelFilterQuantityTo)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(searchQuantityEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jSeparator5, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(searchCondition, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(labelFilterStatus, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(labelFilterCondition, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
-            .addComponent(panelClearFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         panelFilterLayout.setVerticalGroup(
             panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelFilterLayout.createSequentialGroup()
-                .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelFilterLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addComponent(labelFilterItem)
-                        .addGap(6, 6, 6)
-                        .addComponent(searchItem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6)
-                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6)
-                        .addComponent(labelFilterDesc)
-                        .addGap(6, 6, 6)
-                        .addComponent(searchDesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6)
-                        .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(labelFilterName)
-                        .addGap(6, 6, 6)
-                        .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6)
-                        .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(panelFilterLayout.createSequentialGroup()
-                                .addComponent(labelFilterQuantity)
-                                .addGap(6, 6, 6)
-                                .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(labelFilterQuantityFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(searchQuantityStart, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(labelFilterQuantityTo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(panelFilterLayout.createSequentialGroup()
-                                .addComponent(labelFilterStatus)
-                                .addGap(6, 6, 6)
-                                .addComponent(searchCondition, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(6, 6, 6)
-                                .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(panelFilterLayout.createSequentialGroup()
-                        .addGap(339, 339, 339)
-                        .addComponent(searchQuantityEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(27, 27, 27)
+                .addComponent(labelFilterItem)
+                .addGap(6, 6, 6)
+                .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(6, 6, 6)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(6, 6, 6)
+                .addComponent(labelFilterDesc)
+                .addGap(6, 6, 6)
+                .addComponent(searchDesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(6, 6, 6)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(labelFilterCondition)
+                .addGap(6, 6, 6)
+                .addComponent(searchCondition, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(6, 6, 6)
+                .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(24, 24, 24)
                 .addComponent(panelClearFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(360, Short.MAX_VALUE))
+                .addContainerGap(453, Short.MAX_VALUE))
         );
 
         tabRequest.addTab("tab2", panelFilter);
@@ -754,51 +708,48 @@ public class ItemReport extends ItemPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
-        setDefaultField(fieldCode, PLACEHOLDER_QTY, FieldFocus.GAINED, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusGained
 
     private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
-        setDefaultField(fieldCode, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusLost
 
-    private void btnCreateRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateRequestActionPerformed
-        switchRequestForm(btnCreateRequest);
-    }//GEN-LAST:event_btnCreateRequestActionPerformed
+    private void btnCreateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateReportActionPerformed
+        switchRequestForm(btnCreateReport);
+    }//GEN-LAST:event_btnCreateReportActionPerformed
 
     private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
         switchRequestForm(btnFilter);
     }//GEN-LAST:event_btnFilterActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-        String request_item = fieldCode.getText();
-        String request_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
-        String request_quantity = fieldCode.getText();
-        String request_name = fieldName.getText();
+        String report_code = fieldSelectedCode.getText();
+        String report_name = fieldName.getText();
+        String report_desc = fieldDesc.getText();
+        String report_condition = comboCondition.getSelectedItem().toString();
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            String query = "INSERT INTO " + Main.TB_ITEM_REQUEST + " (request_item, request_desc, request_quantity, request_name)\n"
-                    + "VALUES (?, ?, ?, ?)";
-            PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-            pst.setString(1, request_item);
-            pst.setString(2, request_desc);
-            pst.setString(3, request_quantity);
-            pst.setString(4, request_name);
+            if (DatabaseUtil.recordExists(conn, Main.TB_ITEM_REPORT, "report_code", report_code)) {
+                return;
+            }
+            String query = "INSERT INTO " + Main.TB_ITEM_REPORT + " (report_code, report_condition)\n"
+                    + "VALUES (?, ?)";
+            PreparedStatement pst = conn.prepareStatement(query);
+            pst.setString(1, report_code);
+            pst.setString(2, report_condition);
 
-            // HISTORY : REQUEST-ADD
+            // HISTORY : REPORT-ADD
             String history_desc = "";
-            history_desc += createHistoryDesc(request_item, "Item Name");
-            history_desc += createHistoryDesc(request_desc, "Description");
-            history_desc += createHistoryDesc(request_quantity, "Quantity");
+            history_desc += createHistoryDesc(report_name, "Name");
+            history_desc += createHistoryDesc(report_desc, "Description");
+            history_desc += createHistoryDesc(report_condition, "Condition");
 
             pst.executeUpdate();
 
-            ResultSet rs = pst.getGeneratedKeys();
-            if (rs.next()) {
-                String request_idStr = "Request-" + rs.getInt(1);
-                insertHistory(DatabaseUtil.HistoryFrame.REQUEST, DatabaseUtil.HistoryType.ADD, request_idStr, request_idStr, history_desc, request_name);
-            }
+            insertHistory(DatabaseUtil.HistoryFrame.REPORT, DatabaseUtil.HistoryType.ADD, report_code, report_code, history_desc, "");
 
-            JOptionPane.showMessageDialog(this, "Request Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Report Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearFields();
             refreshItemTable();
@@ -808,43 +759,27 @@ public class ItemReport extends ItemPanel {
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        int request_id = Integer.parseInt(fieldID.getText());
-        String request_idStr = "Request-" + request_id;
-        String request_item = fieldCode.getText();
-        String request_desc = fieldDesc.getText().equals(PLACEHOLDER_DESC) ? "" : fieldDesc.getText();
-        String request_quantity = fieldCode.getText();
-        String request_name = fieldName.getText();
-        String request_status = comboCondition.getSelectedItem().toString();
+        int report_id = Integer.parseInt(fieldID.getText());
+        String report_code = fieldSelectedCode.getText();
+        String report_condition = comboCondition.getSelectedItem().toString();
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            String query = "UPDATE " + Main.TB_ITEM_REQUEST + " SET request_item = ?, request_desc = ?, request_quantity = ?, request_name = ?, request_status = ? WHERE request_id = ?";
+            String query = "UPDATE " + Main.TB_ITEM_REPORT + " SET report_condition = ? WHERE report_id = ?";
             PreparedStatement pst = conn.prepareStatement(query);
-            pst.setString(1, request_item);
-            pst.setString(2, request_desc);
-            pst.setString(3, request_quantity);
-            pst.setString(4, request_name);
-            pst.setString(5, request_status);
-            pst.setInt(6, request_id);
+            pst.setString(1, report_condition);
+            pst.setInt(2, report_id);
 
-            // HISTORY : REQUEST-UPDATE
+            // HISTORY : REPORT-UPDATE
             String history_desc = "";
 
-            String old_item = getColumnValueByInt(Main.TB_ITEM_REQUEST, "request_item", "request_id", request_id);
-            String old_desc = getColumnValueByInt(Main.TB_ITEM_REQUEST, "request_desc", "request_id", request_id);
-            String old_quantity = getColumnValueByInt(Main.TB_ITEM_REQUEST, "request_quantity", "request_id", request_id);
-            String old_name = getColumnValueByInt(Main.TB_ITEM_REQUEST, "request_name", "request_id", request_id);
-            String old_status = getColumnValueByInt(Main.TB_ITEM_REQUEST, "request_status", "request_id", request_id);
+            String old_condition = getColumnValueByInt(Main.TB_ITEM_REPORT, "report_condition", "report_id", report_id);
 
-            history_desc += createHistoryDesc(old_item, request_item, "Item Name");
-            history_desc += createHistoryDesc(old_desc, request_desc, "Description");
-            history_desc += createHistoryDesc(old_quantity, request_quantity, "Quantity");
-            history_desc += createHistoryDesc(old_name, request_name, "Requestor");
-            history_desc += createHistoryDesc(old_status, request_status, "Status");
+            history_desc += createHistoryDesc(old_condition, report_condition, "Condition");
 
-            insertHistory(DatabaseUtil.HistoryFrame.REQUEST, DatabaseUtil.HistoryType.UPDATE, request_idStr, request_idStr, history_desc, request_name);
+            insertHistory(DatabaseUtil.HistoryFrame.REPORT, DatabaseUtil.HistoryType.UPDATE, report_code, report_code, history_desc, "");
 
             pst.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Request Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Report Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearFields();
             refreshItemTable();
@@ -858,10 +793,9 @@ public class ItemReport extends ItemPanel {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        int request_id = Integer.parseInt(fieldID.getText());
-        String request_idStr = "Request-" + request_id;
-        String request_item = fieldCode.getText();
-        String request_name = fieldName.getText();
+        int report_id = Integer.parseInt(fieldID.getText());
+        String report_code = fieldSelectedCode.getText();
+        String report_name = fieldName.getText();
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
@@ -872,17 +806,17 @@ public class ItemReport extends ItemPanel {
             );
 
             if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "DELETE FROM " + Main.TB_ITEM_REQUEST + " WHERE request_id = ?";
+                String query = "DELETE FROM " + Main.TB_ITEM_REPORT + " WHERE report_id = ?";
                 PreparedStatement pst = conn.prepareStatement(query);
-                pst.setInt(1, request_id);
+                pst.setInt(1, report_id);
 
                 // HISTORY : REQUEST-DELETE
-                String history_desc = createHistoryDesc(request_item, "Item Name");
+                String history_desc = createHistoryDesc(report_name, "Name");
 
-                insertHistory(DatabaseUtil.HistoryFrame.REQUEST, DatabaseUtil.HistoryType.DELETE, request_idStr, request_idStr, history_desc, request_name);
+                insertHistory(DatabaseUtil.HistoryFrame.REPORT, DatabaseUtil.HistoryType.DELETE, report_code, report_code, history_desc, "");
 
                 pst.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Request Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Report Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearFields();
                 refreshItemTable();
@@ -892,86 +826,31 @@ public class ItemReport extends ItemPanel {
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
-    private void fieldCodeKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldCodeKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_fieldCodeKeyTyped
-
-    private void searchQuantityStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusGained
-        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityStartFocusGained
-
-    private void searchQuantityStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityStartFocusLost
-        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityStartFocusLost
-
-    private void searchQuantityStartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyReleased
-        refreshItemTable();
-    }//GEN-LAST:event_searchQuantityStartKeyReleased
-
-    private void searchQuantityStartKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityStartKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_searchQuantityStartKeyTyped
-
-    private void searchQuantityEndFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusGained
-        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityEndFocusGained
-
-    private void searchQuantityEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchQuantityEndFocusLost
-        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_searchQuantityEndFocusLost
-
-    private void searchQuantityEndKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyReleased
-        refreshItemTable();
-    }//GEN-LAST:event_searchQuantityEndKeyReleased
-
-    private void searchQuantityEndKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchQuantityEndKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_searchQuantityEndKeyTyped
-
     private void btnClearFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearFilterActionPerformed
-        searchItem.setSelectedIndex(0);
         searchName.setSelectedIndex(0);
         searchDesc.setSelectedIndex(0);
         searchCondition.setSelectedIndex(0);
-
-        searchQuantityStart.setText("");
-        setDefaultField(searchQuantityStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
-        searchQuantityEnd.setText("");
-        setDefaultField(searchQuantityEnd, Main.filterMaxNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_btnClearFilterActionPerformed
-
-    private void searchItemItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchItemItemStateChanged
-        if (isUpdatingComboBoxes) {
-            return;
-        }
-
-        disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchItem, searchDesc, "request_item", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateAssociatedComboBox(searchItem, searchName, "request_item", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
-        enableUpdatingComboBoxes();
-
-        refreshItemTable();
-    }//GEN-LAST:event_searchItemItemStateChanged
-
-    private void searchDescItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchDescItemStateChanged
-        if (isUpdatingComboBoxes) {
-            return;
-        }
-
-        disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchDesc, searchName, "request_desc", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
-        enableUpdatingComboBoxes();
-
-        refreshItemTable();
-    }//GEN-LAST:event_searchDescItemStateChanged
 
     private void searchNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchNameItemStateChanged
         if (isUpdatingComboBoxes) {
             return;
         }
 
+        disableUpdatingComboBoxes();
+        GuiUtil.repopulateAssociatedComboBox(searchName, searchDesc, "request_item", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
+        enableUpdatingComboBoxes();
+
         refreshItemTable();
     }//GEN-LAST:event_searchNameItemStateChanged
+
+    private void searchDescItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchDescItemStateChanged
+        if (isUpdatingComboBoxes) {
+            return;
+        }
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchDescItemStateChanged
 
     private void searchConditionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchConditionItemStateChanged
         if (isUpdatingComboBoxes) {
@@ -981,27 +860,32 @@ public class ItemReport extends ItemPanel {
         refreshItemTable();
     }//GEN-LAST:event_searchConditionItemStateChanged
 
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        searchItem();
+    }//GEN-LAST:event_btnSearchActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnClearFilter;
-    private javax.swing.JButton btnCreateRequest;
+    private javax.swing.JButton btnCreateReport;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnFilter;
+    private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnUpdate;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboCondition;
     private javax.swing.JTextField fieldCode;
     private javax.swing.JTextField fieldDesc;
     private javax.swing.JTextField fieldID;
     private javax.swing.JTextField fieldName;
+    private javax.swing.JTextField fieldSelectedCode;
     private javax.swing.JTextField fieldTimestamp;
     private javax.swing.JLabel imageCode;
     private javax.swing.JLabel imageCondition;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JLabel labelAdd;
@@ -1011,16 +895,15 @@ public class ItemReport extends ItemPanel {
     private javax.swing.JLabel labelCondition;
     private javax.swing.JLabel labelDelete;
     private javax.swing.JLabel labelDesc;
+    private javax.swing.JLabel labelFilterCondition;
     private javax.swing.JLabel labelFilterDesc;
     private javax.swing.JLabel labelFilterItem;
-    private javax.swing.JLabel labelFilterName;
-    private javax.swing.JLabel labelFilterQuantity;
-    private javax.swing.JLabel labelFilterQuantityFrom;
-    private javax.swing.JLabel labelFilterQuantityTo;
-    private javax.swing.JLabel labelFilterStatus;
     private javax.swing.JLabel labelFormLocation;
     private javax.swing.JLabel labelFormLocation1;
     private javax.swing.JLabel labelItem;
+    private javax.swing.JLabel labelScanInfo;
+    private javax.swing.JLabel labelScanInfo1;
+    private javax.swing.JLabel labelSelectedCode;
     private javax.swing.JLabel labelUpdate;
     private javax.swing.JPanel panelBody;
     private javax.swing.JPanel panelCRUD;
@@ -1030,10 +913,7 @@ public class ItemReport extends ItemPanel {
     private javax.swing.JPanel panelTab;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchCondition;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchDesc;
-    private ProjectINSY.java.swing.ComboBoxSuggestion searchItem;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityStart;
     private javax.swing.JPanel tabButtons;
     private javax.swing.JTabbedPane tabRequest;
     private ProjectINSY.java.swing.Table tableRequest;

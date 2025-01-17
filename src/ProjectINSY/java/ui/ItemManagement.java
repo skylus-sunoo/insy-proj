@@ -245,6 +245,20 @@ public class ItemManagement extends ItemPanel {
     @Override
     public void repopulateComboBox() {
         GuiUtil.repopulateComboBox(comboName, "SELECT item_name FROM " + Main.TB_CATALOG_ITEM);
+        GuiUtil.repopulateComboBox(comboRequest, "SELECT request_timestamp FROM " + Main.TB_ITEM_REQUEST + " WHERE request_status = 'PENDING'");
+
+        for (int i = 1; i < comboRequest.getItemCount(); i++) {
+            String request_timestamp = comboRequest.getItemAt(i).toString();
+            String request_name = DatabaseUtil.getColumnValueByString(Main.TB_ITEM_REQUEST, "request_name", "request_timestamp", request_timestamp);
+            String request_item = DatabaseUtil.getColumnValueByString(Main.TB_ITEM_REQUEST, "request_item", "request_timestamp", request_timestamp);
+            String request_desc = DatabaseUtil.getColumnValueByString(Main.TB_ITEM_REQUEST, "request_desc", "request_timestamp", request_timestamp);
+            if (request_desc.isEmpty()) {
+                request_desc = "No Desc";
+            }
+            String request_quantity = DatabaseUtil.getColumnValueByString(Main.TB_ITEM_REQUEST, "request_quantity", "request_timestamp", request_timestamp);
+            comboRequest.removeItemAt(i);
+            comboRequest.insertItemAt(request_timestamp + "  :  " + request_name + "  :  " + request_item + "  :  " + request_desc + "  :  " + request_quantity, i);
+        }
     }
     //</editor-fold>
 
@@ -355,6 +369,7 @@ public class ItemManagement extends ItemPanel {
         GuiUtil.clearField(fieldBenefactor, PLACEHOLDER_BENEFACTOR);
         GuiUtil.clearFieldDate(fieldDOD);
         fieldDOD.setForeground(Color.BLACK);
+        GuiUtil.clearComboBox(comboRequest);
         TableUtil.clearSelectedTableRow(tableInventory);
         setUpdateDeleteEnable();
     }
@@ -421,6 +436,9 @@ public class ItemManagement extends ItemPanel {
         btnClear = new javax.swing.JButton();
         labelDelete = new javax.swing.JLabel();
         btnDelete = new javax.swing.JButton();
+        comboRequest = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        imageRequest = new javax.swing.JLabel();
+        labelRequest = new javax.swing.JLabel();
         tableScroll = new javax.swing.JScrollPane();
         tableInventory = new ProjectINSY.java.swing.Table();
         panelFilters = new javax.swing.JPanel();
@@ -817,7 +835,21 @@ public class ItemManagement extends ItemPanel {
         btnDelete.setBounds(1480, 0, 310, 50);
 
         panelFields.add(panelCRUD);
-        panelCRUD.setBounds(10, 380, 1790, 50);
+        panelCRUD.setBounds(10, 460, 1790, 50);
+
+        comboRequest.setBorder(null);
+        comboRequest.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        panelFields.add(comboRequest);
+        comboRequest.setBounds(380, 380, 1400, 50);
+
+        imageRequest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldRequest.png"))); // NOI18N
+        panelFields.add(imageRequest);
+        imageRequest.setBounds(370, 370, 1430, 70);
+
+        labelRequest.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
+        labelRequest.setText("Associated Request");
+        panelFields.add(labelRequest);
+        labelRequest.setBounds(10, 370, 310, 60);
 
         tableScroll.setBorder(null);
 
@@ -1136,7 +1168,7 @@ public class ItemManagement extends ItemPanel {
                 .addContainerGap()
                 .addComponent(panelFilters, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1498, Short.MAX_VALUE))
+                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1497, Short.MAX_VALUE))
             .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelBodyLayout.createSequentialGroup()
                     .addContainerGap()
@@ -1146,16 +1178,16 @@ public class ItemManagement extends ItemPanel {
         panelBodyLayout.setVerticalGroup(
             panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBodyLayout.createSequentialGroup()
-                .addContainerGap(483, Short.MAX_VALUE)
-                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 809, Short.MAX_VALUE)
-                    .addComponent(panelFilters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(535, Short.MAX_VALUE)
+                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(panelFilters, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 757, Short.MAX_VALUE))
                 .addContainerGap())
             .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelBodyLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 471, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(821, Short.MAX_VALUE)))
+                    .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 522, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(770, Short.MAX_VALUE)))
         );
 
         scrollMain.setViewportView(panelBody);
@@ -1474,6 +1506,21 @@ public class ItemManagement extends ItemPanel {
                 }
             }
 
+            if (!isDefaultComboItem(comboRequest)) {
+                String[] parts = comboRequest.getSelectedItem().toString().split("  :  ");
+                String timestamp = parts[0];
+                String name = parts[1];
+
+                PreparedStatement pst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_REQUEST + " SET request_status = 'RECEIVED' WHERE request_timestamp = '" + timestamp + "'");
+
+                // HISTORY : REQUEST-UPDATE
+                String request_id = "Request-" + DatabaseUtil.getColumnValueByString(Main.TB_ITEM_REQUEST, "request_id", "request_timestamp", timestamp);
+
+                insertHistory(DatabaseUtil.HistoryFrame.REQUEST, DatabaseUtil.HistoryType.UPDATE, request_id, request_id, "; Status: PENDING -> RECEIVED", name);
+
+                pst.executeUpdate();
+            }
+
             // HISTORY : MANAGEMENT-ADD
             String stock_code = getColumnFromLastRow(Main.TB_ITEM_STOCK, "stock_timestamp", "stock_code");
 
@@ -1711,6 +1758,7 @@ public class ItemManagement extends ItemPanel {
     private javax.swing.JButton btnPrint;
     private javax.swing.JButton btnUpdate;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboName;
+    private ProjectINSY.java.swing.ComboBoxSuggestion comboRequest;
     private ProjectINSY.java.swing.Date.DateChooser dateDOD;
     private ProjectINSY.java.swing.Date.DateChooser dateEnd;
     private ProjectINSY.java.swing.Date.DateChooser dateStart;
@@ -1730,6 +1778,7 @@ public class ItemManagement extends ItemPanel {
     private javax.swing.JLabel imageName;
     private javax.swing.JLabel imagePrice;
     private javax.swing.JLabel imageQuantity;
+    private javax.swing.JLabel imageRequest;
     private javax.swing.JLabel imgBarcode;
     private javax.swing.JLabel infoCode;
     private javax.swing.JLabel infoCode1;
@@ -1766,6 +1815,7 @@ public class ItemManagement extends ItemPanel {
     private javax.swing.JLabel labelPrice;
     private javax.swing.JLabel labelPrint;
     private javax.swing.JLabel labelQuantity;
+    private javax.swing.JLabel labelRequest;
     private javax.swing.JLabel labelUpdate;
     private javax.swing.JPanel panelBarcode;
     private javax.swing.JPanel panelBody;

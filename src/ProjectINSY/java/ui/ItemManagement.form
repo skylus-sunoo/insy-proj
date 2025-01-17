@@ -138,7 +138,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="panelFilters" min="-2" pref="316" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="tableScroll" pref="1498" max="32767" attributes="0"/>
+                          <Component id="tableScroll" pref="1497" max="32767" attributes="0"/>
                       </Group>
                       <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
@@ -152,18 +152,18 @@
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace pref="483" max="32767" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="tableScroll" pref="809" max="32767" attributes="0"/>
+                          <EmptySpace pref="535" max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
                               <Component id="panelFilters" max="32767" attributes="0"/>
+                              <Component id="tableScroll" pref="757" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="panelFields" min="-2" pref="471" max="-2" attributes="0"/>
-                              <EmptySpace pref="821" max="32767" attributes="0"/>
+                              <Component id="panelFields" min="-2" pref="522" max="-2" attributes="0"/>
+                              <EmptySpace pref="770" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -690,7 +690,7 @@
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
-                          <AbsoluteConstraints x="10" y="380" width="1790" height="50"/>
+                          <AbsoluteConstraints x="10" y="460" width="1790" height="50"/>
                         </Constraint>
                       </Constraints>
 
@@ -879,6 +879,46 @@
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Component class="ProjectINSY.java.swing.ComboBoxSuggestion" name="comboRequest">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="null"/>
+                        </Property>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Bahnschrift" size="24" style="0"/>
+                        </Property>
+                      </Properties>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
+                          <AbsoluteConstraints x="380" y="380" width="1400" height="50"/>
+                        </Constraint>
+                      </Constraints>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="imageRequest">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/ProjectINSY/resources/interface/fieldRequest.png"/>
+                        </Property>
+                      </Properties>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
+                          <AbsoluteConstraints x="370" y="370" width="1430" height="70"/>
+                        </Constraint>
+                      </Constraints>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="labelRequest">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Aaux ProThin OSF" size="36" style="1"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Associated Request"/>
+                      </Properties>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
+                          <AbsoluteConstraints x="10" y="370" width="310" height="60"/>
+                        </Constraint>
+                      </Constraints>
+                    </Component>
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JScrollPane" name="tableScroll">

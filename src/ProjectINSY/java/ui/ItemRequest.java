@@ -204,6 +204,7 @@ public class ItemRequest extends ItemPanel {
         GuiUtil.clearField(fieldItem, PLACEHOLDER_NAME);
         GuiUtil.clearField(fieldDesc, PLACEHOLDER_DESC);
         GuiUtil.clearField(fieldName, PLACEHOLDER_NAME);
+        GuiUtil.clearField(fieldQuantity, PLACEHOLDER_QTY);
         GuiUtil.clearComboBox(comboStatus);
         TableUtil.clearSelectedTableRow(tableRequest);
         setUpdateDeleteEnableItem();
@@ -864,7 +865,7 @@ public class ItemRequest extends ItemPanel {
 
             // HISTORY : REQUEST-ADD
             String history_desc = "";
-            history_desc += createHistoryDesc(request_item, "Item Name");
+            history_desc += createHistoryDesc(request_item, "Name");
             history_desc += createHistoryDesc(request_desc, "Description");
             history_desc += createHistoryDesc(request_quantity, "Quantity");
 
@@ -913,7 +914,7 @@ public class ItemRequest extends ItemPanel {
             String old_name = getColumnValueByInt(Main.TB_ITEM_REQUEST, "request_name", "request_id", request_id);
             String old_status = getColumnValueByInt(Main.TB_ITEM_REQUEST, "request_status", "request_id", request_id);
 
-            history_desc += createHistoryDesc(old_item, request_item, "Item Name");
+            history_desc += createHistoryDesc(old_item, request_item, "Name");
             history_desc += createHistoryDesc(old_desc, request_desc, "Description");
             history_desc += createHistoryDesc(old_quantity, request_quantity, "Quantity");
             history_desc += createHistoryDesc(old_name, request_name, "Requestor");
@@ -955,7 +956,7 @@ public class ItemRequest extends ItemPanel {
                 pst.setInt(1, request_id);
 
                 // HISTORY : REQUEST-DELETE
-                String history_desc = createHistoryDesc(request_item, "Item Name");
+                String history_desc = createHistoryDesc(request_item, "Name");
 
                 insertHistory(DatabaseUtil.HistoryFrame.REQUEST, DatabaseUtil.HistoryType.DELETE, request_idStr, request_idStr, history_desc, request_name);
 
