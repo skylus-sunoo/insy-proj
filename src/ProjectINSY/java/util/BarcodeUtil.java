@@ -15,6 +15,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.PdfException;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -24,6 +25,7 @@ import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import java.awt.image.BufferedImage;
@@ -32,8 +34,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.imageio.ImageIO;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 public class BarcodeUtil {
 
@@ -87,68 +91,114 @@ public class BarcodeUtil {
         }
     }
 
-    public static void generatePDFFromBarcode(List<BufferedImage> bufferedImages, String pdfFilePath) throws IOException {
-        PdfWriter writer = new PdfWriter(pdfFilePath);
+    public enum FileType {
+        PDF, PNG
+    }
 
-        PdfDocument pdf = new PdfDocument(writer);
+    public static void generateFileFromBarcodes(List<BufferedImage> bufferedImages, FileType FileType, String fileName) throws IOException {
+        String outputFilePath = "C:\\Users\\admin\\Documents\\" + fileName + ".";
+        int barcodeWidth = 615;
+        int barcodeHeight = 213;
+        int spacing = 20;
+        int totalHeight = (barcodeHeight + spacing) * bufferedImages.size() - spacing;
 
-        try (Document document = new Document(pdf, PageSize.A4)) {
-            float x = 50;  
-            float y = 750; 
-            for (BufferedImage bufferedImage : bufferedImages) {
-                ImageData imageData = ImageDataFactory.create(bufferedImage, null);
-                Image image = new Image(imageData);
+        if (bufferedImages.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No barcodes to process!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-                image.scaleToFit(150, 150);  
+        if (FileType == FileType.PNG) {
+            outputFilePath += "png";
 
-                image.setFixedPosition(x, y);
+            BufferedImage combinedImage = new BufferedImage(barcodeWidth, totalHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics g = combinedImage.getGraphics();
 
-                document.add(image);
+            int y = 0;
+            for (BufferedImage barcode : bufferedImages) {
+                g.drawImage(barcode, 0, y, barcodeWidth, barcodeHeight, null);
+                y += barcodeHeight + spacing;
+            }
 
-                y -= 77; 
+            g.dispose();
 
-                if (y < 50) { 
-                    y = 750;
-                    x += 180; 
-                    if (x > 500) { 
-                        pdf.addNewPage();  
-                        x = 50;  
+            ImageIO.write(combinedImage, "png", new File(outputFilePath));
+        } else if (FileType == FileType.PDF) {
+            outputFilePath += "pdf";
+
+            PdfWriter writer = new PdfWriter(outputFilePath);
+            PdfDocument pdf = new PdfDocument(writer);
+
+            String pageSizeSTR = "A4";
+            PageSize pageSize = new PageSize(PageSize.A4);
+
+            try (Document document = new Document(pdf, pageSize)) {
+                if (pageSizeSTR.equals("A4")) {
+                    float x = 50;
+                    float y = 750;
+                    for (BufferedImage bufferedImage : bufferedImages) {
+                        ImageData imageData = ImageDataFactory.create(bufferedImage, null);
+                        Image image = new Image(imageData);
+
+                        image.scaleToFit(150, 150);
+                        image.setFixedPosition(x, y);
+                        document.add(image);
+
+                        y -= 77;
+
+                        if (y < 50) {
+                            y = 750;
+                            x += 180;
+                            if (x > 500) {
+                                pdf.addNewPage();
+                                x = 50;
+                            }
+                        }
+                    }
+                } else if (pageSizeSTR.equals("B9")) {
+                    float pageHeight = pageSize.getHeight();
+                    float x = 10;
+                    float y = pageHeight - 50;
+
+                    int barcodeCount = 0;
+
+                    for (BufferedImage bufferedImage : bufferedImages) {
+                        ImageData imageData = ImageDataFactory.create(bufferedImage, null);
+                        Image image = new Image(imageData);
+
+                        image.scaleToFit(106, 106);
+                        image.setFixedPosition(x, y);
+                        document.add(image);
+
+                        barcodeCount++;
+
+                        y -= 50;
+
+                        if (barcodeCount % 3 == 0) {
+                            pdf.addNewPage();
+                            y = pageHeight - 50;
+                            x = 10;
+                        }
                     }
                 }
             }
+        }
 
-            if (Desktop.isDesktopSupported()) {
-                Desktop desktop = Desktop.getDesktop();
-                File pdfFile = new File(pdfFilePath);
-                if (pdfFile.exists()) {
-                    desktop.open(pdfFile);
-                }
+        File outputFile = new File(outputFilePath);
+        File parentDirectory = outputFile.getParentFile();
+        if (Desktop.isDesktopSupported() && parentDirectory.exists()) {
+            Desktop.getDesktop().open(parentDirectory);
+        } else {
+            System.out.println("Could not open File Explorer. Ensure Desktop is supported and the folder exists.");
+        }
+        
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            File File = new File(outputFilePath);
+            if (File.exists()) {
+                desktop.open(File);
             }
-        } 
-    }
+        }
 
-//    public static ImageIcon generateBarcode(String barcodeValue) {
-//        try {
-//            int barcodeWidth = 300;
-//            int barcodeHeight = 100;
-//            
-//            Map<EncodeHintType, String> hints = new HashMap<>();
-//            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-//
-//            BitMatrix bitMatrix = new MultiFormatWriter().encode(barcodeValue, BarcodeFormat.CODE_128, barcodeWidth, barcodeHeight, hints);
-//
-//            BufferedImage bufferedImage = new BufferedImage(barcodeWidth, barcodeHeight, BufferedImage.TYPE_INT_RGB);
-//            for (int x = 0; x < barcodeWidth; x++) {
-//                for (int y = 0; y < barcodeHeight; y++) {
-//                    bufferedImage.setRGB(x, y, bitMatrix.get(x, y) ? 0x000000 : 0xFFFFFF);
-//                }
-//            }
-//
-//            return new ImageIcon(bufferedImage);
-//
-//        } catch (WriterException e) {
-//            e.printStackTrace(System.out);
-//            return null;
-//        }
-//    }
+        JOptionPane.showMessageDialog(null, "File created successfully: " + outputFilePath, "Print Success", JOptionPane.INFORMATION_MESSAGE);
+    }
 }
