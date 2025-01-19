@@ -17,6 +17,7 @@ import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -136,13 +137,32 @@ public class Main extends javax.swing.JFrame {
     private final MenuLayout menu = new MenuLayout(this);
     private final Animator animator;
 
-//    public static void setTextHeader(){
-//        System.out.println(userSessionEmail);
+    //<editor-fold defaultstate="collapsed" desc="Preferences">
+//    private final Preferences PREFS = Preferences.userNodeForPackage(Main.class);
+//
+//    private final String PREF_LOG_IN = "PREF_LOG_IN";
+//    private final String PREF_DEFAULT_PRINT_FORMAT = "PREF_DEFAULT_PRINT_FORMAT";
+//    private final String PREF_DEFAULT_LOCATION = "PREF_DEFAULT_LOCATION";
+//    private final String PREF_DEFAULT_PAGE_VIEW = "PREF_DEFAULT_PAGE_VIEW";
+//
+//    private final boolean ACTIVE_PREF_LOGIN = PREFS.getBoolean(PREF_LOG_IN, false);
+//    private final String ACTIVE_PREF_BARCODE_EXPORT_FORMAT = PREFS.get(PREF_DEFAULT_PRINT_FORMAT, "PDF");
+//    private final String ACTIVE_PREF_DEFAULT_LOCATION = PREFS.get(PREF_DEFAULT_LOCATION, "Supply Room");
+//    private final String ACTIVE_PREF_DEFAULT_PAGE_VIEW = PREFS.get(PREF_DEFAULT_PAGE_VIEW, "Item Stock");
+//
+//    private void initPreferences() {
+//        System.out.println(PREF_LOG_IN + ": " + ACTIVE_PREF_LOGIN);
+//        System.out.println(PREF_DEFAULT_PRINT_FORMAT + ": " + ACTIVE_PREF_BARCODE_EXPORT_FORMAT);
+//        System.out.println(PREF_DEFAULT_LOCATION + ": " + ACTIVE_PREF_DEFAULT_LOCATION);
+//        System.out.println(PREF_DEFAULT_PAGE_VIEW + ": " + ACTIVE_PREF_DEFAULT_PAGE_VIEW);
 //    }
+    //</editor-fold>
+
     /**
      * Creates new form Dashboard
      */
     private Main() {
+//        initPreferences();
         initComponents();
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("icon.png")));
 

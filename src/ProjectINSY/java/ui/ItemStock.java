@@ -34,13 +34,6 @@ public class ItemStock extends ItemPanel {
     public ItemStock() {
         initComponents();
 
-        currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
-                + Main.TB_ITEM_STOCK
-                + " WHERE 1 "
-                + filterWHERE
-                + "GROUP BY stock_category, stock_name HAVING 1 "
-                + filterHAVING;
-
         setScrollBarCustom(tableScroll);
 
         defaultTable(tableInventory);
@@ -74,7 +67,11 @@ public class ItemStock extends ItemPanel {
 
         currentSearchQuery = "SELECT stock_category, stock_name, COUNT(stock_name) AS stock_quantity FROM "
                 + Main.TB_ITEM_STOCK
-                + " WHERE 1 "
+                + " LEFT JOIN "
+                + Main.TB_ITEM_REPORT
+                + " ON "
+                + Main.TB_ITEM_STOCK + ".stock_code = " + Main.TB_ITEM_REPORT + ".report_code"
+                + " WHERE " + Main.TB_ITEM_REPORT + ".report_code IS NULL "
                 + filterWHERE
                 + "GROUP BY stock_category, stock_name HAVING 1 "
                 + filterHAVING;
@@ -293,9 +290,9 @@ public class ItemStock extends ItemPanel {
                         .addComponent(labelFilterCategory)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(searchCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(radioCurrent, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(panelSearchLayout.createSequentialGroup()
+                    .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(radioCurrent, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelSearchLayout.createSequentialGroup()
                             .addComponent(labelFilterQuantity)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)

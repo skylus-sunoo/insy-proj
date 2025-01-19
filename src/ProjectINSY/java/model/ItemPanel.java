@@ -18,7 +18,8 @@ public abstract class ItemPanel extends javax.swing.JPanel {
     protected final String PLACEHOLDER_NAME = "Enter Name";
     protected final String PLACEHOLDER_DESC = "Enter Description";
     protected final String PLACEHOLDER_QTY = "1";
-    protected final String PLACEHOLDER_CODE = "Enter Code (XXXX)";
+    protected final String PLACEHOLDER_ID_CODE = "Enter Code (XXXX)";
+    protected final String PLACEHOLDER_FULL_CODE = "Enter Code (XXXX)";
     protected final String PLACEHOLDER_PRICE = "Enter Price";
     protected final String PLACEHOLDER_DOD = "Enter Delivery Date";
     protected final String PLACEHOLDER_BENEFACTOR = "Enter Benefactor";

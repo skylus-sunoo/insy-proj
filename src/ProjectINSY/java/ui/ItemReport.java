@@ -14,7 +14,6 @@ import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
-import static ProjectINSY.java.util.GuiUtil.enforceDigits;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
@@ -43,22 +42,13 @@ public class ItemReport extends ItemPanel {
 
     TableHighlighter TableHighlighter = new TableHighlighter(3);
 
-    private final String PLACEHOLDER_CODE = "Silang-00-000000";
+    private final String PLACEHOLDER_FULL_CODE = "Silang-00-000000";
 
     /**
      * Creates new form LogIn
      */
     public ItemReport() {
         initComponents();
-
-        currentSearchQuery = "SELECT r.report_code, s.stock_name, s.stock_desc, r.report_condition FROM "
-                + Main.TB_ITEM_REQUEST
-                + " r JOIN "
-                + Main.TB_ITEM_STOCK
-                + " s ON r.report_code = s.stock_code "
-                + " WHERE 1 "
-                + filterWHERE
-                + " ORDER BY request_timestamp DESC";
 
         setScrollBarCustom(tableScroll);
 
@@ -227,7 +217,7 @@ public class ItemReport extends ItemPanel {
         GuiUtil.clearField(fieldID, "");
         GuiUtil.clearField(fieldTimestamp, "");
         fieldSelectedCode.setText("None");
-        GuiUtil.clearField(fieldCode, PLACEHOLDER_CODE);
+        GuiUtil.clearField(fieldCode, PLACEHOLDER_FULL_CODE);
         GuiUtil.clearField(fieldName, "");
         GuiUtil.clearField(fieldDesc, "");
         GuiUtil.clearComboBox(comboCondition);
@@ -708,11 +698,11 @@ public class ItemReport extends ItemPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.GAINED, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_FULL_CODE, FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusGained
 
     private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_FULL_CODE, FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusLost
 
     private void btnCreateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateReportActionPerformed

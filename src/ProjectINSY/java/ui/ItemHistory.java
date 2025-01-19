@@ -35,8 +35,6 @@ public class ItemHistory extends ItemPanel {
     public ItemHistory() {
         initComponents();
 
-        currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_HISTORY;
-
         setScrollBarCustom(tableScroll);
 
         defaultTable(tableHistory);

@@ -45,8 +45,6 @@ public class ItemCatalog extends ItemPanel {
     public ItemCatalog() {
         initComponents();
 
-        currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK;
-
         setScrollBarCustom(scrollCategory);
         setScrollBarCustom(tableScroll);
 

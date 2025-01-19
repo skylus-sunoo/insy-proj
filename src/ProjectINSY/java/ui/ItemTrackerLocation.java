@@ -33,8 +33,6 @@ public class ItemTrackerLocation extends ItemPanel {
     public ItemTrackerLocation() {
         initComponents();
         
-        currentSearchQuery = "SELECT * FROM " + Main.TB_ITEM_STOCK + " ORDER BY stock_id ASC";
-        
         setTransparentFrame(btnClearFilter);
 
         setScrollBarCustom(tableScroll);

@@ -76,32 +76,6 @@ public class ItemManagement extends ItemPanel {
     public ItemManagement() {
         initComponents();
         
-        currentSearchQuery = "SELECT stock_id, stock_batch, "
-                + "stock_category, "
-                + "stock_name, "
-                + "stock_desc, "
-                + "stock_price, "
-                + "(stock_price * COUNT(*)) AS stock_price_batch, "
-                + "stock_dod, "
-                + "stock_benefactor, "
-                + "CONCAT( "
-                + "    SUBSTRING_INDEX(MIN(stock_code), '-', 1), '-', "
-                + "    SUBSTRING_INDEX(MIN(stock_code), '-', 2), '-', "
-                + "    RIGHT(MIN(stock_code), LOCATE('-', REVERSE(MIN(stock_code))) - 1), "
-                + "    CASE "
-                + "        WHEN MIN(stock_code) = MAX(stock_code) THEN '' "
-                + "        ELSE CONCAT('-', RIGHT(MAX(stock_code), LOCATE('-', REVERSE(MAX(stock_code))) - 1)) "
-                + "    END "
-                + ") AS stock_code, "
-                + "COUNT(*) AS stock_quantity "
-                + "FROM " + Main.TB_ITEM_STOCK + " "
-                + "WHERE 1 "
-                + filterWHERE
-                + "GROUP BY stock_batch "
-                + "HAVING 1 "
-                + filterHAVING
-                + "ORDER BY stock_timestamp DESC";
-        
         setScrollBarCustom(tableScroll);
         setScrollBarCustom(scrollMain);
         
@@ -360,7 +334,7 @@ public class ItemManagement extends ItemPanel {
         
         GuiUtil.clearField(fieldID, "");
         GuiUtil.clearField(fieldID2, "");
-        GuiUtil.clearField(fieldCode, PLACEHOLDER_CODE);
+        GuiUtil.clearField(fieldCode, PLACEHOLDER_ID_CODE);
         GuiUtil.clearComboBox(comboName);
         GuiUtil.clearField(fieldDesc, PLACEHOLDER_DESC);
         GuiUtil.clearField(fieldPrice, PLACEHOLDER_PRICE);
@@ -1261,11 +1235,11 @@ public class ItemManagement extends ItemPanel {
     }//GEN-LAST:event_fieldCodeKeyTyped
 
     private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.LOST, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_ID_CODE, FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusLost
 
     private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, FieldFocus.GAINED, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_ID_CODE, FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusGained
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
@@ -1413,7 +1387,7 @@ public class ItemManagement extends ItemPanel {
         
         int stock_custom_code = 0;
         boolean hasCustomCode = false;
-        if (!fieldCode.getText().equals(PLACEHOLDER_CODE)) {
+        if (!fieldCode.getText().equals(PLACEHOLDER_ID_CODE)) {
             stock_custom_code = Integer.parseInt(fieldCode.getText());
             hasCustomCode = true;
         }

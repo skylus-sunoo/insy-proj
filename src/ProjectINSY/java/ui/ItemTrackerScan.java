@@ -16,13 +16,10 @@ import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import static ProjectINSY.java.util.DatabaseUtil.prepareQueryWithParameters;
 import ProjectINSY.java.util.GuiUtil;
-import static ProjectINSY.java.util.GuiUtil.enforceCharacterAmount;
-import static ProjectINSY.java.util.GuiUtil.enforceDigits;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
-import ProjectINSY.java.util.SoundUtil;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
@@ -68,7 +65,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private String selectedCode = null;
     private int selectedCodeID = -1;
 
-    private final String PLACEHOLDER_CODE = "Silang-00-000000";
+    private final String PLACEHOLDER_FULL_CODE = "Silang-00-000000";
     private final String PLACEHOLDER_LOCATION = "Enter Location";
     private final String PLACEHOLDER_HOLDER = "Enter Holder";
 
@@ -211,7 +208,7 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         selectedCodeID = -1;
 
         fieldSelectedCode.setText("None");
-        GuiUtil.clearField(fieldCode, PLACEHOLDER_CODE);
+        GuiUtil.clearField(fieldCode, PLACEHOLDER_FULL_CODE);
 
 //        GuiUtil.clearField(fieldName, "");
 //        GuiUtil.clearField(fieldDesc, "");
@@ -805,11 +802,11 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     }//GEN-LAST:event_btnWebcamControlActionPerformed
 
     private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, GuiUtil.FieldFocus.GAINED, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_FULL_CODE, GuiUtil.FieldFocus.GAINED, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusGained
 
     private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
-        setDefaultField(fieldCode, PLACEHOLDER_CODE, GuiUtil.FieldFocus.LOST, Color.BLACK);
+        setDefaultField(fieldCode, PLACEHOLDER_FULL_CODE, GuiUtil.FieldFocus.LOST, Color.BLACK);
     }//GEN-LAST:event_fieldCodeFocusLost
 
     private void fieldCodeKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldCodeKeyTyped
