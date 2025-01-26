@@ -33,6 +33,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -54,6 +55,8 @@ import static ProjectINSY.java.util.GuiUtil.getFieldString;
 import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import com.itextpdf.kernel.geom.PageSize;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +68,7 @@ import javax.swing.JTable;
  * @author admin
  */
 public class ItemManagement extends ItemPanel {
-    
+
     private String current_barcode = null;
     private ImageIcon barcodeIcon;
     private int batchQuantity = -1;
@@ -75,13 +78,13 @@ public class ItemManagement extends ItemPanel {
      */
     public ItemManagement() {
         initComponents();
-        
+
         setScrollBarCustom(tableScroll);
         setScrollBarCustom(scrollMain);
-        
+
         setTransparentFrame(ItemManagement.this, fieldDesc, fieldPrice, fieldDOD, fieldQuantity, fieldBenefactor);
         setTransparentFrame(btnDOD, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
-        
+
         tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tableInventory.getColumnModel().getColumn(0).setPreferredWidth(250);
         tableInventory.getColumnModel().getColumn(1).setPreferredWidth(250);
@@ -90,7 +93,7 @@ public class ItemManagement extends ItemPanel {
         tableInventory.getColumnModel().getColumn(4).setPreferredWidth(75);
         tableInventory.getColumnModel().getColumn(5).setPreferredWidth(150);
         tableInventory.getColumnModel().getColumn(6).setPreferredWidth(242);
-        
+
         fieldPrice.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
         fieldBenefactor.getDocument().addDocumentListener(new FieldChangeListener());
@@ -105,7 +108,7 @@ public class ItemManagement extends ItemPanel {
                 }
             }
         });
-        
+
         setColumnHorizontalAligment(tableInventory, 3, TableUtil.EnumAlignment.LEFT);
         floatFormatDecimal(tableInventory, 3);
         setColumnHorizontalAligment(tableInventory, 4, TableUtil.EnumAlignment.LEFT);
@@ -136,7 +139,7 @@ public class ItemManagement extends ItemPanel {
         if (fieldHasValue(searchDateEnd)) {
             filterWHERE += "AND stock_dod <= '" + getFieldString(searchDateEnd) + "' ";
         }
-        
+
         filterHAVING = " ";
         if (fieldHasValue(searchPriceStart)) {
             filterHAVING += "AND stock_price >= '" + getFieldString(searchPriceStart) + "' ";
@@ -150,7 +153,7 @@ public class ItemManagement extends ItemPanel {
         if (fieldHasValue(searchQuantityEnd)) {
             filterHAVING += "AND stock_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
         }
-        
+
         if (radioBatches.isSelected()) {
             currentSearchQuery = "SELECT stock_timestamp, stock_id, stock_batch, "
                     + "stock_category, "
@@ -186,16 +189,16 @@ public class ItemManagement extends ItemPanel {
                     + filterHAVING
                     + " ORDER BY stock_timestamp DESC";
         }
-        
+
         currentSearchQuery = cleanSpaces(currentSearchQuery);
         TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
-        
+
         String query = "SELECT DISTINCT stock_benefactor FROM " + Main.TB_ITEM_STOCK;
-        
+
         fieldBenefactor.clearItemSuggestion();
         try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
             ResultSet rs = ps.executeQuery();
-            
+
             while (rs.next()) {
                 fieldBenefactor.addItemSuggestion(rs.getString("stock_benefactor"));
             }
@@ -203,7 +206,7 @@ public class ItemManagement extends ItemPanel {
             paneDatabaseError(e);
         }
     }
-    
+
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
@@ -212,15 +215,15 @@ public class ItemManagement extends ItemPanel {
         GuiUtil.repopulateComboBox(searchDesc, "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
         GuiUtil.repopulateComboBox(searchBenefactor, "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
-        
+
         refreshItemTable();
     }
-    
+
     @Override
     public void repopulateComboBox() {
         GuiUtil.repopulateComboBox(comboName, "SELECT item_name FROM " + Main.TB_CATALOG_ITEM);
         GuiUtil.repopulateComboBox(comboRequest, "SELECT request_timestamp FROM " + Main.TB_ITEM_REQUEST + " WHERE request_status = 'PENDING'");
-        
+
         for (int i = 1; i < comboRequest.getItemCount(); i++) {
             String request_timestamp = comboRequest.getItemAt(i).toString();
             String request_name = DatabaseUtil.getColumnValueByString(Main.TB_ITEM_REQUEST, "request_name", "request_timestamp", request_timestamp);
@@ -239,7 +242,7 @@ public class ItemManagement extends ItemPanel {
     public void selectTableStock(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableInventory, selectedRow);
         TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldDesc, fieldPrice, fieldQuantitySelected, fieldDOD, fieldBenefactor);
-        
+
         batchQuantity = Integer.parseInt(fieldQuantitySelected.getText());
         Float actual_price;
         if (isGroupedByBatches()) {
@@ -249,17 +252,17 @@ public class ItemManagement extends ItemPanel {
             actual_price = Float.valueOf(fieldPrice.getText());
         }
         setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
-        
+
         fieldPrice.setText(floatRoundOff(actual_price));
-        
+
         current_barcode = validateBarcode(fieldID.getText());
         barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
         imgBarcode.setIcon(barcodeIcon);
-        
+
         if (fieldDesc.getText().isEmpty()) {
             setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
         }
-        
+
         if (fieldID.getText().contains("-")) {
             String[] parts = fieldID.getText().split("-");
             fieldID.setText(parts[2]);
@@ -271,29 +274,29 @@ public class ItemManagement extends ItemPanel {
         }
         setUpdateDeleteEnable();
     }
-    
+
     private class FieldChangeListener implements DocumentListener, ActionListener {
-        
+
         @Override
         public void insertUpdate(DocumentEvent e) {
             checkFields();
         }
-        
+
         @Override
         public void removeUpdate(DocumentEvent e) {
             checkFields();
         }
-        
+
         @Override
         public void changedUpdate(DocumentEvent e) {
             checkFields();
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             checkFields();
         }
-        
+
         private void checkFields() {
             btnAdd.setEnabled(!fieldPrice.getText().trim().isEmpty()
                     && !fieldPrice.getText().trim().equals(PLACEHOLDER_PRICE)
@@ -303,7 +306,7 @@ public class ItemManagement extends ItemPanel {
             if (!fieldID2.getText().isEmpty()) {
                 btnUpdate.setEnabled(fieldQuantity.getText().equals(PLACEHOLDER_QTY));
             }
-            
+
             String date_filter = searchDateEnd.getText();
             if (date_filter.matches(Main.validDatePattern)) {
                 try {
@@ -321,17 +324,17 @@ public class ItemManagement extends ItemPanel {
             refreshItemTable();
         }
     }
-    
+
     public void setUpdateDeleteEnable() {
         resetBtnEnability(fieldID, btnUpdate, btnDelete);
     }
-    
+
     public void clearFields() {
         current_barcode = null;
         barcodeIcon = null;
         batchQuantity = -1;
         GuiUtil.resetIcon(imgBarcode);
-        
+
         GuiUtil.clearField(fieldID, "");
         GuiUtil.clearField(fieldID2, "");
         GuiUtil.clearField(fieldCode, PLACEHOLDER_ID_CODE);
@@ -347,7 +350,7 @@ public class ItemManagement extends ItemPanel {
         TableUtil.clearSelectedTableRow(tableInventory);
         setUpdateDeleteEnable();
     }
-    
+
     public static boolean isGroupedByBatches() {
         return radioBatches.isSelected();
     }
@@ -367,6 +370,7 @@ public class ItemManagement extends ItemPanel {
         fieldQuantitySelected = new javax.swing.JTextField();
         fieldID2 = new javax.swing.JTextField();
         fieldID = new javax.swing.JTextField();
+        btnExport = new javax.swing.JButton();
         panelMain = new javax.swing.JPanel();
         scrollMain = new javax.swing.JScrollPane();
         panelBody = new javax.swing.JPanel();
@@ -465,6 +469,13 @@ public class ItemManagement extends ItemPanel {
         dateEnd.setTextRefernce(searchDateEnd);
 
         fieldQuantitySelected.setText("jTextField1");
+
+        btnExport.setText("Print");
+        btnExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExportActionPerformed(evt);
+            }
+        });
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -1198,28 +1209,28 @@ public class ItemManagement extends ItemPanel {
                     JOptionPane.YES_NO_OPTION
             );
             List<BufferedImage> barcodeImages = new ArrayList<>();
-            
+
             int stock_id = Integer.parseInt(fieldID.getText());
             String file_name = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
-            
+
             if (warnUser == JOptionPane.NO_OPTION) {
                 BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
                 barcodeImages.add(bufferedImage);
             } else if (warnUser == JOptionPane.YES_OPTION) {
                 file_name += "-BATCH";
-                
+
                 for (int i = 0; i < batchQuantity; i++) {
                     String code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
                     current_barcode = validateBarcode(code);
                     barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
-                    
+
                     BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
                     barcodeImages.add(bufferedImage);
-                    
+
                     stock_id++;
                 }
             }
-            
+
             try {
                 BarcodeUtil.generateFileFromBarcodes(barcodeImages, BarcodeUtil.FileType.PDF, file_name);
             } catch (IOException ex) {
@@ -1245,7 +1256,7 @@ public class ItemManagement extends ItemPanel {
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         int stock_id = Integer.parseInt(fieldID.getText());
         int stock_batch_end = Integer.parseInt(fieldID2.getText());
-        
+
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
                     null,
@@ -1253,7 +1264,7 @@ public class ItemManagement extends ItemPanel {
                     "Warning: Delete",
                     JOptionPane.YES_NO_OPTION
             );
-            
+
             if (warnUser == JOptionPane.YES_OPTION) {
                 String query = "DELETE FROM " + Main.TB_ITEM_STOCK + " WHERE stock_id >= ? && stock_id <= ?";
                 PreparedStatement pst = conn.prepareStatement(query);
@@ -1263,12 +1274,12 @@ public class ItemManagement extends ItemPanel {
                 // HISTORY : MANAGEMENT-DELETE
                 String stock_code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
                 String stock_code_end = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_batch_end);
-                
+
                 insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.DELETE, stock_code, stock_code_end, "", "");
-                
+
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Stock Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                
+
                 clearFields();
                 refreshItemTable();
             }
@@ -1288,7 +1299,7 @@ public class ItemManagement extends ItemPanel {
             JOptionPane.showMessageDialog(this, "Stock quantity cannot be updated! \n\nPlease just use 'Add' or 'Delete' to update the new stock quantity.", "Update Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         int stock_id = Integer.parseInt(fieldID.getText());
         int stock_batch_end = Integer.parseInt(fieldID2.getText());
         String stock_name = comboName.getSelectedItem().toString();
@@ -1296,9 +1307,9 @@ public class ItemManagement extends ItemPanel {
         String stock_price = fieldPrice.getText();
         String stock_deliveryDate = fieldDOD.getText();
         String stock_benefactor = fieldBenefactor.getText();
-        
+
         String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
-        
+
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
                     null,
@@ -1306,7 +1317,7 @@ public class ItemManagement extends ItemPanel {
                     "Warning: Stock Update",
                     JOptionPane.YES_NO_OPTION
             );
-            
+
             if (warnUser == JOptionPane.YES_OPTION) {
                 String query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_category = ?, stock_name = ?, stock_desc = ?, stock_price = ?, stock_dod = ?, stock_benefactor = ? WHERE stock_id >= ? && stock_id <= ?";
                 PreparedStatement pst = conn.prepareStatement(query);
@@ -1324,28 +1335,28 @@ public class ItemManagement extends ItemPanel {
                 String selectedCode = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
                 String selectedCodeEnd = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_batch_end);
                 String stock_holder = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_holder", "stock_id", stock_batch_end);
-                
+
                 String old_name = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_name", "stock_id", stock_id);
                 String old_desc = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_desc", "stock_id", stock_id);
                 Float old_priceFloat = Float.valueOf(getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_price", "stock_id", stock_id));
                 String old_price = floatRoundOff(old_priceFloat);
                 String old_deliveryDate = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_dod", "stock_id", stock_id);
                 String old_benefactor = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_benefactor", "stock_id", stock_id);
-                
+
                 history_desc += createHistoryDesc(old_name, stock_name, "Name");
                 history_desc += createHistoryDesc(old_desc, stock_desc, "Description");
                 history_desc += createHistoryDesc(old_price, stock_price, "Price");
                 history_desc += createHistoryDesc(old_deliveryDate, stock_deliveryDate, "DOD");
                 history_desc += createHistoryDesc(old_benefactor, stock_benefactor, "Benefactor");
-                
+
                 insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.UPDATE, selectedCode, selectedCodeEnd, history_desc, stock_holder);
-                
+
                 pst.executeUpdate();
-                
+
                 for (int i = 0; i < Integer.parseInt(fieldQuantitySelected.getText()); i++) {
                     query = "UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?";
                     pst = conn.prepareStatement(query);
-                    
+
                     int id = i + stock_id;
                     String code;
 
@@ -1358,17 +1369,17 @@ public class ItemManagement extends ItemPanel {
                     }
                     pst.setString(1, code);
                     pst.setInt(2, id);
-                    
+
                     pst.executeUpdate();
-                    
+
                 }
-                
+
                 JOptionPane.showMessageDialog(this, "Stock Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                
+
                 clearFields();
                 refreshItemTable();
             }
-            
+
         } catch (SQLException e) {
             paneDatabaseError(e);
         }
@@ -1381,10 +1392,10 @@ public class ItemManagement extends ItemPanel {
         int stock_quantity = Integer.parseInt(fieldQuantity.getText());
         String stock_deliveryDate = fieldDOD.getText();
         String stock_benefactor = fieldBenefactor.getText();
-        
+
         String stock_category = DatabaseUtil.getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", stock_name);
         int stock_batch = generateNewBatch();
-        
+
         int stock_custom_code = 0;
         boolean hasCustomCode = false;
         if (!fieldCode.getText().equals(PLACEHOLDER_ID_CODE)) {
@@ -1406,7 +1417,7 @@ public class ItemManagement extends ItemPanel {
             JOptionPane.showMessageDialog(this, "Invalid date format. Please use YYYY-MM-DD.", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             if (hasCustomCode) {
                 String query = "INSERT INTO " + Main.TB_ITEM_STOCK + " (stock_id, stock_category, stock_name, stock_desc, stock_price, stock_dod, stock_benefactor, stock_batch)\n"
@@ -1416,7 +1427,7 @@ public class ItemManagement extends ItemPanel {
                 boolean hasDuplicateCode = false;
                 for (int i = 0; i < stock_quantity; i++) {
                     String stock_custom_codeString = String.valueOf(stock_custom_codeLoop);
-                    
+
                     if (DatabaseUtil.recordExists(conn, Main.TB_ITEM_STOCK, "stock_id", stock_custom_codeString)) {
                         JOptionPane.showMessageDialog(this, "(" + stock_custom_codeLoop + ") Custom stock code can't be used. It already exists!", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
                         hasDuplicateCode = true;
@@ -1435,20 +1446,20 @@ public class ItemManagement extends ItemPanel {
                         pst.setString(7, stock_benefactor);
                         pst.setInt(8, stock_batch);
                         pst.executeUpdate();
-                        
+
                         ResultSet rs = pst.getGeneratedKeys();
                         if (rs.next()) {
                             int stock_id = stock_custom_code;
                             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                             Date parsedDate = dateFormat.parse(stock_deliveryDate);
-                            
+
                             String stock_code = "Silang-" + (new SimpleDateFormat("yy").format(parsedDate)) + "-" + stock_id;
                             PreparedStatement codePst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?");
                             codePst.setString(1, stock_code);
                             codePst.setInt(2, stock_id);
                             codePst.executeUpdate();
                         }
-                        
+
                         stock_custom_code++;
                     }
                 }
@@ -1465,13 +1476,13 @@ public class ItemManagement extends ItemPanel {
                     pst.setString(6, stock_benefactor);
                     pst.setInt(7, stock_batch);
                     pst.executeUpdate();
-                    
+
                     ResultSet rs = pst.getGeneratedKeys();
                     if (rs.next()) {
                         int stock_id = rs.getInt(1);
                         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                         Date parsedDate = dateFormat.parse(stock_deliveryDate);
-                        
+
                         String stock_code = "Silang-" + (new SimpleDateFormat("yy").format(parsedDate)) + "-" + stock_id;
                         PreparedStatement codePst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?");
                         codePst.setString(1, stock_code);
@@ -1480,35 +1491,35 @@ public class ItemManagement extends ItemPanel {
                     }
                 }
             }
-            
+
             if (!isDefaultComboItem(comboRequest)) {
                 String[] parts = comboRequest.getSelectedItem().toString().split("  :  ");
                 String timestamp = parts[0];
                 String name = parts[1];
-                
+
                 PreparedStatement pst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_REQUEST + " SET request_status = 'RECEIVED' WHERE request_timestamp = '" + timestamp + "'");
 
                 // HISTORY : REQUEST-UPDATE
                 String request_id = "Request-" + DatabaseUtil.getColumnValueByString(Main.TB_ITEM_REQUEST, "request_id", "request_timestamp", timestamp);
-                
+
                 insertHistory(DatabaseUtil.HistoryFrame.REQUEST, DatabaseUtil.HistoryType.UPDATE, request_id, request_id, "; Status: PENDING -> RECEIVED", name);
-                
+
                 pst.executeUpdate();
             }
 
             // HISTORY : MANAGEMENT-ADD
             String stock_code = getColumnFromLastRow(Main.TB_ITEM_STOCK, "stock_timestamp", "stock_code");
-            
+
             String stock_code_end = stock_code;
-            
+
             if (stock_code_end.contains("-")) {
                 String[] parts = stock_code_end.split("-");
                 int qty = Integer.parseInt(parts[2]) + stock_quantity - 1;
                 stock_code_end = parts[0] + "-" + parts[1] + "-" + qty;
             }
-            
+
             String history_desc = "";
-            
+
             history_desc += createHistoryDesc(stock_name, "Name");
             if (!stock_desc.isEmpty()) {
                 history_desc += createHistoryDesc(stock_desc, "Description");
@@ -1517,11 +1528,11 @@ public class ItemManagement extends ItemPanel {
             history_desc += createHistoryDesc(String.valueOf(stock_quantity), "Quantity");
             history_desc += createHistoryDesc(stock_deliveryDate, "DOD");
             history_desc += createHistoryDesc(stock_benefactor, "Benefactor");
-            
+
             insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.ADD, stock_code, stock_code_end, history_desc, "N/A");
-            
+
             JOptionPane.showMessageDialog(this, "(" + stock_quantity + ") Stock/s Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            
+
             clearFields();
             refreshItemTable();
         } catch (SQLException e) {
@@ -1662,7 +1673,7 @@ public class ItemManagement extends ItemPanel {
         searchName.setSelectedIndex(0);
         searchDesc.setSelectedIndex(0);
         searchBenefactor.setSelectedIndex(0);
-        
+
         searchPriceStart.setText("");
         setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.LOST, Color.BLACK);
         searchPriceEnd.setText("");
@@ -1677,7 +1688,7 @@ public class ItemManagement extends ItemPanel {
         searchDateEnd.setText("");
         setDefaultField(searchDateEnd, Main.filterMaxDate, GuiUtil.FieldFocus.LOST, Color.BLACK);
         searchDateEnd.setForeground(Color.BLACK);
-        
+
         refreshItemTable();
     }//GEN-LAST:event_btnClearFilterActionPerformed
 
@@ -1685,13 +1696,13 @@ public class ItemManagement extends ItemPanel {
         if (isUpdatingComboBoxes) {
             return;
         }
-        
+
         disableUpdatingComboBoxes();
         GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
         GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
         GuiUtil.repopulateAssociatedComboBox(searchCategory, searchBenefactor, "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
-        
+
         refreshItemTable();
     }//GEN-LAST:event_searchCategoryItemStateChanged
 
@@ -1699,12 +1710,12 @@ public class ItemManagement extends ItemPanel {
         if (isUpdatingComboBoxes) {
             return;
         }
-        
+
         disableUpdatingComboBoxes();
         GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
         GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchBenefactor, "stock_name", "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
-        
+
         refreshItemTable();
     }//GEN-LAST:event_searchNameItemStateChanged
 
@@ -1712,7 +1723,7 @@ public class ItemManagement extends ItemPanel {
         if (isUpdatingComboBoxes) {
             return;
         }
-        
+
         refreshItemTable();
     }//GEN-LAST:event_searchDescItemStateChanged
 
@@ -1720,9 +1731,13 @@ public class ItemManagement extends ItemPanel {
         if (isUpdatingComboBoxes) {
             return;
         }
-        
+
         refreshItemTable();
     }//GEN-LAST:event_searchBenefactorItemStateChanged
+
+    private void btnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportActionPerformed
+        exportSQLToCSV(currentSearchQuery);
+    }//GEN-LAST:event_btnExportActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
@@ -1730,6 +1745,7 @@ public class ItemManagement extends ItemPanel {
     private javax.swing.JButton btnClearFilter;
     private javax.swing.JButton btnDOD;
     private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnExport;
     private javax.swing.JButton btnPrint;
     private javax.swing.JButton btnUpdate;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboName;

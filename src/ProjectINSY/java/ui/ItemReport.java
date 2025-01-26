@@ -14,6 +14,8 @@ import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
+import static ProjectINSY.java.util.GuiUtil.getComboSelected;
+import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
@@ -74,24 +76,15 @@ public class ItemReport extends ItemPanel {
     @Override
     public void refreshItemTable() {
         filterWHERE = "";
-//        if (!isDefaultComboItem(searchItem)) {
-//            filterWHERE += "AND request_item = '" + getComboSelected(searchItem) + "' ";
-//        }
-//        if (!isDefaultComboItem(searchDesc)) {
-//            filterWHERE += "AND request_desc = '" + getComboSelected(searchDesc) + "' ";
-//        }
-//        if (!isDefaultComboItem(searchName)) {
-//            filterWHERE += "AND request_name = '" + getComboSelected(searchName) + "' ";
-//        }
-//        if (!isDefaultComboItem(searchStatus)) {
-//            filterWHERE += "AND request_status = '" + getComboSelected(searchStatus) + "' ";
-//        }
-//        if (fieldHasValue(searchQuantityStart)) {
-//            filterWHERE += "AND request_quantity >= '" + getFieldString(searchQuantityStart) + "' ";
-//        }
-//        if (fieldHasValue(searchQuantityEnd)) {
-//            filterWHERE += "AND request_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
-//        }
+        if (!isDefaultComboItem(searchName)) {
+            filterWHERE += "AND s.stock_name = '" + getComboSelected(searchName) + "' ";
+        }
+        if (!isDefaultComboItem(searchDesc)) {
+            filterWHERE += "AND s.stock_desc = '" + getComboSelected(searchDesc) + "' ";
+        }
+        if (!isDefaultComboItem(searchCondition)) {
+            filterWHERE += "AND r.report_condition = '" + getComboSelected(searchCondition) + "' ";
+        }
 
         currentSearchQuery = "SELECT r.report_code, s.stock_name, s.stock_desc, r.report_condition FROM "
                 + Main.TB_ITEM_REPORT
