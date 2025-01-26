@@ -127,13 +127,17 @@ public class ItemRequest extends ItemPanel {
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
+        String selectedStatus = "PENDING";
+        if (searchStatus.getSelectedItem() != null) {
+            selectedStatus = searchStatus.getSelectedItem().toString();
+        }
         GuiUtil.repopulateComboBox(searchItem, "SELECT request_item FROM " + Main.TB_ITEM_REQUEST);
         GuiUtil.repopulateComboBox(searchDesc, "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
         GuiUtil.repopulateComboBox(searchName, "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
         GuiUtil.repopulateComboBox(searchStatus, "SELECT request_status FROM " + Main.TB_ITEM_REQUEST);
         searchStatus.removeItem("PENDING");
         searchStatus.insertItemAt("PENDING", 1);
-        searchStatus.setSelectedItem("PENDING");
+        searchStatus.setSelectedItem(selectedStatus);
         enableUpdatingComboBoxes();
 
         refreshItemTable();
