@@ -124,10 +124,10 @@ public class ItemRequest extends ItemPanel {
         if (searchStatus.getSelectedItem() != null) {
             selectedStatus = searchStatus.getSelectedItem().toString();
         }
-        GuiUtil.repopulateComboBox(searchItem, "SELECT request_item FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateComboBox(searchDesc, "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateComboBox(searchName, "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateComboBox(searchStatus, "SELECT request_status FROM " + Main.TB_ITEM_REQUEST);
+        searchItem.repopulateComboBox("SELECT request_item FROM " + Main.TB_ITEM_REQUEST);
+        searchDesc.repopulateComboBox("SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
+        searchName.repopulateComboBox("SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
+        searchStatus.repopulateComboBox("SELECT request_status FROM " + Main.TB_ITEM_REQUEST);
         searchStatus.removeItem("PENDING");
         searchStatus.insertItemAt("PENDING", 1);
         searchStatus.setSelectedItem(selectedStatus);
@@ -1022,8 +1022,8 @@ public class ItemRequest extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchItem, searchDesc, "request_item", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
-        GuiUtil.repopulateAssociatedComboBox(searchItem, searchName, "request_item", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
+        searchDesc.repopulateAssociatedComboBox(searchItem, "request_item", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
+        searchName.repopulateAssociatedComboBox(searchItem, "request_item", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
         enableUpdatingComboBoxes();
 
         refreshItemTable();
@@ -1035,7 +1035,7 @@ public class ItemRequest extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchDesc, searchName, "request_desc", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
+        searchName.repopulateAssociatedComboBox(searchDesc, "request_desc", "SELECT request_name FROM " + Main.TB_ITEM_REQUEST);
         enableUpdatingComboBoxes();
 
         refreshItemTable();

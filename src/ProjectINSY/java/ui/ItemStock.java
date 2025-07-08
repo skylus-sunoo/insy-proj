@@ -74,8 +74,8 @@ public class ItemStock extends ItemPanel {
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateComboBox(searchCategory, "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchName, "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        searchCategory.repopulateComboBox("SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        searchName.repopulateComboBox("SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
 
         refreshItemTable();
@@ -367,7 +367,7 @@ public class ItemStock extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        searchName.repopulateAssociatedComboBox(searchCategory, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
 
         refreshItemTable();

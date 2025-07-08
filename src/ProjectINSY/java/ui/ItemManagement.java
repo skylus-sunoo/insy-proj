@@ -202,10 +202,10 @@ public class ItemManagement extends ItemPanel {
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateComboBox(searchCategory, "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchName, "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchDesc, "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchBenefactor, "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
+        searchCategory.repopulateComboBox("SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        searchName.repopulateComboBox("SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        searchDesc.repopulateComboBox("SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        searchBenefactor.repopulateComboBox("SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
 
         refreshItemTable();
@@ -213,8 +213,8 @@ public class ItemManagement extends ItemPanel {
 
     @Override
     public void repopulateComboBox() {
-        GuiUtil.repopulateComboBox(comboName, "SELECT item_name FROM " + Main.TB_CATALOG_ITEM);
-        GuiUtil.repopulateComboBox(comboRequest, "SELECT request_timestamp FROM " + Main.TB_ITEM_REQUEST + " WHERE request_status = 'PENDING'");
+        comboName.repopulateComboBox("SELECT item_name FROM " + Main.TB_CATALOG_ITEM);
+        comboRequest.repopulateComboBox("SELECT request_timestamp FROM " + Main.TB_ITEM_REQUEST + " WHERE request_status = 'PENDING'");
 
         for (int i = 1; i < comboRequest.getItemCount(); i++) {
             String request_timestamp = comboRequest.getItemAt(i).toString();
@@ -1690,9 +1690,9 @@ public class ItemManagement extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchBenefactor, "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
+        searchName.repopulateAssociatedComboBox(searchCategory, "stock_category", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        searchDesc.repopulateAssociatedComboBox(searchCategory, "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        searchBenefactor.repopulateAssociatedComboBox(searchCategory, "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
 
         refreshItemTable();
@@ -1704,8 +1704,8 @@ public class ItemManagement extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchBenefactor, "stock_name", "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
+        searchDesc.repopulateAssociatedComboBox(searchName, searchCategory, "stock_name", "stock_category", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        searchBenefactor.repopulateAssociatedComboBox(searchName, searchCategory, "stock_name", "stock_category", "SELECT stock_benefactor FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
 
         refreshItemTable();

@@ -82,15 +82,15 @@ public class ItemTrackerOut extends ItemPanel {
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateComboBox(searchCategory, "SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchName, "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchDesc, "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateComboBox(searchLoc, "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
+        searchCategory.repopulateComboBox("SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+        searchName.repopulateComboBox("SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        searchDesc.repopulateComboBox("SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        searchLoc.repopulateComboBox("SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
         if (((DefaultComboBoxModel) searchLoc.getModel()).getIndexOf("Supply Room") < 0) {
             searchLoc.insertItemAt("Supply Room", 1);
         }
         searchLoc.setSelectedItem("Supply Room");
-        GuiUtil.repopulateComboBox(searchHolder, "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        searchHolder.repopulateComboBox("SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
         
         refreshItemTable();
@@ -329,10 +329,10 @@ public class ItemTrackerOut extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchName, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchDesc, "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchLoc, "stock_category", "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchCategory, searchHolder, "stock_category", "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        searchName.repopulateAssociatedComboBox(searchCategory, "stock_category", "stock_name", "SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+        searchDesc.repopulateAssociatedComboBox(searchCategory, "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        searchLoc.repopulateAssociatedComboBox(searchCategory, "stock_category", "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
+        searchHolder.repopulateAssociatedComboBox(searchCategory, "stock_category", "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
         
         refreshItemTable();
@@ -344,9 +344,9 @@ public class ItemTrackerOut extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchDesc, "stock_name", "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchLoc, "stock_name", "stock_category", "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchCategory, searchHolder, "stock_name", "stock_category", "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
+        searchDesc.repopulateAssociatedComboBox(searchName, searchCategory, "stock_name", "stock_category", "stock_desc", "SELECT stock_desc FROM " + Main.TB_ITEM_STOCK);
+        searchLoc.repopulateAssociatedComboBox(searchName, searchCategory, "stock_name", "stock_category", "stock_location", "SELECT stock_location FROM " + Main.TB_ITEM_STOCK);
+        searchHolder.repopulateAssociatedComboBox(searchName, searchCategory, "stock_name", "stock_category", "stock_holder", "SELECT stock_holder FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
         
         refreshItemTable();

@@ -43,6 +43,22 @@ public class TextFieldSuggestion extends JTextField {
         return textUI.getRound();
     }
 
+    /**
+     * Repopulates the auto-complete suggestions for this text field using data
+     * from a specified database column and query.
+     * <p>
+     * This method fetches distinct, non-empty values from the given column,
+     * sorts them alphabetically (case-insensitive), and gives priority
+     * positioning to the special entry "Supply Room" by placing it at the top.
+     * <p>
+     * After fetching and sorting, it clears any existing suggestions and
+     * updates the list with the new results.
+     *
+     * @param columnName the name of the column in the result set whose values
+     * are used for suggestions.
+     * @param query the SQL query to execute for retrieving the suggestion
+     * values.
+     */
     public void repopulateSuggestions(String columnName, String query) {
         Set<String> uniqueItems = new HashSet<>();
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = DatabaseUtil.prepareQuery(conn, query); ResultSet rs = pst.executeQuery()) {
