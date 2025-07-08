@@ -9,7 +9,6 @@ import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.util.GuiUtil;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import ProjectINSY.java.util.TableUtil;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
@@ -38,9 +37,9 @@ public class ItemTransaction extends ItemPanel {
 
         setScrollBarCustom(tableScroll);
 
-        defaultTable(tableTransaction);
+        tableTransaction.setDefaultTable();
         tableTransaction.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tableTransaction.fixColumnWidth(new int[]{400, 500, 150, 150, 200, 416});
+        tableTransaction.setColumnWidth(new int[]{400, 500, 150, 150, 200, 416});
         tableTransaction.setIntegerColumn(2);
         tableTransaction.setPriceColumn(3);
 

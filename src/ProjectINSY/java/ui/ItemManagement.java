@@ -6,6 +6,7 @@ package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.model.ItemPanel;
+import ProjectINSY.java.swing.Table.EnumAlignment;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
@@ -25,9 +26,7 @@ import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.TableUtil.floatFormatDecimal;
-import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -86,20 +85,14 @@ public class ItemManagement extends ItemPanel {
         setTransparentFrame(btnDOD, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
 
         tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tableInventory.getColumnModel().getColumn(0).setPreferredWidth(250);
-        tableInventory.getColumnModel().getColumn(1).setPreferredWidth(250);
-        tableInventory.getColumnModel().getColumn(2).setPreferredWidth(350);
-        tableInventory.getColumnModel().getColumn(3).setPreferredWidth(175);
-        tableInventory.getColumnModel().getColumn(4).setPreferredWidth(75);
-        tableInventory.getColumnModel().getColumn(5).setPreferredWidth(150);
-        tableInventory.getColumnModel().getColumn(6).setPreferredWidth(242);
+        tableInventory.setColumnWidth(new int[]{250, 250, 350, 175, 75, 150, 242});
 
         fieldPrice.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
         fieldBenefactor.getDocument().addDocumentListener(new FieldChangeListener());
         searchDateStart.getDocument().addDocumentListener(new FieldChangeListener());
         searchDateEnd.getDocument().addDocumentListener(new FieldChangeListener());
-        defaultTable(tableInventory);
+        tableInventory.setDefaultTable();
         tableInventory.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableInventory.getSelectedRow();
@@ -109,9 +102,9 @@ public class ItemManagement extends ItemPanel {
             }
         });
 
-        setColumnHorizontalAligment(tableInventory, 3, TableUtil.EnumAlignment.LEFT);
+        tableInventory.setColumnHorizontalAligment(3, EnumAlignment.LEFT);
         floatFormatDecimal(tableInventory, 3);
-        setColumnHorizontalAligment(tableInventory, 4, TableUtil.EnumAlignment.LEFT);
+        tableInventory.setIntegerColumn(4);
         searchDateStart.setText(Main.filterMinDate);
 //        sorterNumbers(tableInventory, 3);
 //        sorterNumbers(tableInventory, 4);

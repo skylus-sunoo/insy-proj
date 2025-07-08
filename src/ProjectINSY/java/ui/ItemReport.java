@@ -22,7 +22,6 @@ import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import ProjectINSY.java.util.TableUtil;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -59,7 +58,7 @@ public class ItemReport extends ItemPanel {
 
         fieldName.getDocument().addDocumentListener(new FieldChangeListener());
 
-        defaultTable(tableRequest);
+        tableRequest.setDefaultTable();
         tableRequest.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableRequest.getSelectedRow();
@@ -76,13 +75,13 @@ public class ItemReport extends ItemPanel {
     @Override
     public void refreshItemTable() {
         filterWHERE = "";
-        if (!isDefaultComboItem(searchName)) {
+        if (!searchName.isDefaultComboItem()) {
             filterWHERE += "AND s.stock_name = '" + getComboSelected(searchName) + "' ";
         }
-        if (!isDefaultComboItem(searchDesc)) {
+        if (!searchDesc.isDefaultComboItem()) {
             filterWHERE += "AND s.stock_desc = '" + getComboSelected(searchDesc) + "' ";
         }
-        if (!isDefaultComboItem(searchCondition)) {
+        if (!searchCondition.isDefaultComboItem()) {
             filterWHERE += "AND r.report_condition = '" + getComboSelected(searchCondition) + "' ";
         }
 
@@ -95,6 +94,11 @@ public class ItemReport extends ItemPanel {
                 + filterWHERE
                 + " ORDER BY report_timestamp DESC";
 
+        System.out.println("1: " + searchName.isDefaultComboItem());
+        System.out.println("2: " + searchDesc.isDefaultComboItem());
+        System.out.println("3: " + searchCondition.isDefaultComboItem());
+
+//        System.out.println(currentSearchQuery);
         TableUtil.refreshTable(tableRequest, currentSearchQuery, TableUtil.TableEnum.ITEM_REPORT);
 
         for (int i = 0; i < tableRequest.getColumnCount(); i++) {
@@ -105,17 +109,17 @@ public class ItemReport extends ItemPanel {
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateComboBox(searchName, "SELECT s.stock_name FROM "
+        searchName.repopulateComboBox("SELECT s.stock_name FROM "
                 + Main.TB_ITEM_REPORT
                 + " r JOIN "
                 + Main.TB_ITEM_STOCK
                 + " s ON r.report_code = s.stock_code");
-        GuiUtil.repopulateComboBox(searchDesc, "SELECT s.stock_desc FROM "
+        searchDesc.repopulateComboBox("SELECT s.stock_desc FROM "
                 + Main.TB_ITEM_REPORT
                 + " r JOIN "
                 + Main.TB_ITEM_STOCK
                 + " s ON r.report_code = s.stock_code");
-        GuiUtil.repopulateComboBox(searchCondition, "SELECT report_condition FROM " + Main.TB_ITEM_REPORT);
+        searchCondition.repopulateComboBox("SELECT report_condition FROM " + Main.TB_ITEM_REPORT);
         enableUpdatingComboBoxes();
 
         refreshItemTable();
@@ -612,18 +616,24 @@ public class ItemReport extends ItemPanel {
                 .addContainerGap()
                 .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator2)
-                    .addComponent(searchName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(labelFilterItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(labelFilterDesc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(searchDesc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator3)
-                    .addGroup(panelFilterLayout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelFilterLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jSeparator5, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(searchCondition, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(labelFilterCondition, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(labelFilterCondition, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(panelFilterLayout.createSequentialGroup()
+                        .addGroup(panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, 520, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(searchDesc, javax.swing.GroupLayout.PREFERRED_SIZE, 520, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelFilterLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(searchCondition, javax.swing.GroupLayout.PREFERRED_SIZE, 520, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(24, 24, 24))
         );
         panelFilterLayout.setVerticalGroup(
             panelFilterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -821,7 +831,16 @@ public class ItemReport extends ItemPanel {
         }
 
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateAssociatedComboBox(searchName, searchDesc, "request_item", "SELECT request_desc FROM " + Main.TB_ITEM_REQUEST);
+        searchDesc.repopulateAssociatedComboBox(searchName, "stock_name", "SELECT s.stock_desc FROM "
+                + Main.TB_ITEM_REPORT
+                + " r JOIN "
+                + Main.TB_ITEM_STOCK
+                + " s ON r.report_code = s.stock_code");
+        searchCondition.repopulateAssociatedComboBox(searchName, "stock_name", "SELECT r.report_condition FROM "
+                + Main.TB_ITEM_REPORT
+                + " r JOIN "
+                + Main.TB_ITEM_STOCK
+                + " s ON r.report_code = s.stock_code");
         enableUpdatingComboBoxes();
 
         refreshItemTable();

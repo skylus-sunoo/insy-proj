@@ -11,7 +11,6 @@ import ProjectINSY.java.util.GuiUtil;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
 import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
@@ -37,8 +36,8 @@ public class ItemTrackerOut extends ItemPanel {
 
         setScrollBarCustom(tableScroll);
 
-        defaultTable(tableLocation);
-        tableLocation.getColumnModel().getColumn(0).setPreferredWidth(10);
+        tableLocation.setDefaultTable();
+        tableLocation.setColumnWidth(0, 10);
     }
     
     //<editor-fold defaultstate="collapsed" desc="Item Panel">

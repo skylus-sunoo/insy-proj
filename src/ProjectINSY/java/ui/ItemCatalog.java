@@ -21,7 +21,6 @@ import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,7 +51,7 @@ public class ItemCatalog extends ItemPanel {
         setTransparentFrame(btnAddCategory, btnUpdateCategory, btnClearCategory, btnDeleteCategory, btnAddItem, btnUpdateItem, btnClearItem, btnDeleteItem);
 
         fieldCategoryName.getDocument().addDocumentListener(new ItemCatalog.FieldChangeListener());
-        defaultTable(tableCategory);
+        tableCategory.setDefaultTable();
         tableCategory.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableCategory.getSelectedRow();
@@ -63,7 +62,7 @@ public class ItemCatalog extends ItemPanel {
         });
 
         fieldName.getDocument().addDocumentListener(new ItemCatalog.FieldChangeListener());
-        defaultTable(tableItem);
+        tableItem.setDefaultTable();
         tableItem.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableItem.getSelectedRow();
@@ -91,7 +90,7 @@ public class ItemCatalog extends ItemPanel {
 
     @Override
     public void repopulateComboBox() {
-        GuiUtil.repopulateComboBox(comboCategory, "SELECT category_name FROM " + Main.TB_CATALOG_CATEGORY);
+        comboCategory.repopulateComboBox("SELECT category_name FROM " + Main.TB_CATALOG_CATEGORY);
     }
     //</editor-fold>
 
@@ -666,7 +665,7 @@ public class ItemCatalog extends ItemPanel {
                     // HISTORY : CATALOG-UPDATE
                     String history_desc = createHistoryDesc(category_name_original, category_name, "Category Name");
 
-                    String category_idStr = getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category", "category_name", category_name_original);
+                    String category_idStr = getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_code", "category_name", category_name_original);
                     insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, category_idStr, category_idStr, history_desc, "");
 
                     pst.executeUpdate();

@@ -9,7 +9,6 @@ import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.util.GuiUtil;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import ProjectINSY.java.util.TableUtil;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
@@ -37,20 +36,16 @@ public class ItemHistory extends ItemPanel {
 
         setScrollBarCustom(tableScroll);
 
-        defaultTable(tableHistory);
+        tableHistory.setDefaultTable();
         tableHistory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tableHistory.getColumnModel().getColumn(0).setPreferredWidth(200);
-        tableHistory.getColumnModel().getColumn(1).setPreferredWidth(200);
-        tableHistory.getColumnModel().getColumn(2).setPreferredWidth(250);
-        tableHistory.getColumnModel().getColumn(3).setPreferredWidth(966);
-        tableHistory.getColumnModel().getColumn(4).setPreferredWidth(200);
+        tableHistory.setColumnWidth(new int[]{200, 200, 250, 966, 200});
 
         String[] parts = getFieldString(searchTimestampStart).split("-");
         String month_start = parts[0] + "-" + parts[1] + "-01";
         searchTimestampStart.setText(month_start);
         searchTimestampStart.getDocument().addDocumentListener(new FieldChangeListener());
         searchTimestampEnd.getDocument().addDocumentListener(new FieldChangeListener());
-        
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         try {
             Date date = formatter.parse(month_start);
@@ -66,13 +61,13 @@ public class ItemHistory extends ItemPanel {
     @Override
     public void refreshItemTable() {
         filterWHERE = "";
-        if (!isDefaultComboItem(searchType)) {
+        if (!searchType.isDefaultComboItem()) {
             String[] parts = getComboSelected(searchType).split("-");
             if (parts.length == 2) {
                 filterWHERE += "AND history_frame = '" + parts[0] + "' AND history_type = '" + parts[1] + "' ";
             }
         }
-        if (!isDefaultComboItem(searchHolder)) {
+        if (!searchHolder.isDefaultComboItem()) {
             filterWHERE += "AND history_user = '" + getComboSelected(searchHolder) + "' ";
         }
         if (fieldHasValue(searchTimestampStart)) {
@@ -93,8 +88,8 @@ public class ItemHistory extends ItemPanel {
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
-        GuiUtil.repopulateComboBox(searchType, "history_frame_type", "SELECT CONCAT(history_frame,'-', history_type) AS history_frame_type FROM " + Main.TB_ITEM_HISTORY);
-        GuiUtil.repopulateComboBox(searchHolder, "SELECT history_user FROM " + Main.TB_ITEM_HISTORY);
+        searchType.repopulateComboBox("history_frame_type", "SELECT CONCAT(history_frame,'-', history_type) AS history_frame_type FROM " + Main.TB_ITEM_HISTORY);
+        searchHolder.repopulateComboBox("SELECT history_user FROM " + Main.TB_ITEM_HISTORY);
         enableUpdatingComboBoxes();
 
         refreshItemTable();

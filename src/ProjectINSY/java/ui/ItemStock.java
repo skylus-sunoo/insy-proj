@@ -11,15 +11,10 @@ import static ProjectINSY.java.util.GuiUtil.enforceDigits;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import ProjectINSY.java.util.TableUtil;
-import ProjectINSY.java.util.TableUtil.EnumAlignment;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
-import static ProjectINSY.java.util.TableUtil.fixedColumnAll;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
 import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
-import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
-import static ProjectINSY.java.util.TableUtil.sorterNumbers;
 import java.awt.Color;
 
 /**
@@ -36,11 +31,9 @@ public class ItemStock extends ItemPanel {
 
         setScrollBarCustom(tableScroll);
 
-        defaultTable(tableInventory);
-
-        setColumnHorizontalAligment(tableInventory, 2, EnumAlignment.LEFT);
-        fixedColumnAll(tableInventory);
-        sorterNumbers(tableInventory, 2);
+        tableInventory.setDefaultTable();
+        tableInventory.setIntegerColumn(2);
+        tableInventory.setFixedColumn();
     }
 
     //<editor-fold defaultstate="collapsed" desc="Item Panel">

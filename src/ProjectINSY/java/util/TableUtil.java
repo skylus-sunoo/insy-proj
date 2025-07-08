@@ -70,56 +70,6 @@ public class TableUtil {
         refreshTable(tableName, query, tableEnum);
     }
 
-    public static void defaultTable(JTable tableName) {
-        tableName.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//        tableName.isCellEditable(ERROR, WIDTH);
-        tableName.setDefaultEditor(Object.class, null);
-        tableName.setAutoCreateRowSorter(true);
-        tableName.setFillsViewportHeight(true);
-    }
-
-    public static void fixedColumnAll(JTable tableName) {
-        for (int i = 0; i < tableName.getColumnCount(); i++) {
-            tableName.getColumnModel().getColumn(i).setResizable(false);
-        }
-    }
-
-    public enum EnumAlignment {
-        CENTER, LEFT, RIGHT
-    }
-
-    public static void setColumnHorizontalAligment(JTable tableName, int columnIndex, EnumAlignment enumAlignment) {
-        DefaultTableCellRenderer alignment = new DefaultTableCellRenderer();
-        if (null != enumAlignment) {
-            switch (enumAlignment) {
-                case CENTER ->
-                    alignment.setHorizontalAlignment(JLabel.CENTER);
-                case LEFT ->
-                    alignment.setHorizontalAlignment(JLabel.LEFT);
-                case RIGHT ->
-                    alignment.setHorizontalAlignment(JLabel.RIGHT);
-                default -> {
-                }
-            }
-        }
-        tableName.getColumnModel().getColumn(columnIndex).setCellRenderer(alignment);
-    }
-
-    public static void sorterNumbers(JTable tableName, int columnIndex) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(tableName.getModel());
-        tableName.setRowSorter(sorter);
-
-        sorter.setComparator(columnIndex, (String o1, String o2) -> {
-            try {
-                Float float1 = Float.valueOf(o1);
-                Float float2 = Float.valueOf(o2);
-                return Float.compare(float1, float2);
-            } catch (NumberFormatException e) {
-                return o1.compareTo(o2);
-            }
-        });
-    }
-
     public static void floatFormatDecimal(JTable tableName, int columnIndex) {
         TableColumn column = tableName.getColumnModel().getColumn(columnIndex);
         DecimalFormat df = new DecimalFormat("#,##0.00");
@@ -191,7 +141,7 @@ public class TableUtil {
                             case STOCK_DISTINCT: {
                                 String category = rs.getString("stock_category");
                                 String name = rs.getString("stock_name");
-                                String quantity = rs.getString("stock_quantity");
+                                int quantity = rs.getInt("stock_quantity");
                                 model.addRow(new Object[]{
                                     category, name, quantity
                                 });

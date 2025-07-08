@@ -22,15 +22,10 @@ import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
-import ProjectINSY.java.util.TableUtil.EnumAlignment;
-import static ProjectINSY.java.util.TableUtil.defaultTable;
 import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
-import static ProjectINSY.java.util.TableUtil.fixedColumnAll;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
 import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
-import static ProjectINSY.java.util.TableUtil.setColumnHorizontalAligment;
-import static ProjectINSY.java.util.TableUtil.sorterNumbers;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -72,7 +67,7 @@ public class ItemRequest extends ItemPanel {
         fieldName.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
 
-        defaultTable(tableRequest);
+        tableRequest.setDefaultTable();
         tableRequest.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableRequest.getSelectedRow();
@@ -82,9 +77,8 @@ public class ItemRequest extends ItemPanel {
             }
         });
 
-        setColumnHorizontalAligment(tableRequest, 4, EnumAlignment.LEFT);
-        fixedColumnAll(tableRequest);
-        sorterNumbers(tableRequest, 4);
+        tableRequest.setIntegerColumn(4);
+        tableRequest.setFixedColumn();
 
         switchRequestForm(btnCreateRequest);
     }

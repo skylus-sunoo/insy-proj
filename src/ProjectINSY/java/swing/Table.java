@@ -12,11 +12,15 @@ import java.text.DecimalFormat;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import static javax.swing.SwingConstants.LEFT;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public class Table extends JTable {
 
@@ -39,7 +43,48 @@ public class Table extends JTable {
         model.addRow(row);
     }
 
-    public void fixColumnWidth(int[] widths) {
+    public void setFixedColumn() {
+        for (int i = 0; i < getColumnCount(); i++) {
+            getColumnModel().getColumn(i).setResizable(false);
+        }
+    }
+
+    public void setFixedColumn(int... cols) {
+        for (int col : cols) {
+            getColumnModel().getColumn(col).setResizable(false);
+        }
+    }
+
+    public void setDefaultTable() {
+        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        isCellEditable(ERROR, WIDTH);
+        setDefaultEditor(Object.class, null);
+        setAutoCreateRowSorter(true);
+        setFillsViewportHeight(true);
+    }
+
+    public enum EnumAlignment {
+        CENTER, LEFT, RIGHT
+    }
+
+    public void setColumnHorizontalAligment(int columnIndex, EnumAlignment enumAlignment) {
+        DefaultTableCellRenderer alignment = new DefaultTableCellRenderer();
+        if (null != enumAlignment) {
+            switch (enumAlignment) {
+                case CENTER ->
+                    alignment.setHorizontalAlignment(JLabel.CENTER);
+                case LEFT ->
+                    alignment.setHorizontalAlignment(JLabel.LEFT);
+                case RIGHT ->
+                    alignment.setHorizontalAlignment(JLabel.RIGHT);
+                default -> {
+                }
+            }
+        }
+        getColumnModel().getColumn(columnIndex).setCellRenderer(alignment);
+    }
+
+    public void setColumnWidth(int[] widths) {
         if (getColumnCount() == widths.length) {
             for (int i = 0; i < widths.length; i++) {
                 getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
@@ -47,6 +92,20 @@ public class Table extends JTable {
         } else {
             System.err.println("Width array length does not match table column count.");
         }
+    }
+
+    public void setColumnWidth(int[] columns, int[] widths) {
+        if (columns.length == widths.length) {
+            for (int i = 0; i < widths.length; i++) {
+                getColumnModel().getColumn(columns[i]).setPreferredWidth(widths[i]);
+            }
+        } else {
+            System.err.println("Width array length does not match column array length.");
+        }
+    }
+
+    public void setColumnWidth(int column, int width) {
+        getColumnModel().getColumn(column).setPreferredWidth(width);
     }
 
     // PriceCellRenderer for formatting price with 2 decimal places
