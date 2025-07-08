@@ -48,6 +48,7 @@ public class TableUtil {
         ITEM_LIST,
         ITEM_REQUEST,
         ITEM_REPORT,
+        TRANSACTION,
     };
 
     public static ImageIcon blobToImage(ResultSet rs, String column_name) throws SQLException {
@@ -146,6 +147,20 @@ public class TableUtil {
                 try {
                     if (null != tableEnum) {
                         switch (tableEnum) {
+                            //<editor-fold defaultstate="collapsed" desc="TRANSACTION">
+                            case TRANSACTION: {
+                                String timestamp = rs.getString("out_timestamp");
+                                String name = rs.getString("out_name");
+                                int quantity = rs.getInt("out_quantity");
+                                float price = rs.getFloat("out_price");
+                                String channel = rs.getString("out_channel");
+                                String customer = rs.getString("out_customer");
+                                model.addRow(new Object[]{
+                                    timestamp, name, quantity, price, channel, customer
+                                });
+                                break;
+                            }
+                            //</editor-fold>
                             //<editor-fold defaultstate="collapsed" desc="ITEM REQUEST">
                             case ITEM_REQUEST: {
                                 String timestamp = rs.getString("request_timestamp");
@@ -304,16 +319,90 @@ public class TableUtil {
     }
 
     public static void linkFieldsToTable(String[] tableRow, JComponent... components) {
+        DecimalFormat df = new DecimalFormat("0.00");  // For formatting prices to 2 decimals
+
         // image cell renderers should always be the last column, and not included in the list of components!
         for (int i = 0; i < components.length; i++) {
+            if (components[i] == null) {
+                continue;
+            }
+
             JComponent component = components[i];
-            if (component instanceof JTextField jTextField) {
-                jTextField.setText(tableRow[i]);
-                jTextField.setForeground(new Color(0, 0, 0));
-            } else if (component instanceof JComboBox jComboBox) {
-                jComboBox.setSelectedItem(tableRow[i]);
+            String cellValue = tableRow[i];
+
+            switch (component) {
+                case JTextField jTextField -> {
+                    // Check if the value is a number (float or double)
+                    if (isFloat(cellValue)) {
+                        try {
+                            float value = Float.parseFloat(cellValue);  // Parse as float
+
+                            // Check if the number has more than 2 decimals
+                            if (getDecimalPlaces(value) <= 2) {
+                                jTextField.setText(df.format(value));  // Format to 2 decimal places
+                            } else {
+                                jTextField.setText(String.valueOf(value));  // Leave as is
+                            }
+                        } catch (NumberFormatException e) {
+                            jTextField.setText(cellValue);  // If it's not a number, just display it as is
+                        }
+                    } else {
+                        // If not numeric, just set the value as is
+                        jTextField.setText(cellValue);
+                    }
+                    jTextField.setForeground(new Color(0, 0, 0));  // Default text color
+                }
+                case JComboBox jComboBox -> {
+                    // Set the selected item from the tableRow values
+                    jComboBox.setSelectedItem(cellValue);
+                }
+                default -> {
+                    // Handle other cases if needed
+                }
             }
         }
+        
+        // image cell renderers should always be the last column, and not included in the list of components!
+//        for (int i = 0; i < components.length; i++) {
+//            JComponent component = components[i];
+//            if (component instanceof JTextField jTextField) {
+//                jTextField.setText(tableRow[i]);
+//                jTextField.setForeground(new Color(0, 0, 0));
+//            } else if (component instanceof JComboBox jComboBox) {
+//                jComboBox.setSelectedItem(tableRow[i]);
+//            }
+//        }
+    }
+
+    /**
+     * Helper method to check if the string can be parsed to a Float.
+     */
+    private static boolean isFloat(String str) {
+        // Check if the string contains a decimal point
+        if (str.contains(".")) {
+            try {
+                Float.valueOf(str);  // Try to parse as float
+                return true;
+            } catch (NumberFormatException e) {
+                return false;  // Return false if it's not a valid float
+            }
+        }
+        // If there's no decimal point, it's treated as an integer
+        return false;
+    }
+
+    /**
+     * Helper method to check the number of decimal places in a float.
+     */
+    private static int getDecimalPlaces(float value) {
+        String str = String.valueOf(value);
+        int decimalIndex = str.indexOf('.');
+
+        if (decimalIndex == -1) {
+            return 0;  // No decimal places
+        }
+
+        return str.length() - decimalIndex - 1;  // Return number of decimals after the dot
     }
 
     public static void resetTableSort(JTable table) {

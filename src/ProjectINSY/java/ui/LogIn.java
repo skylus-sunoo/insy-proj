@@ -59,7 +59,7 @@ public class LogIn extends javax.swing.JPanel {
         initComponents();
 
         panelQuit.setOpaque(false);
-        setTransparentFrame(LogIn.this, fieldEmail, fieldPassword, btnForgotPasword, btnSignUp, btnQuit);
+        setTransparentFrame(LogIn.this, fieldEmail, fieldPassword, btnForgotPasword, btnSignUp, btnQuit, btnAuto);
         btnSignUp.setText("<html>Don't have an account yet? <font color='#0C2BFF'>Sign up now.</font></html>");
 
         fieldEmail.getDocument().addDocumentListener(new FieldChangeListener());
@@ -199,7 +199,6 @@ public class LogIn extends javax.swing.JPanel {
 
         btnSignUp = new javax.swing.JButton();
         btnForgotPasword = new javax.swing.JButton();
-        btnAuto = new javax.swing.JButton();
         panelLogIn = new javax.swing.JPanel();
         btnLogIn = new javax.swing.JButton();
         imageSilang = new javax.swing.JLabel();
@@ -215,6 +214,7 @@ public class LogIn extends javax.swing.JPanel {
         panelQuit = new javax.swing.JPanel();
         labelQuit = new javax.swing.JLabel();
         btnQuit = new javax.swing.JButton();
+        btnAuto = new javax.swing.JButton();
 
         btnSignUp.setFont(new java.awt.Font("Bahnschrift", 0, 12)); // NOI18N
         btnSignUp.setText("Don't have an account yet? Sign up now.");
@@ -234,15 +234,6 @@ public class LogIn extends javax.swing.JPanel {
         btnForgotPasword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnForgotPaswordActionPerformed(evt);
-            }
-        });
-
-        btnAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLogIn_pressed.png"))); // NOI18N
-        btnAuto.setBorder(null);
-        btnAuto.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnAuto.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAutoActionPerformed(evt);
             }
         });
 
@@ -404,6 +395,15 @@ public class LogIn extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        btnAuto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnLogIn_pressed.png"))); // NOI18N
+        btnAuto.setBorder(null);
+        btnAuto.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAutoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -412,6 +412,11 @@ public class LogIn extends javax.swing.JPanel {
                 .addContainerGap(620, Short.MAX_VALUE)
                 .addComponent(panelLogIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(620, 620, 620))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(183, Short.MAX_VALUE)
+                    .addComponent(btnAuto)
+                    .addContainerGap(1351, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -419,6 +424,11 @@ public class LogIn extends javax.swing.JPanel {
                 .addContainerGap(75, Short.MAX_VALUE)
                 .addComponent(panelLogIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(75, 75, 75))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(425, Short.MAX_VALUE)
+                    .addComponent(btnAuto)
+                    .addContainerGap(426, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 

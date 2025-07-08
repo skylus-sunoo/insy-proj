@@ -45,7 +45,8 @@ public class Main extends javax.swing.JFrame {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Database">
     public static String BRANCH_CAMPUS = "Silang";
-    public static String DB_NAME = "db_cvsu_" + BRANCH_CAMPUS.toLowerCase() + "_inventory";
+//    public static String DB_NAME = "db_cvsu_" + BRANCH_CAMPUS.toLowerCase() + "_inventory";";
+    public static String DB_NAME = "db_demo_paulash";
     public static String TB_USER = "tb_user";
     public static String TB_CATALOG_CATEGORY = "tb_catalog_category";
     public static String TB_CATALOG_ITEM = "tb_catalog_item";
@@ -54,6 +55,7 @@ public class Main extends javax.swing.JFrame {
     public static String TB_ITEM_HISTORY = "tb_item_history";
     public static String TB_ITEM_REQUEST = "tb_item_request";
     public static String TB_ITEM_REPORT = "tb_item_report";
+    public static String TB_ITEM_TRANSACTION = "tb_item_out";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Session">
     private static int userSessionID = -1;
@@ -86,6 +88,7 @@ public class Main extends javax.swing.JFrame {
     private final ItemCatalog ItemCatalog = new ItemCatalog();
     private final ItemTracker ItemTracker = new ItemTracker();
     private final ItemHistory ItemHistory = new ItemHistory();
+    private final ItemTransaction ItemTransaction = new ItemTransaction();
 
     public LogIn getLogIn() {
         return LogIn;
@@ -93,6 +96,10 @@ public class Main extends javax.swing.JFrame {
 
     public ItemStock getItemStock() {
         return ItemStock;
+    }
+
+    public ItemTransaction getItemTransaction() {
+        return ItemTransaction;
     }
 
     public ItemRequest getItemRequest() {
@@ -274,11 +281,14 @@ public class Main extends javax.swing.JFrame {
                 form.refreshItemTable();
             }
             case ItemTracker form -> {
-                form.ItemTrackerLocation.repopulateFilterComboBox();
+                form.ItemTrackerOut.repopulateFilterComboBox();
                 form.ItemTrackerScan.repopulateSuggestions();
                 form.ItemTrackerScan.setScannerFocus();
             }
             case ItemHistory form -> {
+                form.repopulateFilterComboBox();
+            }
+            case ItemTransaction form -> {
                 form.repopulateFilterComboBox();
             }
             default -> {

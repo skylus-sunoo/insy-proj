@@ -25,12 +25,12 @@ import javax.swing.DefaultComboBoxModel;
  *
  * @author admin
  */
-public class ItemTrackerLocation extends ItemPanel {
+public class ItemTrackerOut extends ItemPanel {
 
     /**
-     * Creates new form ItemTrackerLocation
+     * Creates new form ItemTrackerOut
      */
-    public ItemTrackerLocation() {
+    public ItemTrackerOut() {
         initComponents();
         
         setTransparentFrame(btnClearFilter);

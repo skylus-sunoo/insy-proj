@@ -1,0 +1,397 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ */
+package ProjectINSY.java.ui;
+
+import ProjectINSY.java.Main;
+import ProjectINSY.java.model.ItemPanel;
+import ProjectINSY.java.util.GuiUtil;
+import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
+import ProjectINSY.java.util.TableUtil;
+import static ProjectINSY.java.util.TableUtil.defaultTable;
+import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
+import static ProjectINSY.java.util.GuiUtil.getComboSelected;
+import static ProjectINSY.java.util.GuiUtil.getFieldString;
+import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
+import static ProjectINSY.java.util.TableUtil.TableEnum.TRANSACTION;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.swing.JTable;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+/**
+ *
+ * @author admin
+ */
+public class ItemTransaction extends ItemPanel {
+
+    /**
+     * Creates new form LogIn
+     */
+    public ItemTransaction() {
+        initComponents();
+
+        setScrollBarCustom(tableScroll);
+
+        defaultTable(tableTransaction);
+        tableTransaction.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tableTransaction.fixColumnWidth(new int[]{400, 500, 150, 150, 200, 416});
+        tableTransaction.setIntegerColumn(2);
+        tableTransaction.setPriceColumn(3);
+
+        String[] parts = getFieldString(searchTimestampStart).split("-");
+        String month_start = parts[0] + "-" + parts[1] + "-01";
+        searchTimestampStart.setText(month_start);
+        searchTimestampStart.getDocument().addDocumentListener(new FieldChangeListener());
+        searchTimestampEnd.getDocument().addDocumentListener(new FieldChangeListener());
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = formatter.parse(month_start);
+
+            dateStart.setSelectedDate(date);
+        } catch (ParseException e) {
+            e.printStackTrace(System.out);
+        }
+
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="Item Panel">
+    @Override
+    public void refreshItemTable() {
+        filterWHERE = "";
+        if (!searchName.isDefaultComboItem()) {
+            filterWHERE += "AND out_name = '" + getComboSelected(searchName) + "' ";
+        }
+        if (!searchChannel.isDefaultComboItem()) {
+            filterWHERE += "AND out_channel = '" + getComboSelected(searchChannel) + "' ";
+        }
+        if (!searchCustomer.isDefaultComboItem()) {
+            filterWHERE += "AND out_customer = '" + getComboSelected(searchCustomer) + "' ";
+        }
+        if (fieldHasValue(searchTimestampStart)) {
+            filterWHERE += "AND out_timestamp >= '" + getFieldString(searchTimestampStart) + " 00:00:00' ";
+        }
+        if (fieldHasValue(searchTimestampEnd)) {
+            filterWHERE += "AND out_timestamp <= '" + getFieldString(searchTimestampEnd) + " 23:59:59' ";
+        }
+
+        currentSearchQuery = "SELECT * FROM "
+                + Main.TB_ITEM_TRANSACTION + " WHERE 1 "
+                + filterWHERE
+                + "ORDER BY out_timestamp DESC";
+
+        TableUtil.refreshTable(tableTransaction, currentSearchQuery, TableUtil.TableEnum.TRANSACTION);
+    }
+
+    @Override
+    public void repopulateFilterComboBox() {
+        disableUpdatingComboBoxes();
+        searchName.repopulateComboBox("SELECT out_name FROM " + Main.TB_ITEM_TRANSACTION);
+        searchChannel.repopulateComboBox("SELECT out_channel FROM " + Main.TB_ITEM_TRANSACTION);
+        searchCustomer.repopulateComboBox("SELECT out_customer FROM " + Main.TB_ITEM_TRANSACTION);
+//        searchCustomer.repopulateAssociatedComboBox(searchChannel, "out_channel", "SELECT out_customer FROM " + Main.TB_ITEM_TRANSACTION);
+        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }
+
+    @Override
+    public void repopulateComboBox() {
+    }
+    //</editor-fold>
+
+    private class FieldChangeListener implements DocumentListener, ActionListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            checkFields();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            checkFields();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            checkFields();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            checkFields();
+        }
+
+        private void checkFields() {
+            refreshItemTable();
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        dateStart = new ProjectINSY.java.swing.Date.DateChooser();
+        dateEnd = new ProjectINSY.java.swing.Date.DateChooser();
+        panelMain = new javax.swing.JPanel();
+        tableScroll = new javax.swing.JScrollPane();
+        tableTransaction = new ProjectINSY.java.swing.Table();
+        panelSearch = new javax.swing.JPanel();
+        searchName = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelNameType = new javax.swing.JLabel();
+        searchChannel = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        labelFilterChannel = new javax.swing.JLabel();
+        labelFilterTimestamp = new javax.swing.JLabel();
+        searchTimestampStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchTimestampEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        labelFilterTimestampFrom = new javax.swing.JLabel();
+        labelFilterTimestampTo = new javax.swing.JLabel();
+        labelFilterCustomer = new javax.swing.JLabel();
+        searchCustomer = new ProjectINSY.java.swing.ComboBoxSuggestion();
+
+        dateStart.setForeground(new java.awt.Color(25, 102, 24));
+        dateStart.setDateFormat("yyyy-MM-dd");
+        dateStart.setTextRefernce(searchTimestampStart);
+
+        dateEnd.setForeground(new java.awt.Color(25, 102, 24));
+        dateEnd.setDateFormat("yyyy-MM-dd");
+        dateEnd.setTextRefernce(searchTimestampEnd);
+
+        setMaximumSize(new java.awt.Dimension(1840, 900));
+        setMinimumSize(new java.awt.Dimension(1840, 900));
+        setOpaque(false);
+        setPreferredSize(new java.awt.Dimension(1840, 900));
+
+        panelMain.setBackground(new java.awt.Color(255, 255, 255));
+        panelMain.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
+        panelMain.setMaximumSize(new java.awt.Dimension(1840, 900));
+        panelMain.setMinimumSize(new java.awt.Dimension(1840, 900));
+        panelMain.setPreferredSize(new java.awt.Dimension(1840, 900));
+
+        tableScroll.setBorder(null);
+
+        tableTransaction.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "Timestamp", "Name", "Quantity", "Price", "Channel", "Customer"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Float.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tableTransaction.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        tableTransaction.setGridColor(new java.awt.Color(255, 255, 255));
+        tableTransaction.setSelectionBackground(new java.awt.Color(25, 102, 24));
+        tableScroll.setViewportView(tableTransaction);
+
+        panelSearch.setBackground(new java.awt.Color(255, 255, 255));
+        panelSearch.setMaximumSize(new java.awt.Dimension(1277, 71));
+        panelSearch.setMinimumSize(new java.awt.Dimension(1277, 71));
+
+        searchName.setBorder(null);
+        searchName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchName.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchNameItemStateChanged(evt);
+            }
+        });
+
+        labelNameType.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelNameType.setText("Name");
+
+        searchChannel.setBorder(null);
+        searchChannel.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchChannel.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchChannelItemStateChanged(evt);
+            }
+        });
+
+        labelFilterChannel.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterChannel.setText("Channel");
+
+        labelFilterTimestamp.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterTimestamp.setText("Date Range");
+
+        searchTimestampStart.setBorder(null);
+        searchTimestampStart.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+
+        searchTimestampEnd.setBorder(null);
+        searchTimestampEnd.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+
+        labelFilterTimestampFrom.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        labelFilterTimestampFrom.setText("From");
+
+        labelFilterTimestampTo.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        labelFilterTimestampTo.setText("To");
+
+        labelFilterCustomer.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelFilterCustomer.setText("Customer");
+
+        searchCustomer.setBorder(null);
+        searchCustomer.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        searchCustomer.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchCustomerItemStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelSearchLayout = new javax.swing.GroupLayout(panelSearch);
+        panelSearch.setLayout(panelSearchLayout);
+        panelSearchLayout.setHorizontalGroup(
+            panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSearchLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(panelSearchLayout.createSequentialGroup()
+                        .addComponent(labelFilterTimestampFrom)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchTimestampStart, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(labelFilterTimestampTo)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchTimestampEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(labelFilterTimestamp, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(128, 128, 128)
+                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(labelNameType, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(labelFilterChannel, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .addComponent(searchChannel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(labelFilterCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .addComponent(searchCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(78, 78, 78))
+        );
+        panelSearchLayout.setVerticalGroup(
+            panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSearchLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelSearchLayout.createSequentialGroup()
+                        .addComponent(labelFilterTimestamp)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(searchTimestampStart, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(labelFilterTimestampTo, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(searchTimestampEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(labelFilterTimestampFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(panelSearchLayout.createSequentialGroup()
+                        .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(labelNameType)
+                            .addComponent(labelFilterChannel)
+                            .addComponent(labelFilterCustomer))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panelSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(searchName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(searchCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(searchChannel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
+        panelMain.setLayout(panelMainLayout);
+        panelMainLayout.setHorizontalGroup(
+            panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelMainLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tableScroll)
+                    .addComponent(panelSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        panelMainLayout.setVerticalGroup(
+            panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void searchNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchNameItemStateChanged
+        refreshItemTable();
+    }//GEN-LAST:event_searchNameItemStateChanged
+
+    private void searchCustomerItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchCustomerItemStateChanged
+        refreshItemTable();
+    }//GEN-LAST:event_searchCustomerItemStateChanged
+
+    private void searchChannelItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchChannelItemStateChanged
+//        if (isUpdatingComboBoxes) {
+//            return;
+//        }
+//
+//        disableUpdatingComboBoxes();
+//        searchCustomer.repopulateAssociatedComboBox(searchChannel, "out_channel", "SELECT out_customer FROM " + Main.TB_ITEM_TRANSACTION);
+//        enableUpdatingComboBoxes();
+
+        refreshItemTable();
+    }//GEN-LAST:event_searchChannelItemStateChanged
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private ProjectINSY.java.swing.Date.DateChooser dateEnd;
+    private ProjectINSY.java.swing.Date.DateChooser dateStart;
+    private javax.swing.JLabel labelFilterChannel;
+    private javax.swing.JLabel labelFilterCustomer;
+    private javax.swing.JLabel labelFilterTimestamp;
+    private javax.swing.JLabel labelFilterTimestampFrom;
+    private javax.swing.JLabel labelFilterTimestampTo;
+    private javax.swing.JLabel labelNameType;
+    private javax.swing.JPanel panelMain;
+    private javax.swing.JPanel panelSearch;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchChannel;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchCustomer;
+    private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampEnd;
+    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampStart;
+    private javax.swing.JScrollPane tableScroll;
+    private ProjectINSY.java.swing.Table tableTransaction;
+    // End of variables declaration//GEN-END:variables
+}

@@ -14,7 +14,7 @@ import javax.swing.JComponent;
  */
 public class ItemTracker extends javax.swing.JPanel {
     
-    public final ItemTrackerLocation ItemTrackerLocation = new ItemTrackerLocation();
+    public final ItemTrackerOut ItemTrackerOut = new ItemTrackerOut();
     public final ItemTrackerScan ItemTrackerScan = new ItemTrackerScan();
 
     /**
@@ -24,22 +24,23 @@ public class ItemTracker extends javax.swing.JPanel {
         initComponents();
         
         setTransparentFrame(ItemTracker.this, panelBody);
-        setTransparentFrame(btnFormLocation, btnFormScan);
+        setTransparentFrame(btnFormScan, btnFormOut);
         
-        switchTrackerForm(ItemTrackerLocation);
+        switchTrackerForm(ItemTrackerScan);
+        panelPage.setVisible(false);
     }
     
     public void switchTrackerForm(JComponent com) {
         setForm(panelBody, com);
         
-        if (com == ItemTrackerLocation) {
-            btnFormLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker_active.png")));
-            btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));
-            
-            ItemTrackerLocation.repopulateFilterComboBox();
-        } else {
-            btnFormLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));
+        if (com == ItemTrackerOut) {
             btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker_active.png")));
+            btnFormOut.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));
+            
+            ItemTrackerOut.repopulateFilterComboBox();
+        } else {
+            btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png")));
+            btnFormOut.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker_active.png")));
             
             ItemTrackerScan.repopulateSuggestions();
             ItemTrackerScan.setScannerFocus();
@@ -55,13 +56,53 @@ public class ItemTracker extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelMain = new javax.swing.JPanel();
-        panelBody = new javax.swing.JPanel();
         panelPage = new javax.swing.JPanel();
+        labelFormOut = new javax.swing.JLabel();
+        btnFormOut = new javax.swing.JButton();
         labelFormScan = new javax.swing.JLabel();
         btnFormScan = new javax.swing.JButton();
-        labelFormLocation = new javax.swing.JLabel();
-        btnFormLocation = new javax.swing.JButton();
+        panelMain = new javax.swing.JPanel();
+        panelBody = new javax.swing.JPanel();
+
+        panelPage.setBackground(new java.awt.Color(255, 255, 255));
+        panelPage.setLayout(null);
+
+        labelFormOut.setFont(new java.awt.Font("Bebas", 0, 24)); // NOI18N
+        labelFormOut.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelFormOut.setText("SCAN ITEM");
+        labelFormOut.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelPage.add(labelFormOut);
+        labelFormOut.setBounds(920, 6, 910, 30);
+
+        btnFormOut.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png"))); // NOI18N
+        btnFormOut.setBorder(null);
+        btnFormOut.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnFormOut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFormOutActionPerformed(evt);
+            }
+        });
+        panelPage.add(btnFormOut);
+        btnFormOut.setBounds(920, 0, 909, 40);
+
+        labelFormScan.setFont(new java.awt.Font("Bebas", 0, 24)); // NOI18N
+        labelFormScan.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelFormScan.setText("ITEM LOCATION");
+        labelFormScan.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelPage.add(labelFormScan);
+        labelFormScan.setBounds(10, 6, 900, 30);
+
+        btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png"))); // NOI18N
+        btnFormScan.setToolTipText("");
+        btnFormScan.setBorder(null);
+        btnFormScan.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnFormScan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFormScanActionPerformed(evt);
+            }
+        });
+        panelPage.add(btnFormScan);
+        btnFormScan.setBounds(0, 0, 920, 40);
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -74,59 +115,15 @@ public class ItemTracker extends javax.swing.JPanel {
         panelBody.setBackground(new java.awt.Color(255, 255, 255));
         panelBody.setLayout(new java.awt.BorderLayout());
 
-        panelPage.setBackground(new java.awt.Color(255, 255, 255));
-        panelPage.setLayout(null);
-
-        labelFormScan.setFont(new java.awt.Font("Bebas", 0, 24)); // NOI18N
-        labelFormScan.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelFormScan.setText("SCAN ITEM");
-        labelFormScan.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelPage.add(labelFormScan);
-        labelFormScan.setBounds(920, 6, 910, 30);
-
-        btnFormScan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png"))); // NOI18N
-        btnFormScan.setBorder(null);
-        btnFormScan.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnFormScan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnFormScanActionPerformed(evt);
-            }
-        });
-        panelPage.add(btnFormScan);
-        btnFormScan.setBounds(920, 0, 909, 40);
-
-        labelFormLocation.setFont(new java.awt.Font("Bebas", 0, 24)); // NOI18N
-        labelFormLocation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelFormLocation.setText("ITEM LOCATION");
-        labelFormLocation.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelPage.add(labelFormLocation);
-        labelFormLocation.setBounds(10, 6, 900, 30);
-
-        btnFormLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnTracker.png"))); // NOI18N
-        btnFormLocation.setToolTipText("");
-        btnFormLocation.setBorder(null);
-        btnFormLocation.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnFormLocation.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnFormLocationActionPerformed(evt);
-            }
-        });
-        panelPage.add(btnFormLocation);
-        btnFormLocation.setBounds(0, 0, 920, 40);
-
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelBody, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panelPage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
-                .addComponent(panelPage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelBody, javax.swing.GroupLayout.PREFERRED_SIZE, 850, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(panelBody, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 896, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -141,19 +138,19 @@ public class ItemTracker extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnFormLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFormLocationActionPerformed
-        switchTrackerForm(ItemTrackerLocation);
-    }//GEN-LAST:event_btnFormLocationActionPerformed
-
     private void btnFormScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFormScanActionPerformed
         switchTrackerForm(ItemTrackerScan);
     }//GEN-LAST:event_btnFormScanActionPerformed
 
+    private void btnFormOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFormOutActionPerformed
+        switchTrackerForm(ItemTrackerOut);
+    }//GEN-LAST:event_btnFormOutActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnFormLocation;
+    private javax.swing.JButton btnFormOut;
     private javax.swing.JButton btnFormScan;
-    private javax.swing.JLabel labelFormLocation;
+    private javax.swing.JLabel labelFormOut;
     private javax.swing.JLabel labelFormScan;
     private javax.swing.JPanel panelBody;
     private javax.swing.JPanel panelMain;
