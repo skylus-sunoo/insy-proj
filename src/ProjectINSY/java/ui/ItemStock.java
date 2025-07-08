@@ -14,7 +14,6 @@ import ProjectINSY.java.util.TableUtil;
 import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
-import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import java.awt.Color;
 
 /**
@@ -40,10 +39,10 @@ public class ItemStock extends ItemPanel {
     @Override
     public void refreshItemTable() {
         filterWHERE = " ";
-        if (!isDefaultComboItem(searchCategory)) {
+        if (!searchCategory.isDefaultComboItem()) {
             filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
         }
-        if (!isDefaultComboItem(searchName)) {
+        if (!searchName.isDefaultComboItem()) {
             filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
         }
         if (radioCurrent.isSelected()) {

@@ -51,7 +51,6 @@ import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
 import static ProjectINSY.java.util.TableUtil.floatRoundOff;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
-import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import com.itextpdf.kernel.geom.PageSize;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
@@ -114,16 +113,16 @@ public class ItemManagement extends ItemPanel {
     @Override
     public void refreshItemTable() {
         filterWHERE = " ";
-        if (!isDefaultComboItem(searchCategory)) {
+        if (!searchCategory.isDefaultComboItem()) {
             filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
         }
-        if (!isDefaultComboItem(searchName)) {
+        if (!searchName.isDefaultComboItem()) {
             filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
         }
-        if (!isDefaultComboItem(searchDesc)) {
+        if (!searchDesc.isDefaultComboItem()) {
             filterWHERE += "AND stock_desc = '" + getComboSelected(searchDesc) + "' ";
         }
-        if (!isDefaultComboItem(searchBenefactor)) {
+        if (!searchBenefactor.isDefaultComboItem()) {
             filterWHERE += "AND stock_benefactor = '" + getComboSelected(searchBenefactor) + "' ";
         }
         if (fieldHasValue(searchDateStart)) {
@@ -1485,7 +1484,7 @@ public class ItemManagement extends ItemPanel {
                 }
             }
 
-            if (!isDefaultComboItem(comboRequest)) {
+            if (!comboRequest.isDefaultComboItem()) {
                 String[] parts = comboRequest.getSelectedItem().toString().split("  :  ");
                 String timestamp = parts[0];
                 String name = parts[1];

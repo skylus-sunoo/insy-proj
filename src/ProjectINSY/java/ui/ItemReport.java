@@ -15,7 +15,6 @@ import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import ProjectINSY.java.util.GuiUtil;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
-import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
@@ -93,10 +92,6 @@ public class ItemReport extends ItemPanel {
                 + " WHERE 1 "
                 + filterWHERE
                 + " ORDER BY report_timestamp DESC";
-
-        System.out.println("1: " + searchName.isDefaultComboItem());
-        System.out.println("2: " + searchDesc.isDefaultComboItem());
-        System.out.println("3: " + searchCondition.isDefaultComboItem());
 
 //        System.out.println(currentSearchQuery);
         TableUtil.refreshTable(tableRequest, currentSearchQuery, TableUtil.TableEnum.ITEM_REPORT);

@@ -222,43 +222,7 @@ public class GuiUtil {
 
         resetDefaultComboItem(childCombo);
     }
-
-    public static void repopulateSuggestions(TextFieldSuggestion field, String columnName, String query) {
-        Set<String> uniqueItems = new HashSet<>();
-        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME); PreparedStatement pst = DatabaseUtil.prepareQuery(conn, query); ResultSet rs = pst.executeQuery()) {
-
-            while (rs.next()) {
-                String name = rs.getString(columnName);
-                if (name != null && !name.trim().isEmpty()) {
-                    uniqueItems.add(name);
-                }
-            }
-
-            List<String> sortedItems = new ArrayList<>(uniqueItems);
-            boolean hasSupplyRoom = sortedItems.contains("Supply Room");
-            if (hasSupplyRoom) {
-                sortedItems.remove("Supply Room");
-            }
-
-            Collections.sort(sortedItems, String.CASE_INSENSITIVE_ORDER);
-            if (hasSupplyRoom) {
-                sortedItems.add(0, "Supply Room");
-            }
-
-            field.clearItemSuggestion();
-            for (String item : sortedItems) {
-                field.addItemSuggestion(item);
-            }
-
-            rs.close();
-            pst.close();
-            conn.close();
-
-        } catch (SQLException e) {
-            paneDatabaseError(e);
-        }
-    }
-
+    
     public static void enforceDigits(KeyEvent evt) {
         char c = evt.getKeyChar();
 

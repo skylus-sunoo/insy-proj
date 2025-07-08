@@ -25,7 +25,6 @@ import ProjectINSY.java.util.TableUtil;
 import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
 import static ProjectINSY.java.util.GuiUtil.getFieldString;
-import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -87,16 +86,16 @@ public class ItemRequest extends ItemPanel {
     @Override
     public void refreshItemTable() {
         filterWHERE = "";
-        if (!isDefaultComboItem(searchItem)) {
+        if (!searchItem.isDefaultComboItem()) {
             filterWHERE += "AND request_item = '" + getComboSelected(searchItem) + "' ";
         }
-        if (!isDefaultComboItem(searchDesc)) {
+        if (!searchDesc.isDefaultComboItem()) {
             filterWHERE += "AND request_desc = '" + getComboSelected(searchDesc) + "' ";
         }
-        if (!isDefaultComboItem(searchName)) {
+        if (!searchName.isDefaultComboItem()) {
             filterWHERE += "AND request_name = '" + getComboSelected(searchName) + "' ";
         }
-        if (!isDefaultComboItem(searchStatus)) {
+        if (!searchStatus.isDefaultComboItem()) {
             filterWHERE += "AND request_status = '" + getComboSelected(searchStatus) + "' ";
         }
         if (fieldHasValue(searchQuantityStart)) {

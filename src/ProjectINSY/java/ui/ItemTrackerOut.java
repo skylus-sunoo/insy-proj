@@ -12,7 +12,6 @@ import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
 import static ProjectINSY.java.util.GuiUtil.getComboSelected;
-import static ProjectINSY.java.util.GuiUtil.isDefaultComboItem;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,19 +43,19 @@ public class ItemTrackerOut extends ItemPanel {
     @Override
     public void refreshItemTable() {
         filterWHERE = "";
-        if (!isDefaultComboItem(searchCategory)) {
+        if (!searchCategory.isDefaultComboItem()) {
             filterWHERE += "AND stock_category = '" + getComboSelected(searchCategory) + "' ";
         }
-        if (!isDefaultComboItem(searchName)) {
+        if (!searchName.isDefaultComboItem()) {
             filterWHERE += "AND stock_name = '" + getComboSelected(searchName) + "' ";
         }
-        if (!isDefaultComboItem(searchDesc)) {
+        if (!searchDesc.isDefaultComboItem()) {
             filterWHERE += "AND stock_desc = '" + getComboSelected(searchDesc) + "' ";
         }
-        if (!isDefaultComboItem(searchLoc)) {
+        if (!searchLoc.isDefaultComboItem()) {
             filterWHERE += "AND stock_location = '" + getComboSelected(searchLoc) + "' ";
         }
-        if (!isDefaultComboItem(searchHolder)) {
+        if (!searchHolder.isDefaultComboItem()) {
             filterWHERE += "AND stock_holder = '" + getComboSelected(searchHolder) + "' ";
         }
         
