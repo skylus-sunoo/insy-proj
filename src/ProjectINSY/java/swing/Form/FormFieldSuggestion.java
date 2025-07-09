@@ -1,4 +1,4 @@
-package ProjectINSY.java.swing.TextFieldSuggestion;
+package ProjectINSY.java.swing.Form;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.util.DatabaseUtil;
@@ -12,14 +12,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JTextField;
 
-public class TextFieldSuggestion extends JTextField {
+public class FormFieldSuggestion extends FormField {
 
-    private TextFieldSuggestionUI textUI;
+    private FormFieldSuggestionUI textUI;
 
-    public TextFieldSuggestion() {
-        textUI = new TextFieldSuggestionUI(this);
+    public FormFieldSuggestion() {
+        textUI = new FormFieldSuggestionUI(this);
         setUI(textUI);
     }
 

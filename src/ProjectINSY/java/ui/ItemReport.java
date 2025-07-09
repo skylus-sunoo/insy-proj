@@ -6,6 +6,7 @@ package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.model.ItemPanel;
+import ProjectINSY.java.swing.Form.FormField.FieldType;
 import ProjectINSY.java.swing.TableHighlighter;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
@@ -55,6 +56,11 @@ public class ItemReport extends ItemPanel {
         setTransparentFrame(ItemReport.this);
         setTransparentFrame(btnCreateReport, btnFilter, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
 
+        fieldID.setForm(null, FieldType.STRING);
+        fieldTimestamp.setForm(null, FieldType.STRING);
+        fieldCode.setForm(PLACEHOLDER_FULL_CODE, FieldType.STRING);
+        
+        fieldName.setForm(null, FieldType.STRING);
         fieldName.getDocument().addDocumentListener(new FieldChangeListener());
 
         tableRequest.setDefaultTable();
@@ -67,7 +73,7 @@ public class ItemReport extends ItemPanel {
             }
         });
 
-        switchRequestForm(btnCreateReport);
+        switchReportForm(btnCreateReport);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Item Panel">
@@ -180,12 +186,11 @@ public class ItemReport extends ItemPanel {
         }
 
         private void checkFields() {
-            btnAdd.setEnabled(!fieldName.getText().trim().isEmpty()
-                    && !fieldName.getText().trim().equals(PLACEHOLDER_NAME));
+            btnAdd.setEnabled(fieldName.isValidText());
         }
     }
 
-    public void switchRequestForm(JComponent com) {
+    public void switchReportForm(JComponent com) {
         if (com == btnCreateReport) {
             tabRequest.setSelectedIndex(0);
             btnCreateReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
@@ -206,14 +211,16 @@ public class ItemReport extends ItemPanel {
     }
 
     public void clearFields() {
-        GuiUtil.clearField(fieldID, "");
-        GuiUtil.clearField(fieldTimestamp, "");
+        fieldID.resetToPlaceholder();
+        fieldTimestamp.resetToPlaceholder();
+        
+        fieldCode.resetToPlaceholder();
         fieldSelectedCode.setText("None");
-        GuiUtil.clearField(fieldCode, PLACEHOLDER_FULL_CODE);
+        
         GuiUtil.clearField(fieldName, "");
         GuiUtil.clearField(fieldDesc, "");
-        GuiUtil.clearComboBox(comboCondition);
-        TableUtil.clearSelectedTableRow(tableRequest);
+        comboCondition.clearComboBox();
+        tableRequest.clearSelectedRow();
 
         fieldName.setForeground(Color.BLACK);
         fieldDesc.setForeground(Color.BLACK);
@@ -233,8 +240,8 @@ public class ItemReport extends ItemPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fieldID = new javax.swing.JTextField();
-        fieldTimestamp = new javax.swing.JTextField();
+        fieldID = new ProjectINSY.java.swing.Form.FormField();
+        fieldTimestamp = new ProjectINSY.java.swing.Form.FormField();
         panelMain = new javax.swing.JPanel();
         tableScroll = new javax.swing.JScrollPane();
         tableRequest = new ProjectINSY.java.swing.Table();
@@ -249,7 +256,7 @@ public class ItemReport extends ItemPanel {
         labelDesc = new javax.swing.JLabel();
         labelItem = new javax.swing.JLabel();
         labelCode = new javax.swing.JLabel();
-        fieldCode = new javax.swing.JTextField();
+        fieldCode = new ProjectINSY.java.swing.Form.FormField();
         imageCode = new javax.swing.JLabel();
         labelCondition = new javax.swing.JLabel();
         comboCondition = new ProjectINSY.java.swing.ComboBoxSuggestion();
@@ -263,7 +270,7 @@ public class ItemReport extends ItemPanel {
         btnClear = new javax.swing.JButton();
         labelDelete = new javax.swing.JLabel();
         btnDelete = new javax.swing.JButton();
-        fieldName = new javax.swing.JTextField();
+        fieldName = new ProjectINSY.java.swing.Form.FormField();
         jSeparator6 = new javax.swing.JSeparator();
         fieldDesc = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
@@ -285,6 +292,20 @@ public class ItemReport extends ItemPanel {
         panelClearFilter = new javax.swing.JPanel();
         labelCleaFilter = new javax.swing.JLabel();
         btnClearFilter = new javax.swing.JButton();
+
+        fieldID.setBorder(null);
+        fieldID.setForeground(new java.awt.Color(0, 0, 0));
+        fieldID.setText("formField");
+        fieldID.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldID.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldID.setSelectionColor(new java.awt.Color(25, 102, 24));
+
+        fieldTimestamp.setBorder(null);
+        fieldTimestamp.setForeground(new java.awt.Color(0, 0, 0));
+        fieldTimestamp.setText("formField");
+        fieldTimestamp.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldTimestamp.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldTimestamp.setSelectionColor(new java.awt.Color(25, 102, 24));
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -384,21 +405,14 @@ public class ItemReport extends ItemPanel {
         labelCode.setText("Enter or Scan Code:");
         panelBody.add(labelCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 80, 240, -1));
 
-        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        fieldCode.setForeground(new java.awt.Color(153, 153, 153));
-        fieldCode.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        fieldCode.setText("Silang-00-000000");
         fieldCode.setBorder(null);
+        fieldCode.setForeground(new java.awt.Color(0, 0, 0));
+        fieldCode.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        fieldCode.setText("formField");
+        fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldCode.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldCode.setSelectionColor(new java.awt.Color(25, 102, 24));
-        fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldCodeFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldCodeFocusLost(evt);
-            }
-        });
-        panelBody.add(fieldCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 130, 220, 30));
+        panelBody.add(fieldCode, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 130, 240, 30));
 
         imageCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf_small.png"))); // NOI18N
@@ -411,7 +425,7 @@ public class ItemReport extends ItemPanel {
         comboCondition.setBorder(null);
         comboCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "DAMAGED", "IN MAINTENANCE", "LOST/STOLEN", "OBSOLETE", "UNSERVICABLE" }));
         comboCondition.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        panelBody.add(comboCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 340, 510, -1));
+        panelBody.add(comboCondition, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 340, 510, 30));
 
         imageCondition.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         imageCondition.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
@@ -497,12 +511,14 @@ public class ItemReport extends ItemPanel {
 
         panelBody.add(panelCRUD, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 660, 560, 110));
 
-        fieldName.setEditable(false);
-        fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldName.setBorder(null);
-        fieldName.setFocusable(false);
+        fieldName.setForeground(new java.awt.Color(0, 0, 0));
+        fieldName.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        fieldName.setText("formField");
+        fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldName.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldName.setSelectionColor(new java.awt.Color(25, 102, 24));
-        panelBody.add(fieldName, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 440, 530, -1));
+        panelBody.add(fieldName, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 440, 530, 30));
         panelBody.add(jSeparator6, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 480, 530, 10));
 
         fieldDesc.setEditable(false);
@@ -541,7 +557,7 @@ public class ItemReport extends ItemPanel {
         panelBody.add(labelScanInfo1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, -1, -1));
 
         labelScanInfo.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 18)); // NOI18N
-        labelScanInfo.setText("that the field above is selected and empty.");
+        labelScanInfo.setText("that the field below is selected and empty.");
         panelBody.add(labelScanInfo, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 30, -1, -1));
 
         tabRequest.addTab("tab1", panelBody);
@@ -695,20 +711,12 @@ public class ItemReport extends ItemPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
-        setDefaultField(fieldCode, PLACEHOLDER_FULL_CODE, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldCodeFocusGained
-
-    private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
-        setDefaultField(fieldCode, PLACEHOLDER_FULL_CODE, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldCodeFocusLost
-
     private void btnCreateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateReportActionPerformed
-        switchRequestForm(btnCreateReport);
+        switchReportForm(btnCreateReport);
     }//GEN-LAST:event_btnCreateReportActionPerformed
 
     private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
-        switchRequestForm(btnFilter);
+        switchReportForm(btnFilter);
     }//GEN-LAST:event_btnFilterActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
@@ -872,12 +880,12 @@ public class ItemReport extends ItemPanel {
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnUpdate;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboCondition;
-    private javax.swing.JTextField fieldCode;
+    private ProjectINSY.java.swing.Form.FormField fieldCode;
     private javax.swing.JTextField fieldDesc;
-    private javax.swing.JTextField fieldID;
-    private javax.swing.JTextField fieldName;
+    private ProjectINSY.java.swing.Form.FormField fieldID;
+    private ProjectINSY.java.swing.Form.FormField fieldName;
     private javax.swing.JTextField fieldSelectedCode;
-    private javax.swing.JTextField fieldTimestamp;
+    private ProjectINSY.java.swing.Form.FormField fieldTimestamp;
     private javax.swing.JLabel imageCode;
     private javax.swing.JLabel imageCondition;
     private javax.swing.JSeparator jSeparator1;

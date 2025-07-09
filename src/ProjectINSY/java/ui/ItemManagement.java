@@ -6,6 +6,7 @@ package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.model.ItemPanel;
+import ProjectINSY.java.swing.Form.FormField.FieldType;
 import ProjectINSY.java.swing.Table.EnumAlignment;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
@@ -80,11 +81,22 @@ public class ItemManagement extends ItemPanel {
         setScrollBarCustom(tableScroll);
         setScrollBarCustom(scrollMain);
 
-        setTransparentFrame(ItemManagement.this, fieldDesc, fieldPrice, fieldDOD, fieldQuantity, fieldBenefactor);
+        setTransparentFrame(ItemManagement.this, fieldBenefactor, fieldPrice, fieldDOD, fieldQuantity, fieldBenefactor);
         setTransparentFrame(btnDOD, btnAdd, btnUpdate, btnClear, btnDelete, btnClearFilter);
 
         tableInventory.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tableInventory.setColumnWidth(new int[]{250, 250, 350, 175, 75, 150, 242});
+
+        fieldCode.setForm(PLACEHOLDER_ID_CODE, FieldType.INT);
+        fieldDesc.setForm(PLACEHOLDER_DESC, FieldType.STRING);
+        fieldPrice.setForm(PLACEHOLDER_PRICE, FieldType.FLOAT);
+        fieldQuantity.setForm(PLACEHOLDER_QTY, FieldType.INT);
+        fieldDOD.setForm(PLACEHOLDER_DOD, FieldType.DATE);
+        fieldBenefactor.setForm(PLACEHOLDER_BENEFACTOR, FieldType.STRING);
+        
+        fieldID.setForm(null, FieldType.INT);
+        fieldID2.setForm(null, FieldType.INT);
+        fieldQuantitySelected.setForm(null, FieldType.INT);
 
         fieldPrice.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
@@ -243,7 +255,8 @@ public class ItemManagement extends ItemPanel {
         } else {
             actual_price = Float.valueOf(fieldPrice.getText());
         }
-        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
+        fieldQuantity.resetToPlaceholder();
+//        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
 
         fieldPrice.setText(floatRoundOff(actual_price));
 
@@ -251,8 +264,8 @@ public class ItemManagement extends ItemPanel {
         barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
         imgBarcode.setIcon(barcodeIcon);
 
-        if (fieldDesc.getText().isEmpty()) {
-            setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
+        if (fieldBenefactor.getText().isEmpty()) {
+            setDefaultField(fieldBenefactor, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
         }
 
         if (fieldID.getText().contains("-")) {
@@ -290,13 +303,9 @@ public class ItemManagement extends ItemPanel {
         }
 
         private void checkFields() {
-            btnAdd.setEnabled(!fieldPrice.getText().trim().isEmpty()
-                    && !fieldPrice.getText().trim().equals(PLACEHOLDER_PRICE)
-                    && !fieldQuantity.getText().trim().isEmpty()
-                    && !fieldBenefactor.getText().trim().isEmpty()
-                    && !fieldBenefactor.getText().trim().equals(PLACEHOLDER_BENEFACTOR));
+            btnAdd.setEnabled(fieldPrice.isValidText() && !fieldQuantity.getText().trim().isEmpty() && fieldBenefactor.isValidText());
             if (!fieldID2.getText().isEmpty()) {
-                btnUpdate.setEnabled(fieldQuantity.getText().equals(PLACEHOLDER_QTY));
+                btnUpdate.setEnabled(fieldQuantity.isPlaceholder());
             }
 
             String date_filter = searchDateEnd.getText();
@@ -327,19 +336,20 @@ public class ItemManagement extends ItemPanel {
         batchQuantity = -1;
         GuiUtil.resetIcon(imgBarcode);
 
-        GuiUtil.clearField(fieldID, "");
-        GuiUtil.clearField(fieldID2, "");
-        GuiUtil.clearField(fieldCode, PLACEHOLDER_ID_CODE);
-        GuiUtil.clearComboBox(comboName);
-        GuiUtil.clearField(fieldDesc, PLACEHOLDER_DESC);
-        GuiUtil.clearField(fieldPrice, PLACEHOLDER_PRICE);
-        GuiUtil.clearField(fieldQuantity, PLACEHOLDER_QTY);
-        GuiUtil.clearField(fieldQuantitySelected, "");
-        GuiUtil.clearField(fieldBenefactor, PLACEHOLDER_BENEFACTOR);
-        GuiUtil.clearFieldDate(fieldDOD);
-        fieldDOD.setForeground(Color.BLACK);
-        GuiUtil.clearComboBox(comboRequest);
-        TableUtil.clearSelectedTableRow(tableInventory);
+        fieldID.resetToPlaceholder();
+        fieldID2.resetToPlaceholder();
+        fieldCode.resetToPlaceholder();
+        comboName.clearComboBox();
+        
+        fieldDesc.resetToPlaceholder();
+        fieldPrice.resetToPlaceholder();
+        fieldQuantity.resetToPlaceholder();
+        fieldQuantitySelected.resetToPlaceholder();
+        fieldBenefactor.resetToPlaceholder();
+        fieldDOD.resetToPlaceholder();
+        
+        comboRequest.clearComboBox();
+        tableInventory.clearSelectedRow();
         setUpdateDeleteEnable();
     }
 
@@ -359,17 +369,17 @@ public class ItemManagement extends ItemPanel {
         dateDOD = new ProjectINSY.java.swing.Date.DateChooser();
         dateStart = new ProjectINSY.java.swing.Date.DateChooser();
         dateEnd = new ProjectINSY.java.swing.Date.DateChooser();
-        fieldQuantitySelected = new javax.swing.JTextField();
-        fieldID2 = new javax.swing.JTextField();
-        fieldID = new javax.swing.JTextField();
         btnExport = new javax.swing.JButton();
+        fieldID = new ProjectINSY.java.swing.Form.FormField();
+        fieldID2 = new ProjectINSY.java.swing.Form.FormField();
+        fieldQuantitySelected = new ProjectINSY.java.swing.Form.FormField();
         panelMain = new javax.swing.JPanel();
         scrollMain = new javax.swing.JScrollPane();
         panelBody = new javax.swing.JPanel();
         panelFields = new javax.swing.JPanel();
         panelCode = new javax.swing.JPanel();
         labelCode = new javax.swing.JLabel();
-        fieldCode = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        fieldCode = new ProjectINSY.java.swing.Form.FormField();
         imageCode = new javax.swing.JLabel();
         infoCode1 = new javax.swing.JLabel();
         infoCode = new javax.swing.JLabel();
@@ -378,20 +388,20 @@ public class ItemManagement extends ItemPanel {
         comboName = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageName = new javax.swing.JLabel();
         labelDesc = new javax.swing.JLabel();
-        fieldDesc = new javax.swing.JTextField();
+        fieldDesc = new ProjectINSY.java.swing.Form.FormField();
         imageDesc = new javax.swing.JLabel();
         labelPrice = new javax.swing.JLabel();
-        fieldPrice = new javax.swing.JTextField();
+        fieldPrice = new ProjectINSY.java.swing.Form.FormField();
         imagePrice = new javax.swing.JLabel();
         labelDOD = new javax.swing.JLabel();
-        fieldDOD = new javax.swing.JTextField();
+        fieldDOD = new ProjectINSY.java.swing.Form.FormField();
         btnDOD = new javax.swing.JButton();
         imageDOD = new javax.swing.JLabel();
-        fieldQuantity = new javax.swing.JTextField();
+        fieldQuantity = new ProjectINSY.java.swing.Form.FormField();
         labelQuantity = new javax.swing.JLabel();
         imageQuantity = new javax.swing.JLabel();
         labelBenefactor = new javax.swing.JLabel();
-        fieldBenefactor = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        fieldBenefactor = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         imageBenefactor = new javax.swing.JLabel();
         panelBarcode = new javax.swing.JPanel();
         imgBarcode = new javax.swing.JLabel();
@@ -422,14 +432,14 @@ public class ItemManagement extends ItemPanel {
         searchDesc = new ProjectINSY.java.swing.ComboBoxSuggestion();
         labelFilterPrice = new javax.swing.JLabel();
         labelFilterPriceFrom = new javax.swing.JLabel();
-        searchPriceStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchPriceStart = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterPriceTo = new javax.swing.JLabel();
-        searchPriceEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchPriceEnd = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterQuantity = new javax.swing.JLabel();
         labelFilterQuantityFrom = new javax.swing.JLabel();
-        searchQuantityStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchQuantityStart = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterQuantityTo = new javax.swing.JLabel();
-        searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchQuantityEnd = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterBenefactor = new javax.swing.JLabel();
         searchBenefactor = new ProjectINSY.java.swing.ComboBoxSuggestion();
         jSeparator1 = new javax.swing.JSeparator();
@@ -439,10 +449,10 @@ public class ItemManagement extends ItemPanel {
         jSeparator5 = new javax.swing.JSeparator();
         jSeparator7 = new javax.swing.JSeparator();
         labelFilterDateFrom = new javax.swing.JLabel();
-        searchDateStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchDateStart = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterDate = new javax.swing.JLabel();
         labelFilterDateTo = new javax.swing.JLabel();
-        searchDateEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchDateEnd = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         jSeparator6 = new javax.swing.JSeparator();
         radioBatches = new ProjectINSY.java.swing.RadioButtonCustom();
         labelCleaFilter = new javax.swing.JLabel();
@@ -460,14 +470,33 @@ public class ItemManagement extends ItemPanel {
         dateEnd.setDateFormat("yyyy-MM-dd");
         dateEnd.setTextRefernce(searchDateEnd);
 
-        fieldQuantitySelected.setText("jTextField1");
-
         btnExport.setText("Print");
         btnExport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnExportActionPerformed(evt);
             }
         });
+
+        fieldID.setBorder(null);
+        fieldID.setForeground(new java.awt.Color(0, 0, 0));
+        fieldID.setText("formField");
+        fieldID.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldID.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldID.setSelectionColor(new java.awt.Color(25, 102, 24));
+
+        fieldID2.setBorder(null);
+        fieldID2.setForeground(new java.awt.Color(0, 0, 0));
+        fieldID2.setText("formField");
+        fieldID2.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldID2.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldID2.setSelectionColor(new java.awt.Color(25, 102, 24));
+
+        fieldQuantitySelected.setBorder(null);
+        fieldQuantitySelected.setForeground(new java.awt.Color(0, 0, 0));
+        fieldQuantitySelected.setText("formField");
+        fieldQuantitySelected.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldQuantitySelected.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldQuantitySelected.setSelectionColor(new java.awt.Color(25, 102, 24));
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -496,24 +525,13 @@ public class ItemManagement extends ItemPanel {
         labelCode.setBounds(0, 0, 670, 60);
 
         fieldCode.setBorder(null);
-        fieldCode.setForeground(new java.awt.Color(153, 153, 153));
-        fieldCode.setText("Enter Code (XXXX)");
+        fieldCode.setForeground(new java.awt.Color(0, 0, 0));
+        fieldCode.setText("formField");
         fieldCode.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        fieldCode.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldCodeFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldCodeFocusLost(evt);
-            }
-        });
-        fieldCode.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                fieldCodeKeyTyped(evt);
-            }
-        });
+        fieldCode.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldCode.setSelectionColor(new java.awt.Color(25, 102, 24));
         panelCode.add(fieldCode);
-        fieldCode.setBounds(730, 10, 320, 50);
+        fieldCode.setBounds(730, 20, 310, 30);
 
         imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelCode.add(imageCode);
@@ -554,21 +572,14 @@ public class ItemManagement extends ItemPanel {
         panelInformation.add(labelDesc);
         labelDesc.setBounds(910, 0, 180, 60);
 
-        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        fieldDesc.setForeground(new java.awt.Color(153, 153, 153));
-        fieldDesc.setText("Enter Description");
         fieldDesc.setBorder(null);
+        fieldDesc.setForeground(new java.awt.Color(0, 0, 0));
+        fieldDesc.setText("formField");
+        fieldDesc.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldDesc.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldDesc.setSelectionColor(new java.awt.Color(25, 102, 24));
-        fieldDesc.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldDescFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldDescFocusLost(evt);
-            }
-        });
         panelInformation.add(fieldDesc);
-        fieldDesc.setBounds(1130, 10, 640, 50);
+        fieldDesc.setBounds(1130, 20, 640, 30);
 
         imageDesc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldFull.png"))); // NOI18N
         panelInformation.add(imageDesc);
@@ -579,26 +590,14 @@ public class ItemManagement extends ItemPanel {
         panelInformation.add(labelPrice);
         labelPrice.setBounds(0, 80, 90, 60);
 
-        fieldPrice.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        fieldPrice.setForeground(new java.awt.Color(153, 153, 153));
-        fieldPrice.setText("Enter Price");
         fieldPrice.setBorder(null);
+        fieldPrice.setForeground(new java.awt.Color(0, 0, 0));
+        fieldPrice.setText("formField");
+        fieldPrice.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldPrice.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldPrice.setSelectionColor(new java.awt.Color(25, 102, 24));
-        fieldPrice.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldPriceFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldPriceFocusLost(evt);
-            }
-        });
-        fieldPrice.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                fieldPriceKeyTyped(evt);
-            }
-        });
         panelInformation.add(fieldPrice);
-        fieldPrice.setBounds(10, 150, 310, 50);
+        fieldPrice.setBounds(10, 160, 310, 30);
 
         imagePrice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelInformation.add(imagePrice);
@@ -609,19 +608,14 @@ public class ItemManagement extends ItemPanel {
         panelInformation.add(labelDOD);
         labelDOD.setBounds(470, 80, 210, 60);
 
-        fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         fieldDOD.setBorder(null);
+        fieldDOD.setForeground(new java.awt.Color(0, 0, 0));
+        fieldDOD.setText("formField");
+        fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldDOD.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldDOD.setSelectionColor(new java.awt.Color(25, 102, 24));
-        fieldDOD.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldDODFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldDODFocusLost(evt);
-            }
-        });
         panelInformation.add(fieldDOD);
-        fieldDOD.setBounds(480, 150, 270, 50);
+        fieldDOD.setBounds(480, 160, 270, 30);
 
         btnDOD.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnDateSelect.png"))); // NOI18N
         btnDOD.setBorder(null);
@@ -637,26 +631,14 @@ public class ItemManagement extends ItemPanel {
         panelInformation.add(imageDOD);
         imageDOD.setBounds(470, 140, 333, 70);
 
-        fieldQuantity.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        fieldQuantity.setForeground(new java.awt.Color(153, 153, 153));
-        fieldQuantity.setText("1");
         fieldQuantity.setBorder(null);
+        fieldQuantity.setForeground(new java.awt.Color(0, 0, 0));
+        fieldQuantity.setText("formField");
+        fieldQuantity.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        fieldQuantity.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldQuantity.setSelectionColor(new java.awt.Color(25, 102, 24));
-        fieldQuantity.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldQuantityFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldQuantityFocusLost(evt);
-            }
-        });
-        fieldQuantity.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                fieldQuantityKeyTyped(evt);
-            }
-        });
         panelInformation.add(fieldQuantity);
-        fieldQuantity.setBounds(980, 150, 310, 50);
+        fieldQuantity.setBounds(980, 160, 310, 30);
 
         labelQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelQuantity.setText("Quantity");
@@ -676,14 +658,6 @@ public class ItemManagement extends ItemPanel {
         fieldBenefactor.setForeground(new java.awt.Color(153, 153, 153));
         fieldBenefactor.setText("Enter Benefactor");
         fieldBenefactor.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        fieldBenefactor.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldBenefactorFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldBenefactorFocusLost(evt);
-            }
-        });
         panelInformation.add(fieldBenefactor);
         fieldBenefactor.setBounds(1460, 150, 310, 50);
 
@@ -1233,18 +1207,6 @@ public class ItemManagement extends ItemPanel {
         }
     }//GEN-LAST:event_btnPrintActionPerformed
 
-    private void fieldCodeKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldCodeKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_fieldCodeKeyTyped
-
-    private void fieldCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusLost
-        setDefaultField(fieldCode, PLACEHOLDER_ID_CODE, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldCodeFocusLost
-
-    private void fieldCodeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCodeFocusGained
-        setDefaultField(fieldCode, PLACEHOLDER_ID_CODE, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldCodeFocusGained
-
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         int stock_id = Integer.parseInt(fieldID.getText());
         int stock_batch_end = Integer.parseInt(fieldID2.getText());
@@ -1534,57 +1496,9 @@ public class ItemManagement extends ItemPanel {
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
-    private void fieldBenefactorFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldBenefactorFocusLost
-        setDefaultField(fieldBenefactor, PLACEHOLDER_BENEFACTOR, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldBenefactorFocusLost
-
-    private void fieldBenefactorFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldBenefactorFocusGained
-        setDefaultField(fieldBenefactor, PLACEHOLDER_BENEFACTOR, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldBenefactorFocusGained
-
-    private void fieldQuantityKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldQuantityKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_fieldQuantityKeyTyped
-
-    private void fieldQuantityFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldQuantityFocusLost
-        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldQuantityFocusLost
-
-    private void fieldQuantityFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldQuantityFocusGained
-        setDefaultField(fieldQuantity, PLACEHOLDER_QTY, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldQuantityFocusGained
-
     private void btnDODActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDODActionPerformed
         dateDOD.showPopup();
     }//GEN-LAST:event_btnDODActionPerformed
-
-    private void fieldDODFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDODFocusLost
-        setDefaultField(fieldDOD, PLACEHOLDER_DOD, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldDODFocusLost
-
-    private void fieldDODFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDODFocusGained
-        setDefaultField(fieldDOD, PLACEHOLDER_DOD, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldDODFocusGained
-
-    private void fieldPriceKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fieldPriceKeyTyped
-        enforceDigits(evt);
-    }//GEN-LAST:event_fieldPriceKeyTyped
-
-    private void fieldPriceFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldPriceFocusLost
-        setDefaultField(fieldPrice, PLACEHOLDER_PRICE, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldPriceFocusLost
-
-    private void fieldPriceFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldPriceFocusGained
-        setDefaultField(fieldPrice, PLACEHOLDER_PRICE, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldPriceFocusGained
-
-    private void fieldDescFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDescFocusLost
-        setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldDescFocusLost
-
-    private void fieldDescFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldDescFocusGained
-        setDefaultField(fieldDesc, PLACEHOLDER_DESC, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldDescFocusGained
 
     private void searchPriceStartFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchPriceStartFocusGained
         setDefaultField(searchPriceStart, Main.filterMinNumber, GuiUtil.FieldFocus.GAINED, Color.BLACK);
@@ -1745,15 +1659,15 @@ public class ItemManagement extends ItemPanel {
     private ProjectINSY.java.swing.Date.DateChooser dateDOD;
     private ProjectINSY.java.swing.Date.DateChooser dateEnd;
     private ProjectINSY.java.swing.Date.DateChooser dateStart;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldBenefactor;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldCode;
-    private javax.swing.JTextField fieldDOD;
-    private javax.swing.JTextField fieldDesc;
-    private javax.swing.JTextField fieldID;
-    private javax.swing.JTextField fieldID2;
-    private javax.swing.JTextField fieldPrice;
-    private javax.swing.JTextField fieldQuantity;
-    private javax.swing.JTextField fieldQuantitySelected;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion fieldBenefactor;
+    private ProjectINSY.java.swing.Form.FormField fieldCode;
+    private ProjectINSY.java.swing.Form.FormField fieldDOD;
+    private ProjectINSY.java.swing.Form.FormField fieldDesc;
+    private ProjectINSY.java.swing.Form.FormField fieldID;
+    private ProjectINSY.java.swing.Form.FormField fieldID2;
+    private ProjectINSY.java.swing.Form.FormField fieldPrice;
+    private ProjectINSY.java.swing.Form.FormField fieldQuantity;
+    private ProjectINSY.java.swing.Form.FormField fieldQuantitySelected;
     private javax.swing.JLabel imageBenefactor;
     private javax.swing.JLabel imageCode;
     private javax.swing.JLabel imageDOD;
@@ -1813,14 +1727,14 @@ public class ItemManagement extends ItemPanel {
     private javax.swing.JScrollPane scrollMain;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchBenefactor;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchDateStart;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchDateEnd;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchDateStart;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchDesc;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchPriceEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchPriceStart;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityStart;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchPriceEnd;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchPriceStart;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchQuantityEnd;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchQuantityStart;
     private ProjectINSY.java.swing.Table tableInventory;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

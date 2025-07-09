@@ -1,4 +1,4 @@
-package ProjectINSY.java.swing.TextFieldSuggestion;
+package ProjectINSY.java.swing.Form;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -14,7 +14,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.metal.MetalTextFieldUI;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
-public class TextFieldSuggestionUI extends MetalTextFieldUI {
+public class FormFieldSuggestionUI extends MetalTextFieldUI {
 
     public List<String> getItems() {
         return items;
@@ -39,7 +39,7 @@ public class TextFieldSuggestionUI extends MetalTextFieldUI {
     private int round = 15;
     private List<String> items = new ArrayList<>();
 
-    public TextFieldSuggestionUI(JTextField textfield) {
+    public FormFieldSuggestionUI(JTextField textfield) {
         this.textfield = textfield;
         border = new Border(10);
         border.setRound(round);

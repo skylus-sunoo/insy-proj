@@ -104,8 +104,8 @@ public class ItemStock extends ItemPanel {
         searchName = new ProjectINSY.java.swing.ComboBoxSuggestion();
         labelFilterName = new javax.swing.JLabel();
         labelFilterQuantity = new javax.swing.JLabel();
-        searchQuantityStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchQuantityStart = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
+        searchQuantityEnd = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterQuantityFrom = new javax.swing.JLabel();
         labelFilterQuantityTo = new javax.swing.JLabel();
         radioCurrent = new ProjectINSY.java.swing.RadioButtonCustom();
@@ -397,8 +397,8 @@ public class ItemStock extends ItemPanel {
     private ProjectINSY.java.swing.RadioButtonCustom radioCurrent;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchCategory;
     private static ProjectINSY.java.swing.ComboBoxSuggestion searchName;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityStart;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchQuantityEnd;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchQuantityStart;
     private ProjectINSY.java.swing.Table tableInventory;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

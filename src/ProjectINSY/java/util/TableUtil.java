@@ -253,10 +253,6 @@ public class TableUtil {
         return bd.toString();
     }
 
-    public static void clearSelectedTableRow(JTable table) {
-        table.getSelectionModel().clearSelection();
-    }
-
     public static String[] selectTableRow(JTable table, int selectedRow) {
         String[] values = new String[table.getColumnCount()];
 

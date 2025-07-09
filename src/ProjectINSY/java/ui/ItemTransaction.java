@@ -149,8 +149,8 @@ public class ItemTransaction extends ItemPanel {
         searchChannel = new ProjectINSY.java.swing.ComboBoxSuggestion();
         labelFilterChannel = new javax.swing.JLabel();
         labelFilterTimestamp = new javax.swing.JLabel();
-        searchTimestampStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        searchTimestampEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchTimestampStart = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
+        searchTimestampEnd = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterTimestampFrom = new javax.swing.JLabel();
         labelFilterTimestampTo = new javax.swing.JLabel();
         labelFilterCustomer = new javax.swing.JLabel();
@@ -385,8 +385,8 @@ public class ItemTransaction extends ItemPanel {
     private ProjectINSY.java.swing.ComboBoxSuggestion searchChannel;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchCustomer;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampStart;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchTimestampEnd;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchTimestampStart;
     private javax.swing.JScrollPane tableScroll;
     private ProjectINSY.java.swing.Table tableTransaction;
     // End of variables declaration//GEN-END:variables

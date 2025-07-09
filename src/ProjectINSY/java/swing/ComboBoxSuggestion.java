@@ -15,9 +15,10 @@ import java.util.Set;
 import javax.swing.JComboBox;
 
 /**
- * A customized {@link JComboBox} that provides dynamic population and association
- * based on database queries. Useful for filtering combo box selections with
- * dependencies between combo boxes (e.g., cascading selections).
+ * A customized {@link JComboBox} that provides dynamic population and
+ * association based on database queries. Useful for filtering combo box
+ * selections with dependencies between combo boxes (e.g., cascading
+ * selections).
  *
  * @param <E> The type of items in this combo box.
  */
@@ -30,11 +31,15 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
         setUI(new ComboSuggestionUI());
     }
 
+    public void clearComboBox() {
+        setSelectedIndex(0);
+    }
+
     /**
      * Checks whether the currently selected item is the default combo box item.
      *
-     * @return {@code true} if the selected item equals the default item (first item),
-     *         otherwise {@code false}.
+     * @return {@code true} if the selected item equals the default item (first
+     * item), otherwise {@code false}.
      */
     public boolean isDefaultComboItem() {
         if (getSelectedItem() == null) {
@@ -43,10 +48,9 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
         return getSelectedItem().toString().equals(getItemAt(0));
     }
 
-    
     /**
-     * Resets the combo box to its default state by inserting a default item at index 0
-     * and selecting it.
+     * Resets the combo box to its default state by inserting a default item at
+     * index 0 and selecting it.
      */
     public void resetDefaultComboItem() {
         removeItem("- - - - -");
@@ -55,7 +59,8 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
     }
 
     /**
-     * Repopulates the combo box using a SQL query. The column name is inferred from the query.
+     * Repopulates the combo box using a SQL query. The column name is inferred
+     * from the query.
      *
      * @param query the SQL query string used to retrieve data.
      */
@@ -66,12 +71,12 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
     }
 
     /**
-     * Repopulates the combo box with items fetched from the database.
-     * Ensures unique, sorted, and categorized entries with special positioning
-     * for "Supply Room", "N/A", and "Miscellaneous".
+     * Repopulates the combo box with items fetched from the database. Ensures
+     * unique, sorted, and categorized entries with special positioning for
+     * "Supply Room", "N/A", and "Miscellaneous".
      *
      * @param columnName the column name to fetch data from.
-     * @param query      the SQL query to execute.
+     * @param query the SQL query to execute.
      */
     public void repopulateComboBox(String columnName, String query) {
         Set<String> uniqueItems = new HashSet<>();
@@ -130,12 +135,13 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
     }
 
     /**
-     * Repopulates a child combo box based on the selection of a parent combo box.
-     * The column names are inferred from the base query.
+     * Repopulates a child combo box based on the selection of a parent combo
+     * box. The column names are inferred from the base query.
      *
-     * @param parentCombo     the parent combo box whose selection affects this combo box.
+     * @param parentCombo the parent combo box whose selection affects this
+     * combo box.
      * @param parentColumnName the name of the parent column in the database.
-     * @param baseQuery       the SQL base query used to construct the WHERE clause.
+     * @param baseQuery the SQL base query used to construct the WHERE clause.
      */
     public void repopulateAssociatedComboBox(ComboBoxSuggestion<E> parentCombo, String parentColumnName, String baseQuery) {
         String[] parts = baseQuery.split(" ");
@@ -144,12 +150,14 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
     }
 
     /**
-     * Repopulates this combo box based on the selection from a parent combo box.
+     * Repopulates this combo box based on the selection from a parent combo
+     * box.
      *
-     * @param parentCombo      the parent combo box whose selection filters this combo.
+     * @param parentCombo the parent combo box whose selection filters this
+     * combo.
      * @param parentColumnName the parent column in the database.
-     * @param childColumnName  the child column whose values are to be populated.
-     * @param baseQuery        the base SQL query.
+     * @param childColumnName the child column whose values are to be populated.
+     * @param baseQuery the base SQL query.
      */
     public void repopulateAssociatedComboBox(ComboBoxSuggestion<E> parentCombo, String parentColumnName, String childColumnName, String baseQuery) {
         Object selectedItemObj = parentCombo.getSelectedItem();
@@ -168,16 +176,15 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
         resetDefaultComboItem();
     }
 
-
     /**
-     * Repopulates this combo box based on the selections of both a parent and grandparent combo box.
-     * The column names are inferred from the base query.
+     * Repopulates this combo box based on the selections of both a parent and
+     * grandparent combo box. The column names are inferred from the base query.
      *
-     * @param parentCombo        the parent combo box.
-     * @param grandParentCombo   the grandparent combo box.
-     * @param parentColumnName   the parent column name.
+     * @param parentCombo the parent combo box.
+     * @param grandParentCombo the grandparent combo box.
+     * @param parentColumnName the parent column name.
      * @param grandParentColumnName the grandparent column name.
-     * @param baseQuery          the base SQL query.
+     * @param baseQuery the base SQL query.
      */
     public void repopulateAssociatedComboBox(ComboBoxSuggestion<E> parentCombo, ComboBoxSuggestion<E> grandParentCombo, String parentColumnName, String grandParentColumnName, String baseQuery) {
         String[] parts = baseQuery.split(" ");
@@ -186,16 +193,18 @@ public class ComboBoxSuggestion<E> extends JComboBox<E> {
     }
 
     /**
-     * Repopulates this combo box based on the selections of both a parent and grandparent combo box.
-     * The SQL query is filtered according to the selected values, depending on which combo box has
-     * a non-default selection.
+     * Repopulates this combo box based on the selections of both a parent and
+     * grandparent combo box. The SQL query is filtered according to the
+     * selected values, depending on which combo box has a non-default
+     * selection.
      *
-     * @param parentCombo         the parent combo box.
-     * @param grandParentCombo    the grandparent combo box.
-     * @param parentColumnName    the column corresponding to the parent.
+     * @param parentCombo the parent combo box.
+     * @param grandParentCombo the grandparent combo box.
+     * @param parentColumnName the column corresponding to the parent.
      * @param grandParentColumnName the column corresponding to the grandparent.
-     * @param childColumnName     the column whose values will populate this combo box.
-     * @param baseQuery           the base SQL query.
+     * @param childColumnName the column whose values will populate this combo
+     * box.
+     * @param baseQuery the base SQL query.
      */
     public void repopulateAssociatedComboBox(ComboBoxSuggestion<E> parentCombo, ComboBoxSuggestion<E> grandParentCombo, String parentColumnName, String grandParentColumnName, String childColumnName, String baseQuery) {
         Object selectedItemObj = parentCombo.getSelectedItem();

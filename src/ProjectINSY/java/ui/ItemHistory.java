@@ -145,8 +145,8 @@ public class ItemHistory extends ItemPanel {
         searchHolder = new ProjectINSY.java.swing.ComboBoxSuggestion();
         labelFilterHolder = new javax.swing.JLabel();
         labelFilterTimestamp = new javax.swing.JLabel();
-        searchTimestampStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
-        searchTimestampEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchTimestampStart = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
+        searchTimestampEnd = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterTimestampFrom = new javax.swing.JLabel();
         labelFilterTimestampTo = new javax.swing.JLabel();
 
@@ -349,8 +349,8 @@ public class ItemHistory extends ItemPanel {
     private javax.swing.JPanel panelMain;
     private javax.swing.JPanel panelSearch;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchHolder;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchTimestampStart;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchTimestampEnd;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchTimestampStart;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchType;
     private ProjectINSY.java.swing.Table tableHistory;
     private javax.swing.JScrollPane tableScroll;

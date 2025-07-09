@@ -13,15 +13,12 @@ import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import static ProjectINSY.java.util.DatabaseUtil.setColumnValueByString;
 import ProjectINSY.java.util.GuiUtil;
-import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
-import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -50,7 +47,9 @@ public class ItemCatalog extends ItemPanel {
         setTransparentFrame(ItemCatalog.this, fieldCategoryName, fieldName);
         setTransparentFrame(btnAddCategory, btnUpdateCategory, btnClearCategory, btnDeleteCategory, btnAddItem, btnUpdateItem, btnClearItem, btnDeleteItem);
 
-        fieldCategoryName.getDocument().addDocumentListener(new ItemCatalog.FieldChangeListener());
+        fieldCategoryID.setPlaceholder();
+        fieldCategoryName.setPlaceholder(PLACEHOLDER_CATEGORY);
+        fieldCategoryName.getDocument().addDocumentListener(new FieldChangeListener());
         tableCategory.setDefaultTable();
         tableCategory.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
@@ -61,7 +60,9 @@ public class ItemCatalog extends ItemPanel {
             }
         });
 
-        fieldName.getDocument().addDocumentListener(new ItemCatalog.FieldChangeListener());
+        fieldItemID.setPlaceholder();
+        fieldName.setPlaceholder(PLACEHOLDER_NAME);
+        fieldName.getDocument().addDocumentListener(new FieldChangeListener());
         tableItem.setDefaultTable();
         tableItem.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
@@ -135,11 +136,8 @@ public class ItemCatalog extends ItemPanel {
         }
 
         private void checkFields() {
-            btnAddCategory.setEnabled(!fieldCategoryName.getText().trim().isEmpty()
-                    && !fieldCategoryName.getText().trim().equals(PLACEHOLDER_CATEGORY));
-
-            btnAddItem.setEnabled(!fieldName.getText().trim().isEmpty()
-                    && !fieldName.getText().trim().equals(PLACEHOLDER_NAME));
+            btnAddCategory.setEnabled(fieldCategoryName.isValidText());
+            btnAddItem.setEnabled(fieldName.isValidText());
         }
     }
 
@@ -148,9 +146,9 @@ public class ItemCatalog extends ItemPanel {
     }
 
     public void clearCategoryFields() {
-        GuiUtil.clearField(fieldCategoryID, "");
-        GuiUtil.clearField(fieldCategoryName, PLACEHOLDER_CATEGORY);
-        TableUtil.clearSelectedTableRow(tableCategory);
+        fieldCategoryID.resetToPlaceholder();
+        fieldCategoryName.resetToPlaceholder();
+        tableCategory.clearSelectedRow();
         setUpdateDeleteEnableCategory();
     }
 
@@ -159,10 +157,10 @@ public class ItemCatalog extends ItemPanel {
     }
 
     public void clearItemFields() {
-        GuiUtil.clearField(fieldItemID, "");
-        GuiUtil.clearComboBox(comboCategory);
-        GuiUtil.clearField(fieldName, PLACEHOLDER_NAME);
-        TableUtil.clearSelectedTableRow(tableItem);
+        fieldItemID.resetToPlaceholder();
+        fieldName.resetToPlaceholder();
+        comboCategory.clearComboBox();
+        tableItem.clearSelectedRow();
         setUpdateDeleteEnableItem();
     }
 
@@ -175,12 +173,12 @@ public class ItemCatalog extends ItemPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fieldCategoryID = new javax.swing.JTextField();
-        fieldItemID = new javax.swing.JTextField();
+        fieldCategoryID = new ProjectINSY.java.swing.Form.FormField();
+        fieldItemID = new ProjectINSY.java.swing.Form.FormField();
         panelCategory = new javax.swing.JPanel();
         panelFields = new javax.swing.JPanel();
         labelCategoryName = new javax.swing.JLabel();
-        fieldCategoryName = new javax.swing.JTextField();
+        fieldCategoryName = new ProjectINSY.java.swing.Form.FormField();
         imageCategoryName = new javax.swing.JLabel();
         labelAddCategory = new javax.swing.JLabel();
         btnAddCategory = new javax.swing.JButton();
@@ -202,7 +200,7 @@ public class ItemCatalog extends ItemPanel {
         comboCategory = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageCategory = new javax.swing.JLabel();
         labelName = new javax.swing.JLabel();
-        fieldName = new javax.swing.JTextField();
+        fieldName = new ProjectINSY.java.swing.Form.FormField();
         imageName = new javax.swing.JLabel();
         labelAddItem = new javax.swing.JLabel();
         btnAddItem = new javax.swing.JButton();
@@ -215,6 +213,20 @@ public class ItemCatalog extends ItemPanel {
         labelUOM = new javax.swing.JLabel();
         comboUOM = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageUOM = new javax.swing.JLabel();
+
+        fieldCategoryID.setBorder(null);
+        fieldCategoryID.setForeground(new java.awt.Color(0, 0, 0));
+        fieldCategoryID.setText("formField");
+        fieldCategoryID.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldCategoryID.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldCategoryID.setSelectionColor(new java.awt.Color(25, 102, 24));
+
+        fieldItemID.setBorder(null);
+        fieldItemID.setForeground(new java.awt.Color(0, 0, 0));
+        fieldItemID.setText("formField");
+        fieldItemID.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldItemID.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldItemID.setSelectionColor(new java.awt.Color(25, 102, 24));
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -232,21 +244,14 @@ public class ItemCatalog extends ItemPanel {
         panelFields.add(labelCategoryName);
         labelCategoryName.setBounds(0, 0, 173, 30);
 
-        fieldCategoryName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        fieldCategoryName.setForeground(new java.awt.Color(153, 153, 153));
-        fieldCategoryName.setText("Enter Category");
         fieldCategoryName.setBorder(null);
+        fieldCategoryName.setForeground(new java.awt.Color(0, 0, 0));
+        fieldCategoryName.setText("formField");
+        fieldCategoryName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldCategoryName.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldCategoryName.setSelectionColor(new java.awt.Color(25, 102, 24));
-        fieldCategoryName.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldCategoryNameFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldCategoryNameFocusLost(evt);
-            }
-        });
         panelFields.add(fieldCategoryName);
-        fieldCategoryName.setBounds(10, 40, 520, 40);
+        fieldCategoryName.setBounds(10, 50, 520, 20);
 
         imageCategoryName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelFields.add(imageCategoryName);
@@ -435,21 +440,14 @@ public class ItemCatalog extends ItemPanel {
         panelItemFields.add(labelName);
         labelName.setBounds(0, 0, 173, 30);
 
+        fieldName.setBorder(null);
+        fieldName.setForeground(new java.awt.Color(0, 0, 0));
+        fieldName.setText("formField");
         fieldName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        fieldName.setForeground(new java.awt.Color(153, 153, 153));
-        fieldName.setText("Enter Name");
-        fieldName.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 2));
+        fieldName.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldName.setSelectionColor(new java.awt.Color(25, 102, 24));
-        fieldName.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fieldNameFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fieldNameFocusLost(evt);
-            }
-        });
         panelItemFields.add(fieldName);
-        fieldName.setBounds(10, 40, 520, 40);
+        fieldName.setBounds(10, 50, 520, 20);
 
         imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelItemFields.add(imageName);
@@ -595,14 +593,6 @@ public class ItemCatalog extends ItemPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fieldNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldNameFocusGained
-        setDefaultField(fieldName, PLACEHOLDER_NAME, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldNameFocusGained
-
-    private void fieldNameFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldNameFocusLost
-        setDefaultField(fieldName, PLACEHOLDER_NAME, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldNameFocusLost
-
     private void btnAddCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddCategoryActionPerformed
         String category_name = fieldCategoryName.getText();
 
@@ -634,14 +624,6 @@ public class ItemCatalog extends ItemPanel {
             MessageUtil.paneDatabaseError(e);
         }
     }//GEN-LAST:event_btnAddCategoryActionPerformed
-
-    private void fieldCategoryNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCategoryNameFocusGained
-        setDefaultField(fieldCategoryName, PLACEHOLDER_CATEGORY, FieldFocus.GAINED, Color.BLACK);
-    }//GEN-LAST:event_fieldCategoryNameFocusGained
-
-    private void fieldCategoryNameFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fieldCategoryNameFocusLost
-        setDefaultField(fieldCategoryName, PLACEHOLDER_CATEGORY, FieldFocus.LOST, Color.BLACK);
-    }//GEN-LAST:event_fieldCategoryNameFocusLost
 
     private void btnUpdateCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateCategoryActionPerformed
         String category_name_original = fieldCategoryID.getText();
@@ -869,10 +851,10 @@ public class ItemCatalog extends ItemPanel {
     private javax.swing.JButton btnUpdateItem;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboCategory;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboUOM;
-    private javax.swing.JTextField fieldCategoryID;
-    private javax.swing.JTextField fieldCategoryName;
-    private javax.swing.JTextField fieldItemID;
-    private javax.swing.JTextField fieldName;
+    private ProjectINSY.java.swing.Form.FormField fieldCategoryID;
+    private ProjectINSY.java.swing.Form.FormField fieldCategoryName;
+    private ProjectINSY.java.swing.Form.FormField fieldItemID;
+    private ProjectINSY.java.swing.Form.FormField fieldName;
     private javax.swing.JLabel imageCategory;
     private javax.swing.JLabel imageCategoryName;
     private javax.swing.JLabel imageName;

@@ -8,25 +8,12 @@ package ProjectINSY.java.util;
  *
  * @author admin
  */
-import ProjectINSY.java.Main;
 import ProjectINSY.java.swing.ScrollBarCustom;
-import ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion;
-import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -127,32 +114,6 @@ public class GuiUtil {
         }
     }
 
-    public static void enforceDigits(DocumentEvent e) {
-        JTextField textField = (JTextField) e.getDocument().getProperty("owner");
-        String text = textField.getText();
-
-        String validText = text.replaceAll("[^0-9.]", "");
-
-        int decimalCount = validText.length() - validText.replace(".", "").length();
-        if (decimalCount > 1) {
-            validText = validText.substring(0, validText.indexOf('.', validText.indexOf('.') + 1));
-        }
-
-        if (!text.equals(validText)) {
-            textField.setText(validText);
-        }
-    }
-
-    public static void clearLabelImage(JLabel label) {
-        label.setIcon(null);
-        clearLabel(label, null);
-    }
-
-    public static void clearLabel(JLabel label, String defaultText) {
-        label.setText(defaultText);
-        label.setForeground(new Color(153, 153, 153));
-    }
-
     public static void clearFieldDate(JTextField field) {
         LocalDate currentDate = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -164,12 +125,6 @@ public class GuiUtil {
     public static void clearField(JTextField field, String defaultText) {
         field.setText(defaultText);
         field.setForeground(new Color(153, 153, 153));
-    }
-
-    public static void clearComboBox(JComboBox... comboBox) {
-        for (JComboBox combo : comboBox) {
-            combo.setSelectedIndex(0);
-        }
     }
 
     public static void resetBtnEnability(JComponent component, JButton... buttons) {

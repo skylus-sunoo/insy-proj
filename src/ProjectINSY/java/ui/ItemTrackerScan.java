@@ -383,10 +383,10 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
         fieldDesc = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         labelLocation = new javax.swing.JLabel();
-        fieldLocation = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        fieldLocation = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         imageLocation = new javax.swing.JLabel();
         labelHolder = new javax.swing.JLabel();
-        fieldHolder = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        fieldHolder = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         imageHolder = new javax.swing.JLabel();
 
         fieldBatch.setText("jTextField1");
@@ -826,9 +826,9 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     private javax.swing.JTextField fieldBatch;
     private javax.swing.JTextField fieldCode;
     private javax.swing.JTextField fieldDesc;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldHolder;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion fieldHolder;
     private javax.swing.JTextField fieldLastCode;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion fieldLocation;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion fieldLocation;
     private javax.swing.JTextField fieldName;
     private javax.swing.JTextField fieldSelectedCode;
     private javax.swing.JLabel imageCode;

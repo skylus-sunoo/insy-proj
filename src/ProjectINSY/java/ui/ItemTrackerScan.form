@@ -599,7 +599,7 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="fieldLocation">
+        <Component class="ProjectINSY.java.swing.Form.FormFieldSuggestion" name="fieldLocation">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
@@ -647,7 +647,7 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion" name="fieldHolder">
+        <Component class="ProjectINSY.java.swing.Form.FormFieldSuggestion" name="fieldHolder">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>

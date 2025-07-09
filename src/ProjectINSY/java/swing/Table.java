@@ -43,6 +43,10 @@ public class Table extends JTable {
         model.addRow(row);
     }
 
+    public void clearSelectedRow() {
+        getSelectionModel().clearSelection();
+    }
+
     public void setFixedColumn() {
         for (int i = 0; i < getColumnCount(); i++) {
             getColumnModel().getColumn(i).setResizable(false);

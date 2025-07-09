@@ -202,8 +202,8 @@ public class ItemRequest extends ItemPanel {
         GuiUtil.clearField(fieldDesc, PLACEHOLDER_DESC);
         GuiUtil.clearField(fieldName, PLACEHOLDER_NAME);
         GuiUtil.clearField(fieldQuantity, PLACEHOLDER_QTY);
-        GuiUtil.clearComboBox(comboStatus);
-        TableUtil.clearSelectedTableRow(tableRequest);
+        comboStatus.clearComboBox();
+        tableRequest.clearSelectedRow();
         setUpdateDeleteEnableItem();
     }
 
@@ -269,9 +269,9 @@ public class ItemRequest extends ItemPanel {
         jSeparator4 = new javax.swing.JSeparator();
         labelFilterQuantity = new javax.swing.JLabel();
         labelFilterQuantityFrom = new javax.swing.JLabel();
-        searchQuantityStart = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchQuantityStart = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         labelFilterQuantityTo = new javax.swing.JLabel();
-        searchQuantityEnd = new ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion();
+        searchQuantityEnd = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
         jSeparator5 = new javax.swing.JSeparator();
         labelFilterStatus = new javax.swing.JLabel();
         searchStatus = new ProjectINSY.java.swing.ComboBoxSuggestion();
@@ -1110,8 +1110,8 @@ public class ItemRequest extends ItemPanel {
     private ProjectINSY.java.swing.ComboBoxSuggestion searchDesc;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchItem;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchName;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityEnd;
-    private ProjectINSY.java.swing.TextFieldSuggestion.TextFieldSuggestion searchQuantityStart;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchQuantityEnd;
+    private ProjectINSY.java.swing.Form.FormFieldSuggestion searchQuantityStart;
     private ProjectINSY.java.swing.ComboBoxSuggestion searchStatus;
     private javax.swing.JPanel tabButtons;
     private javax.swing.JTabbedPane tabRequest;
