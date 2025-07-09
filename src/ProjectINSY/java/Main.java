@@ -89,6 +89,7 @@ public class Main extends javax.swing.JFrame {
     private final ItemTracker ItemTracker = new ItemTracker();
     private final ItemHistory ItemHistory = new ItemHistory();
     private final ItemTransaction ItemTransaction = new ItemTransaction();
+    private final ItemOut ItemOut = new ItemOut();
 
     public LogIn getLogIn() {
         return LogIn;
@@ -124,6 +125,10 @@ public class Main extends javax.swing.JFrame {
 
     public ItemHistory getItemHistory() {
         return ItemHistory;
+    }
+
+    public ItemOut getItemOut() {
+        return ItemOut;
     }
 
     //</editor-fold>
@@ -290,6 +295,10 @@ public class Main extends javax.swing.JFrame {
             }
             case ItemTransaction form -> {
                 form.repopulateFilterComboBox();
+            }
+            case ItemOut form -> {
+                form.setScannerFocus();
+                form.repopulateSuggestions();
             }
             default -> {
             }

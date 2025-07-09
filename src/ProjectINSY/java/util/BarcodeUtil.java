@@ -41,7 +41,7 @@ import javax.swing.JOptionPane;
 
 public class BarcodeUtil {
 
-    public static String validateBarcode(String barcodeValue) {
+    public static String vaalidateBarcode(String barcodeValue) {
         if (barcodeValue.contains("-")) {
             String[] parts = barcodeValue.split("-");
             return parts[0] + "-" + parts[1] + "-" + parts[2];
@@ -49,7 +49,77 @@ public class BarcodeUtil {
         return null;
     }
 
+    public static String validateBarcode(String barcodeValue) {
+        if (barcodeValue.contains("-")) {
+            String[] parts = barcodeValue.split("-");
+            return parts[0] + "-" + parts[1] + "-" + parts[2] + "-" + parts[3];
+        }
+        return null;
+    }
+
     public static ImageIcon generateBarcode(String barcodeValue) {
+        try {
+            Map<EncodeHintType, Object> hints = new HashMap<>();
+            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+            hints.put(EncodeHintType.MARGIN, 4); // Quiet zone
+
+            // Dynamically calculate width based on content length
+            int baseWidth = 200;
+            int extraWidthPerChar = 10;
+            int calculatedWidth = baseWidth + (Math.max(0, barcodeValue.length() - 13) * extraWidthPerChar);
+            int barcodeHeight = 50;
+            int labelHeight = 20;
+            int totalHeight = barcodeHeight + labelHeight;
+
+            // Generate barcode BitMatrix
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(
+                    barcodeValue,
+                    BarcodeFormat.CODE_128,
+                    calculatedWidth,
+                    barcodeHeight,
+                    hints
+            );
+
+            // Create a BufferedImage to hold the barcode and the label
+            BufferedImage combinedImage = new BufferedImage(
+                    calculatedWidth,
+                    totalHeight,
+                    BufferedImage.TYPE_INT_RGB
+            );
+
+            Graphics2D g2d = combinedImage.createGraphics();
+
+            // Fill background with white
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(0, 0, calculatedWidth, totalHeight);
+
+            // Draw barcode
+            for (int x = 0; x < calculatedWidth; x++) {
+                for (int y = 0; y < barcodeHeight; y++) {
+                    combinedImage.setRGB(x, y, bitMatrix.get(x, y) ? 0x000000 : 0xFFFFFF);
+                }
+            }
+
+            // Draw label
+            g2d.setColor(Color.BLACK);
+            g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+            FontMetrics fontMetrics = g2d.getFontMetrics();
+            int labelWidth = fontMetrics.stringWidth(barcodeValue);
+            int xPosition = (calculatedWidth - labelWidth) / 2;
+            g2d.drawString(barcodeValue, xPosition, barcodeHeight + 15);
+
+            g2d.dispose();
+
+            return new ImageIcon(combinedImage);
+
+        } catch (WriterException e) {
+            System.err.println("Failed to generate barcode for: " + barcodeValue);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static ImageIcon generaateBarcode(String barcodeValue) {
         try {
             Map<EncodeHintType, String> hints = new HashMap<>();
             hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -190,7 +260,7 @@ public class BarcodeUtil {
         } else {
             System.out.println("Could not open File Explorer. Ensure Desktop is supported and the folder exists.");
         }
-        
+
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             File File = new File(outputFilePath);

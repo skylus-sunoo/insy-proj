@@ -116,9 +116,9 @@
                                           <Component id="pointerItemTransaction" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="btnItemTracker" min="-2" pref="240" max="-2" attributes="0"/>
+                                          <Component id="btnItemOut" min="-2" pref="240" max="-2" attributes="0"/>
                                           <EmptySpace min="55" max="32767" attributes="0"/>
-                                          <Component id="pointerItemTracker" min="-2" max="-2" attributes="0"/>
+                                          <Component id="pointerItemOut" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -166,8 +166,8 @@
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btnItemTracker" min="-2" pref="50" max="-2" attributes="0"/>
-                      <Component id="pointerItemTracker" min="-2" pref="50" max="-2" attributes="0"/>
+                      <Component id="btnItemOut" min="-2" pref="50" max="-2" attributes="0"/>
+                      <Component id="pointerItemOut" min="-2" pref="50" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -272,7 +272,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnItemCatalogActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="btnItemTracker">
+        <Component class="javax.swing.JButton" name="btnItemOut">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Bebas" size="36" style="0"/>
@@ -281,7 +281,7 @@
               <Color blue="18" green="66" red="19" type="rgb"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/ProjectINSY/resources/interface/iconItemTracker.png"/>
+              <Image iconType="3" name="/ProjectINSY/resources/interface/iconItemOut.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Out"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -293,7 +293,7 @@
             <Property name="horizontalAlignment" type="int" value="2"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnItemTrackerActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnItemOutActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnItemHistory">
@@ -341,7 +341,7 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="pointerItemTracker">
+        <Component class="javax.swing.JLabel" name="pointerItemOut">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/ProjectINSY/resources/interface/menuPointer.png"/>
