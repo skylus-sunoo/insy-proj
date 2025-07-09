@@ -48,8 +48,12 @@ public class Main extends javax.swing.JFrame {
 //    public static String DB_NAME = "db_cvsu_" + BRANCH_CAMPUS.toLowerCase() + "_inventory";";
     public static String DB_NAME = "db_demo_paulash";
     public static String TB_USER = "tb_user";
-    public static String TB_CATALOG_CATEGORY = "tb_catalog_category";
     public static String TB_CATALOG_ITEM = "tb_catalog_item";
+    public static String TB_INVENTORY_BALANCE = "tb_inventory_balance";
+    public static String TB_INVENTORY_TRANSACTION = "tb_inventory_transaction";
+    
+    public static String TB_CATALOG_CATEGORY = "tb_catalog_category";
+//    public static String TB_CATALOG_ITEM = "tb_catalog_item";
     public static String TB_ITEM_BATCH = "tb_item_batch";
     public static String TB_ITEM_STOCK = "tb_item_stock";
     public static String TB_ITEM_HISTORY = "tb_item_history";
@@ -422,11 +426,8 @@ public class Main extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Main().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new Main().setVisible(true);
         });
     }
 

@@ -136,8 +136,8 @@ public class ItemTrackerScan extends javax.swing.JPanel implements Runnable, Thr
     }
 
     public void repopulateSuggestions() {
-        fieldLocation.repopulateSuggestions("stock_location", "SELECT DISTINCT stock_location FROM " + Main.TB_ITEM_STOCK);
-        fieldHolder.repopulateSuggestions("stock_holder", "SELECT DISTINCT stock_holder FROM " + Main.TB_ITEM_STOCK);
+//        fieldLocation.repopulateSuggestions("stock_location", "SELECT DISTINCT stock_location FROM " + Main.TB_ITEM_STOCK);
+//        fieldHolder.repopulateSuggestions("stock_holder", "SELECT DISTINCT stock_holder FROM " + Main.TB_ITEM_STOCK);
     }
 
     public void setScannerFocus() {

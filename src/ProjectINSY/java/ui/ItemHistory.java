@@ -80,7 +80,7 @@ public class ItemHistory extends ItemPanel {
                 + filterWHERE
                 + "ORDER BY history_timestamp DESC";
 
-        TableUtil.refreshTable(tableHistory, currentSearchQuery, TableUtil.TableEnum.ITEM_HISTORY);
+//        TableUtil.refreshTable(tableHistory, currentSearchQuery, TableUtil.TableEnum.ITEM_HISTORY);
     }
 
     @Override

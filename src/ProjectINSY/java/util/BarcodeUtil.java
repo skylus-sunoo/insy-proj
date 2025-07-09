@@ -31,15 +31,45 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.imageio.ImageIO;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 public class BarcodeUtil {
+    
+    public static String generateCode() {
+        // Step 1: Get current date in yyMMdd format
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
+        String datePart = today.format(formatter);
+
+        // Step 2: Generate 6 random digits
+        Random rand = new Random();
+        StringBuilder randomPart = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            randomPart.append(rand.nextInt(10)); // 0 to 9
+        }
+
+        // Combine first 12 digits
+        String first12 = datePart + randomPart.toString();
+
+        // Step 3: Calculate checksum (modulo-10 sum of all digits)
+        int sum = 0;
+        for (char c : first12.toCharArray()) {
+            sum += Character.getNumericValue(c);
+        }
+        int checksum = sum % 10;
+
+        // Final 13-digit code
+        return first12 + checksum;
+    }
 
     public static String vaalidateBarcode(String barcodeValue) {
         if (barcodeValue.contains("-")) {

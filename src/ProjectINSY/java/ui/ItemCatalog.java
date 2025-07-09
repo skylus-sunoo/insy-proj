@@ -6,10 +6,13 @@ package ProjectINSY.java.ui;
 
 import ProjectINSY.java.Main;
 import ProjectINSY.java.model.ItemPanel;
+import ProjectINSY.java.swing.Form.FormField.FieldType;
+import static ProjectINSY.java.util.BarcodeUtil.generateCode;
 import ProjectINSY.java.util.DatabaseUtil;
 import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
 import static ProjectINSY.java.util.DatabaseUtil.createObjectCode;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
+import static ProjectINSY.java.util.DatabaseUtil.getTimestampNow;
 import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
 import static ProjectINSY.java.util.DatabaseUtil.setColumnValueByString;
 import ProjectINSY.java.util.GuiUtil;
@@ -41,29 +44,21 @@ public class ItemCatalog extends ItemPanel {
     public ItemCatalog() {
         initComponents();
 
-        setScrollBarCustom(scrollCategory);
         setScrollBarCustom(tableScroll);
 
-        setTransparentFrame(ItemCatalog.this, fieldCategoryName, fieldName);
-        setTransparentFrame(btnAddCategory, btnUpdateCategory, btnClearCategory, btnDeleteCategory, btnAddItem, btnUpdateItem, btnClearItem, btnDeleteItem);
-
-        fieldCategoryID.setPlaceholder();
-        fieldCategoryName.setPlaceholder(PLACEHOLDER_CATEGORY);
-        fieldCategoryName.getDocument().addDocumentListener(new FieldChangeListener());
-        tableCategory.setDefaultTable();
-        tableCategory.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
-            if (!e.getValueIsAdjusting()) {
-                int selectedRow = tableCategory.getSelectedRow();
-                if (selectedRow >= 0) {
-                    selectTableCategory(selectedRow);
-                }
-            }
-        });
+        setTransparentFrame(ItemCatalog.this, fieldName);
+        setTransparentFrame(btnAddItem, btnUpdateItem, btnClearItem, btnDeleteItem);
 
         fieldItemID.setPlaceholder();
-        fieldName.setPlaceholder(PLACEHOLDER_NAME);
+
+        fieldName.setForm(PLACEHOLDER_NAME, FieldType.STRING);
         fieldName.getDocument().addDocumentListener(new FieldChangeListener());
+
+        fieldPrice.setForm(PLACEHOLDER_PRICE, FieldType.FLOAT);
+        fieldPrice.getDocument().addDocumentListener(new FieldChangeListener());
+
         tableItem.setDefaultTable();
+        tableItem.setPriceColumn(1);
         tableItem.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tableItem.getSelectedRow();
@@ -81,8 +76,8 @@ public class ItemCatalog extends ItemPanel {
     //<editor-fold defaultstate="collapsed" desc="Item Panel">
     @Override
     public void refreshItemTable() {
-        TableUtil.refreshTable(tableItem, "SELECT * FROM " + Main.TB_CATALOG_ITEM + " ORDER BY item_name ASC", TableUtil.TableEnum.CATALOG_ITEM);
-        TableUtil.refreshTable(tableCategory, "SELECT * FROM " + Main.TB_CATALOG_CATEGORY + " ORDER BY category_name ASC", TableUtil.TableEnum.CATALOG_CATEGORY);
+        TableUtil.refreshTable(tableItem, "SELECT * FROM " + Main.TB_CATALOG_ITEM + " ORDER BY updated_at DESC", TableUtil.TableEnum.CATALOG_ITEM);
+//        System.out.println("SELECT * FROM " + Main.TB_CATALOG_ITEM + " ORDER BY updated_at DESC");
     }
 
     @Override
@@ -91,22 +86,13 @@ public class ItemCatalog extends ItemPanel {
 
     @Override
     public void repopulateComboBox() {
-        comboCategory.repopulateComboBox("SELECT category_name FROM " + Main.TB_CATALOG_CATEGORY);
+//        comboCategory.repopulateComboBox("SELECT category_name FROM " + Main.TB_CATALOG_CATEGORY);
     }
     //</editor-fold>
 
-    public void selectTableCategory(int selectedRow) {
-        String[] tableRow = TableUtil.selectTableRow(tableCategory, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldCategoryName);
-
-        fieldCategoryID.setText(fieldCategoryName.getText());
-
-        setUpdateDeleteEnableCategory();
-    }
-
     public void selectTableItem(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableItem, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldName, comboCategory, comboUOM);
+        TableUtil.linkFieldsToTable(tableRow, fieldName, fieldPrice, comboUOM);
 
         fieldItemID.setText(fieldName.getText());
 
@@ -136,20 +122,8 @@ public class ItemCatalog extends ItemPanel {
         }
 
         private void checkFields() {
-            btnAddCategory.setEnabled(fieldCategoryName.isValidText());
-            btnAddItem.setEnabled(fieldName.isValidText());
+            btnAddItem.setEnabled(fieldName.isValidText() && fieldPrice.isValidText());
         }
-    }
-
-    public void setUpdateDeleteEnableCategory() {
-        resetBtnEnability(fieldCategoryID, btnUpdateCategory, btnDeleteCategory);
-    }
-
-    public void clearCategoryFields() {
-        fieldCategoryID.resetToPlaceholder();
-        fieldCategoryName.resetToPlaceholder();
-        tableCategory.clearSelectedRow();
-        setUpdateDeleteEnableCategory();
     }
 
     public void setUpdateDeleteEnableItem() {
@@ -159,7 +133,8 @@ public class ItemCatalog extends ItemPanel {
     public void clearItemFields() {
         fieldItemID.resetToPlaceholder();
         fieldName.resetToPlaceholder();
-        comboCategory.clearComboBox();
+        fieldPrice.resetToPlaceholder();
+        comboUOM.setSelectedIndex(0);
         tableItem.clearSelectedRow();
         setUpdateDeleteEnableItem();
     }
@@ -173,35 +148,21 @@ public class ItemCatalog extends ItemPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fieldCategoryID = new ProjectINSY.java.swing.Form.FormField();
         fieldItemID = new ProjectINSY.java.swing.Form.FormField();
-        panelCategory = new javax.swing.JPanel();
-        panelFields = new javax.swing.JPanel();
-        labelCategoryName = new javax.swing.JLabel();
-        fieldCategoryName = new ProjectINSY.java.swing.Form.FormField();
-        imageCategoryName = new javax.swing.JLabel();
-        labelAddCategory = new javax.swing.JLabel();
-        btnAddCategory = new javax.swing.JButton();
-        labelUpdateCategory = new javax.swing.JLabel();
-        btnUpdateCategory = new javax.swing.JButton();
-        labelClearCategory = new javax.swing.JLabel();
-        btnClearCategory = new javax.swing.JButton();
-        labelDeleteCategory = new javax.swing.JLabel();
-        btnDeleteCategory = new javax.swing.JButton();
-        scrollCategory = new javax.swing.JScrollPane();
-        tableCategory = new ProjectINSY.java.swing.Table();
-        labelCatalogCategory = new javax.swing.JLabel();
         panelItem = new javax.swing.JPanel();
         labelCatalogItem = new javax.swing.JLabel();
         tableScroll = new javax.swing.JScrollPane();
         tableItem = new ProjectINSY.java.swing.Table();
         panelItemFields = new javax.swing.JPanel();
-        labelCategory = new javax.swing.JLabel();
-        comboCategory = new ProjectINSY.java.swing.ComboBoxSuggestion();
-        imageCategory = new javax.swing.JLabel();
         labelName = new javax.swing.JLabel();
         fieldName = new ProjectINSY.java.swing.Form.FormField();
         imageName = new javax.swing.JLabel();
+        fieldPrice = new ProjectINSY.java.swing.Form.FormField();
+        imagePrice = new javax.swing.JLabel();
+        labelPrice = new javax.swing.JLabel();
+        labelUOM = new javax.swing.JLabel();
+        comboUOM = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        imageUOM = new javax.swing.JLabel();
         labelAddItem = new javax.swing.JLabel();
         btnAddItem = new javax.swing.JButton();
         labelUpdateItem = new javax.swing.JLabel();
@@ -210,16 +171,10 @@ public class ItemCatalog extends ItemPanel {
         btnClearItem = new javax.swing.JButton();
         labelDeleteItem = new javax.swing.JLabel();
         btnDeleteItem = new javax.swing.JButton();
-        labelUOM = new javax.swing.JLabel();
-        comboUOM = new ProjectINSY.java.swing.ComboBoxSuggestion();
-        imageUOM = new javax.swing.JLabel();
-
-        fieldCategoryID.setBorder(null);
-        fieldCategoryID.setForeground(new java.awt.Color(0, 0, 0));
-        fieldCategoryID.setText("formField");
-        fieldCategoryID.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        fieldCategoryID.setPlaceholderColor(new java.awt.Color(153, 153, 153));
-        fieldCategoryID.setSelectionColor(new java.awt.Color(25, 102, 24));
+        panelBarcode = new javax.swing.JPanel();
+        imgBarcode = new javax.swing.JLabel();
+        labelPrint = new javax.swing.JLabel();
+        btnPrint = new javax.swing.JButton();
 
         fieldItemID.setBorder(null);
         fieldItemID.setForeground(new java.awt.Color(0, 0, 0));
@@ -232,163 +187,6 @@ public class ItemCatalog extends ItemPanel {
         setMinimumSize(new java.awt.Dimension(1840, 900));
         setOpaque(false);
         setPreferredSize(new java.awt.Dimension(1840, 900));
-
-        panelCategory.setBackground(new java.awt.Color(255, 255, 255));
-        panelCategory.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
-
-        panelFields.setBackground(new java.awt.Color(255, 255, 255));
-        panelFields.setLayout(null);
-
-        labelCategoryName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelCategoryName.setText("Category");
-        panelFields.add(labelCategoryName);
-        labelCategoryName.setBounds(0, 0, 173, 30);
-
-        fieldCategoryName.setBorder(null);
-        fieldCategoryName.setForeground(new java.awt.Color(0, 0, 0));
-        fieldCategoryName.setText("formField");
-        fieldCategoryName.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        fieldCategoryName.setPlaceholderColor(new java.awt.Color(153, 153, 153));
-        fieldCategoryName.setSelectionColor(new java.awt.Color(25, 102, 24));
-        panelFields.add(fieldCategoryName);
-        fieldCategoryName.setBounds(10, 50, 520, 20);
-
-        imageCategoryName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
-        panelFields.add(imageCategoryName);
-        imageCategoryName.setBounds(0, 30, 540, 60);
-
-        labelAddCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelAddCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelAddCategory.setText("Add");
-        labelAddCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelAddCategory);
-        labelAddCategory.setBounds(10, 150, 80, 23);
-
-        btnAddCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
-        btnAddCategory.setBorder(null);
-        btnAddCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnAddCategory.setEnabled(false);
-        btnAddCategory.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnAddCategory.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnAddCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddCategoryActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnAddCategory);
-        btnAddCategory.setBounds(0, 140, 100, 40);
-
-        labelUpdateCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelUpdateCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelUpdateCategory.setText("Update");
-        labelUpdateCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelUpdateCategory);
-        labelUpdateCategory.setBounds(160, 150, 80, 23);
-
-        btnUpdateCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
-        btnUpdateCategory.setBorder(null);
-        btnUpdateCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnUpdateCategory.setEnabled(false);
-        btnUpdateCategory.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnUpdateCategory.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnUpdateCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdateCategoryActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnUpdateCategory);
-        btnUpdateCategory.setBounds(150, 140, 100, 40);
-
-        labelClearCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelClearCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelClearCategory.setText("Clear");
-        labelClearCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelClearCategory);
-        labelClearCategory.setBounds(300, 150, 80, 23);
-
-        btnClearCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
-        btnClearCategory.setBorder(null);
-        btnClearCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnClearCategory.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnClearCategory.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnClearCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClearCategoryActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnClearCategory);
-        btnClearCategory.setBounds(290, 140, 100, 40);
-
-        labelDeleteCategory.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        labelDeleteCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelDeleteCategory.setText("Delete");
-        labelDeleteCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        panelFields.add(labelDeleteCategory);
-        labelDeleteCategory.setBounds(450, 150, 80, 23);
-
-        btnDeleteCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red.png"))); // NOI18N
-        btnDeleteCategory.setBorder(null);
-        btnDeleteCategory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnDeleteCategory.setEnabled(false);
-        btnDeleteCategory.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnDeleteCategory.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_pressed.png"))); // NOI18N
-        btnDeleteCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteCategoryActionPerformed(evt);
-            }
-        });
-        panelFields.add(btnDeleteCategory);
-        btnDeleteCategory.setBounds(440, 140, 100, 40);
-
-        scrollCategory.setBorder(null);
-
-        tableCategory.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null},
-                {null},
-                {null},
-                {null}
-            },
-            new String [] {
-                "Category List"
-            }
-        ));
-        tableCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        tableCategory.setSelectionBackground(new java.awt.Color(25, 102, 24));
-        scrollCategory.setViewportView(tableCategory);
-
-        labelCatalogCategory.setBackground(new java.awt.Color(25, 102, 24));
-        labelCatalogCategory.setFont(new java.awt.Font("Bebas", 0, 64)); // NOI18N
-        labelCatalogCategory.setForeground(new java.awt.Color(255, 255, 255));
-        labelCatalogCategory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        labelCatalogCategory.setText("CATEGORIES CATALOG");
-        labelCatalogCategory.setOpaque(true);
-
-        javax.swing.GroupLayout panelCategoryLayout = new javax.swing.GroupLayout(panelCategory);
-        panelCategory.setLayout(panelCategoryLayout);
-        panelCategoryLayout.setHorizontalGroup(
-            panelCategoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelCategoryLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(scrollCategory)
-                .addContainerGap())
-            .addComponent(labelCatalogCategory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(panelCategoryLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 542, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(17, Short.MAX_VALUE))
-        );
-        panelCategoryLayout.setVerticalGroup(
-            panelCategoryLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelCategoryLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(labelCatalogCategory)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelFields, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 606, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
 
         panelItem.setBackground(new java.awt.Color(255, 255, 255));
         panelItem.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
@@ -404,15 +202,30 @@ public class ItemCatalog extends ItemPanel {
 
         tableItem.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Item", "Category", "Unit of Measure"
+                "Item", "Price", "Unit of Measure", "Last Updated"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Float.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         tableItem.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableItem.setGridColor(new java.awt.Color(255, 255, 255));
         tableItem.setSelectionBackground(new java.awt.Color(25, 102, 24));
@@ -421,24 +234,10 @@ public class ItemCatalog extends ItemPanel {
         panelItemFields.setBackground(new java.awt.Color(255, 255, 255));
         panelItemFields.setLayout(null);
 
-        labelCategory.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelCategory.setText("Category");
-        panelItemFields.add(labelCategory);
-        labelCategory.setBounds(0, 100, 173, 30);
-
-        comboCategory.setBorder(null);
-        comboCategory.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        panelItemFields.add(comboCategory);
-        comboCategory.setBounds(10, 140, 520, 40);
-
-        imageCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
-        panelItemFields.add(imageCategory);
-        imageCategory.setBounds(0, 130, 540, 60);
-
         labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
         labelName.setText("Name");
         panelItemFields.add(labelName);
-        labelName.setBounds(0, 0, 173, 30);
+        labelName.setBounds(10, 0, 173, 30);
 
         fieldName.setBorder(null);
         fieldName.setForeground(new java.awt.Color(0, 0, 0));
@@ -447,18 +246,50 @@ public class ItemCatalog extends ItemPanel {
         fieldName.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldName.setSelectionColor(new java.awt.Color(25, 102, 24));
         panelItemFields.add(fieldName);
-        fieldName.setBounds(10, 50, 520, 20);
+        fieldName.setBounds(20, 50, 520, 20);
 
         imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
         panelItemFields.add(imageName);
-        imageName.setBounds(0, 30, 540, 60);
+        imageName.setBounds(10, 30, 540, 60);
+
+        fieldPrice.setBorder(null);
+        fieldPrice.setForeground(new java.awt.Color(0, 0, 0));
+        fieldPrice.setText("formField");
+        fieldPrice.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        fieldPrice.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldPrice.setSelectionColor(new java.awt.Color(25, 102, 24));
+        panelItemFields.add(fieldPrice);
+        fieldPrice.setBounds(650, 50, 520, 20);
+
+        imagePrice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
+        panelItemFields.add(imagePrice);
+        imagePrice.setBounds(640, 30, 540, 60);
+
+        labelPrice.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelPrice.setText("Price");
+        panelItemFields.add(labelPrice);
+        labelPrice.setBounds(640, 0, 173, 30);
+
+        labelUOM.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
+        labelUOM.setText("Unit of Measure");
+        panelItemFields.add(labelUOM);
+        labelUOM.setBounds(1270, 0, 173, 30);
+
+        comboUOM.setBorder(null);
+        comboUOM.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        panelItemFields.add(comboUOM);
+        comboUOM.setBounds(1280, 40, 520, 40);
+
+        imageUOM.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
+        panelItemFields.add(imageUOM);
+        imageUOM.setBounds(1270, 30, 540, 60);
 
         labelAddItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelAddItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelAddItem.setText("Add");
         labelAddItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelItemFields.add(labelAddItem);
-        labelAddItem.setBounds(650, 150, 80, 23);
+        labelAddItem.setBounds(640, 110, 80, 23);
 
         btnAddItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnAddItem.setBorder(null);
@@ -472,14 +303,14 @@ public class ItemCatalog extends ItemPanel {
             }
         });
         panelItemFields.add(btnAddItem);
-        btnAddItem.setBounds(640, 140, 100, 40);
+        btnAddItem.setBounds(630, 100, 100, 40);
 
         labelUpdateItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelUpdateItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelUpdateItem.setText("Update");
         labelUpdateItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelItemFields.add(labelUpdateItem);
-        labelUpdateItem.setBounds(800, 150, 80, 23);
+        labelUpdateItem.setBounds(790, 110, 80, 23);
 
         btnUpdateItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnUpdateItem.setBorder(null);
@@ -493,14 +324,14 @@ public class ItemCatalog extends ItemPanel {
             }
         });
         panelItemFields.add(btnUpdateItem);
-        btnUpdateItem.setBounds(790, 140, 100, 40);
+        btnUpdateItem.setBounds(780, 100, 100, 40);
 
         labelClearItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelClearItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelClearItem.setText("Clear");
         labelClearItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelItemFields.add(labelClearItem);
-        labelClearItem.setBounds(940, 150, 80, 23);
+        labelClearItem.setBounds(930, 110, 80, 23);
 
         btnClearItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn.png"))); // NOI18N
         btnClearItem.setBorder(null);
@@ -513,14 +344,14 @@ public class ItemCatalog extends ItemPanel {
             }
         });
         panelItemFields.add(btnClearItem);
-        btnClearItem.setBounds(930, 140, 100, 40);
+        btnClearItem.setBounds(920, 100, 100, 40);
 
         labelDeleteItem.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelDeleteItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelDeleteItem.setText("Delete");
         labelDeleteItem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         panelItemFields.add(labelDeleteItem);
-        labelDeleteItem.setBounds(1090, 150, 80, 23);
+        labelDeleteItem.setBounds(1080, 110, 80, 23);
 
         btnDeleteItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btn_red.png"))); // NOI18N
         btnDeleteItem.setBorder(null);
@@ -534,21 +365,38 @@ public class ItemCatalog extends ItemPanel {
             }
         });
         panelItemFields.add(btnDeleteItem);
-        btnDeleteItem.setBounds(1080, 140, 100, 40);
+        btnDeleteItem.setBounds(1070, 100, 100, 40);
 
-        labelUOM.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 24)); // NOI18N
-        labelUOM.setText("Unit of Measure");
-        panelItemFields.add(labelUOM);
-        labelUOM.setBounds(630, 0, 173, 30);
+        panelBarcode.setBackground(new java.awt.Color(255, 255, 255));
+        panelBarcode.setLayout(null);
 
-        comboUOM.setBorder(null);
-        comboUOM.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        panelItemFields.add(comboUOM);
-        comboUOM.setBounds(640, 40, 520, 40);
+        imgBarcode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        panelBarcode.add(imgBarcode);
+        imgBarcode.setBounds(0, 0, 200, 80);
 
-        imageUOM.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldLogIn.png"))); // NOI18N
-        panelItemFields.add(imageUOM);
-        imageUOM.setBounds(630, 30, 540, 60);
+        labelPrint.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelPrint.setForeground(new java.awt.Color(255, 255, 255));
+        labelPrint.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconPrint.png"))); // NOI18N
+        labelPrint.setText("Print");
+        labelPrint.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelBarcode.add(labelPrint);
+        labelPrint.setBounds(230, 10, 150, 50);
+
+        btnPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint.png"))); // NOI18N
+        btnPrint.setBorder(null);
+        btnPrint.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnPrint.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint_pressed.png"))); // NOI18N
+        btnPrint.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrintActionPerformed(evt);
+            }
+        });
+        panelBarcode.add(btnPrint);
+        btnPrint.setBounds(230, 10, 150, 50);
+
+        panelItemFields.add(panelBarcode);
+        panelBarcode.setBounds(1410, 100, 390, 80);
 
         javax.swing.GroupLayout panelItemLayout = new javax.swing.GroupLayout(panelItem);
         panelItem.setLayout(panelItemLayout);
@@ -556,13 +404,10 @@ public class ItemCatalog extends ItemPanel {
             panelItemLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(labelCatalogItem, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelItemLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(panelItemLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelItemLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1238, Short.MAX_VALUE))
-                    .addGroup(panelItemLayout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(panelItemFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(panelItemFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1824, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelItemLayout.setVerticalGroup(
@@ -571,9 +416,9 @@ public class ItemCatalog extends ItemPanel {
                 .addContainerGap()
                 .addComponent(labelCatalogItem)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelItemFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(panelItemFields, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 606, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -581,151 +426,41 @@ public class ItemCatalog extends ItemPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(panelCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(panelItem, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelCategory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnAddCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddCategoryActionPerformed
-        String category_name = fieldCategoryName.getText();
-
-        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            if (!DatabaseUtil.recordExists(conn, Main.TB_CATALOG_CATEGORY, "category_name", category_name)) {
-                String query = "INSERT INTO " + Main.TB_CATALOG_CATEGORY + " (category_name)\n"
-                        + "VALUES (?)";
-                PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-                pst.setString(1, category_name);
-
-                // HISTORY : CATALOG-ADD
-                String history_desc = createHistoryDesc(category_name, "Category Name");
-
-                pst.executeUpdate();
-
-                String category_idStr = createObjectCode(pst.getGeneratedKeys(), "Catalog-C-", Main.TB_CATALOG_CATEGORY, "category_code", "category_id");
-
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, category_idStr, category_idStr, history_desc, "");
-
-                JOptionPane.showMessageDialog(this, "Category Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-                clearCategoryFields();
-                refreshItemTable();
-                repopulateComboBox();
-            } else {
-                JOptionPane.showMessageDialog(this, "This category already exists!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (SQLException e) {
-            MessageUtil.paneDatabaseError(e);
-        }
-    }//GEN-LAST:event_btnAddCategoryActionPerformed
-
-    private void btnUpdateCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateCategoryActionPerformed
-        String category_name_original = fieldCategoryID.getText();
-        String category_name = fieldCategoryName.getText();
-
-        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            if (!DatabaseUtil.recordExists(conn, Main.TB_CATALOG_CATEGORY, "category_name", category_name)) {
-                int warnUser = JOptionPane.showConfirmDialog(
-                        null,
-                        "Updating this Category's name will also update the corresponding category name in other related tables. Do you want to proceed?",
-                        "Warning: Category Update",
-                        JOptionPane.YES_NO_OPTION
-                );
-
-                if (warnUser == JOptionPane.YES_OPTION) {
-                    String query = "UPDATE " + Main.TB_CATALOG_CATEGORY + " SET category_name = ? WHERE category_name = ?";
-                    PreparedStatement pst = conn.prepareStatement(query);
-                    pst.setString(1, category_name);
-                    pst.setString(2, category_name_original);
-
-                    // HISTORY : CATALOG-UPDATE
-                    String history_desc = createHistoryDesc(category_name_original, category_name, "Category Name");
-
-                    String category_idStr = getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_code", "category_name", category_name_original);
-                    insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, category_idStr, category_idStr, history_desc, "");
-
-                    pst.executeUpdate();
-                    JOptionPane.showMessageDialog(this, "Category Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-                    clearCategoryFields();
-                    refreshItemTable();
-                    repopulateComboBox();
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "This category already exists!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (SQLException e) {
-            paneDatabaseError(e);
-        }
-    }//GEN-LAST:event_btnUpdateCategoryActionPerformed
-
-    private void btnDeleteCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteCategoryActionPerformed
-        String category_name = fieldCategoryID.getText();
-
-        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            int warnUser = JOptionPane.showConfirmDialog(
-                    null,
-                    "Confirm Delete?",
-                    "Warning: Delete",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-            if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "DELETE FROM " + Main.TB_CATALOG_CATEGORY + " WHERE category_name = ?";
-                PreparedStatement pst = conn.prepareStatement(query);
-                pst.setString(1, category_name);
-
-                // HISTORY : CATALOG-DELETE
-                String history_desc = createHistoryDesc(category_name, "Category Name");
-
-                String category_idStr = getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_code", "category_name", category_name);
-
-                pst.executeUpdate();
-
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, category_idStr, category_idStr, history_desc, "");
-                JOptionPane.showMessageDialog(this, "Category Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-                clearCategoryFields();
-                refreshItemTable();
-                repopulateComboBox();
-            }
-        } catch (SQLException e) {
-            paneDatabaseError(e);
-        }
-    }//GEN-LAST:event_btnDeleteCategoryActionPerformed
-
     private void btnAddItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddItemActionPerformed
-        String item_category = comboCategory.getSelectedItem().toString();
-        String item_name = fieldName.getText();
-        String item_uom = comboUOM.getSelectedItem().toString();
+        String name = fieldName.getText();
+        String uom = comboUOM.getSelectedItem().toString();
+        Float price = Float.valueOf(fieldPrice.getText());
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            if (!DatabaseUtil.recordExists(conn, Main.TB_CATALOG_ITEM, "item_name", item_name)) {
-                String query = "INSERT INTO " + Main.TB_CATALOG_ITEM + " (item_category, item_name, item_uom)\n"
-                        + "VALUES (?, ?, ?)";
+            if (!DatabaseUtil.recordExists(conn, Main.TB_CATALOG_ITEM, "name", name)) {
+                String query = "INSERT INTO " + Main.TB_CATALOG_ITEM + " (code, name, uom, price)\n"
+                        + "VALUES (?, ?, ?, ?)";
                 PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-                pst.setString(1, item_category);
-                pst.setString(2, item_name);
-                pst.setString(3, item_uom);
+                pst.setString(1, generateCode());
+                pst.setString(2, name);
+                pst.setString(3, uom);
+                pst.setFloat(4, price);
 
                 // HISTORY : CATALOG-ADD
-                String history_desc = "";
-
-                history_desc += createHistoryDesc(item_name, "Item Name");
-                history_desc += createHistoryDesc(item_category, "Category");
-                history_desc += createHistoryDesc(item_uom, "UOM");
-
+//                String history_desc = "";
+//
+//                history_desc += createHistoryDesc(item_name, "Item Name");
+//                history_desc += createHistoryDesc(item_category, "Category");
+//                history_desc += createHistoryDesc(item_uom, "UOM");
+//
                 pst.executeUpdate();
-
-                String item_idStr = createObjectCode(pst.getGeneratedKeys(), "Catalog-I-", Main.TB_CATALOG_ITEM, "item_code", "item_id");
-
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, item_idStr, item_idStr, history_desc, "");
+//
+//                String item_idStr = createObjectCode(pst.getGeneratedKeys(), "Catalog-I-", Main.TB_CATALOG_ITEM, "item_code", "item_id");
+//
+//                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.ADD, item_idStr, item_idStr, history_desc, "");
 
                 JOptionPane.showMessageDialog(this, "Item Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -740,10 +475,10 @@ public class ItemCatalog extends ItemPanel {
     }//GEN-LAST:event_btnAddItemActionPerformed
 
     private void btnUpdateItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateItemActionPerformed
-        String item_name_original = fieldItemID.getText();
-        String item_name = fieldName.getText();
-        String item_category = comboCategory.getSelectedItem().toString();
-        String item_uom = comboUOM.getSelectedItem().toString();
+        String name_original = fieldItemID.getText();
+        String name = fieldName.getText();
+        String uom = comboUOM.getSelectedItem().toString();
+        Float price = Float.valueOf(fieldPrice.getText());
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
@@ -754,37 +489,38 @@ public class ItemCatalog extends ItemPanel {
             );
 
             if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "UPDATE " + Main.TB_CATALOG_ITEM + " SET item_category = ?, item_name = ?, item_uom = ? WHERE item_name = ?";
+                String query = "UPDATE " + Main.TB_CATALOG_ITEM + " SET name = ?, uom = ?, price = ?, updated_at = ? WHERE name = ?";
                 PreparedStatement pst = conn.prepareStatement(query);
-                pst.setString(1, item_category);
-                pst.setString(2, item_name);
-                pst.setString(3, item_uom);
-                pst.setString(4, item_name_original);
+                pst.setString(1, name);
+                pst.setString(2, uom);
+                pst.setFloat(3, price);
+                pst.setString(4, getTimestampNow());
+                pst.setString(5, name_original);
 
                 // HISTORY : CATALOG-UPDATE
-                String history_desc = "";
-
-                String old_category = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", item_name_original);
-                String old_uom = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_uom", "item_name", item_name_original);
-
-                history_desc += createHistoryDesc(item_name_original, item_name, "Item Name");
-                history_desc += createHistoryDesc(old_category, item_category, "Category");
-                history_desc += createHistoryDesc(old_uom, item_uom, "UOM");
-
-                if (!old_category.equals(item_category)) {
-                    int category_id = Integer.parseInt(getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_id", "category_name", item_category));
-                    String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name_original);
-
-                    if (item_idStr.contains("-")) {
-                        String[] parts = item_idStr.split("-");
-                        item_idStr = parts[0] + "-" + parts[1] + "-" + category_id + "-" + parts[3];
-                    }
-
-                    setColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_idStr, item_name_original);
-                }
-
-                String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name_original);
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, item_idStr, item_idStr, history_desc, "");
+//                String history_desc = "";
+//
+//                String old_category = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_category", "item_name", item_name_original);
+//                String old_uom = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_uom", "item_name", item_name_original);
+//
+//                history_desc += createHistoryDesc(item_name_original, item_name, "Item Name");
+//                history_desc += createHistoryDesc(old_category, item_category, "Category");
+//                history_desc += createHistoryDesc(old_uom, item_uom, "UOM");
+//
+//                if (!old_category.equals(item_category)) {
+//                    int category_id = Integer.parseInt(getColumnValueByString(Main.TB_CATALOG_CATEGORY, "category_id", "category_name", item_category));
+//                    String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name_original);
+//
+//                    if (item_idStr.contains("-")) {
+//                        String[] parts = item_idStr.split("-");
+//                        item_idStr = parts[0] + "-" + parts[1] + "-" + category_id + "-" + parts[3];
+//                    }
+//
+//                    setColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_idStr, item_name_original);
+//                }
+//
+//                String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name_original);
+//                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.UPDATE, item_idStr, item_idStr, history_desc, "");
 
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Item Updated!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -809,18 +545,18 @@ public class ItemCatalog extends ItemPanel {
             );
 
             if (warnUser == JOptionPane.YES_OPTION) {
-                String query = "DELETE FROM " + Main.TB_CATALOG_ITEM + " WHERE item_name = ?";
+                String query = "DELETE FROM " + Main.TB_CATALOG_ITEM + " WHERE name = ?";
                 PreparedStatement pst = conn.prepareStatement(query);
                 pst.setString(1, item_name);
 
                 // HISTORY : CATALOG-DELETE
-                String history_desc = createHistoryDesc(item_name, "Item Name");
-
-                String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name);
-
-                pst.executeUpdate();
-
-                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, item_idStr, item_idStr, history_desc, "");
+//                String history_desc = createHistoryDesc(item_name, "Item Name");
+//
+//                String item_idStr = getColumnValueByString(Main.TB_CATALOG_ITEM, "item_code", "item_name", item_name);
+//
+//                pst.executeUpdate();
+//
+//                insertHistory(DatabaseUtil.HistoryFrame.CATALOG, DatabaseUtil.HistoryType.DELETE, item_idStr, item_idStr, history_desc, "");
                 JOptionPane.showMessageDialog(this, "Item Deleted!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 clearItemFields();
@@ -831,54 +567,78 @@ public class ItemCatalog extends ItemPanel {
         }
     }//GEN-LAST:event_btnDeleteItemActionPerformed
 
-    private void btnClearCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearCategoryActionPerformed
-        clearCategoryFields();
-    }//GEN-LAST:event_btnClearCategoryActionPerformed
-
     private void btnClearItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearItemActionPerformed
         clearItemFields();
     }//GEN-LAST:event_btnClearItemActionPerformed
 
+    private void btnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintActionPerformed
+//        if (current_barcode != null) {
+//            int warnUser = JOptionPane.showConfirmDialog(
+//                null,
+//                "This item is part of a batch. Do you wish to print barcodes for the entire batch?",
+//                "Warning: Batch Print",
+//                JOptionPane.YES_NO_OPTION
+//            );
+//            List<BufferedImage> barcodeImages = new ArrayList<>();
+//
+//            int stock_id = Integer.parseInt(fieldID.getText());
+//            String file_name = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
+//
+//            if (warnUser == JOptionPane.NO_OPTION) {
+//                BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+//                barcodeImages.add(bufferedImage);
+//            } else if (warnUser == JOptionPane.YES_OPTION) {
+//                file_name += "-BATCH";
+//
+//                for (int i = 0; i < batchQuantity; i++) {
+//                    String code = getColumnValueByInt(Main.TB_ITEM_STOCK, "stock_code", "stock_id", stock_id);
+//                    current_barcode = validateBarcode(code);
+//                    barcodeIcon = BarcodeUtil.generateBarcode(current_barcode);
+//
+//                    BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+//                    barcodeImages.add(bufferedImage);
+//
+//                    stock_id++;
+//                }
+//            }
+//
+//            try {
+//                BarcodeUtil.generateFileFromBarcodes(barcodeImages, BarcodeUtil.FileType.PDF, file_name);
+//            } catch (IOException ex) {
+//                Logger.getLogger(ItemManagement.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        } else {
+//            JOptionPane.showMessageDialog(this, "No Barcode Selected", "Print Failed", JOptionPane.ERROR_MESSAGE);
+//        }
+    }//GEN-LAST:event_btnPrintActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAddCategory;
     private javax.swing.JButton btnAddItem;
-    private javax.swing.JButton btnClearCategory;
     private javax.swing.JButton btnClearItem;
-    private javax.swing.JButton btnDeleteCategory;
     private javax.swing.JButton btnDeleteItem;
-    private javax.swing.JButton btnUpdateCategory;
+    private javax.swing.JButton btnPrint;
     private javax.swing.JButton btnUpdateItem;
-    private ProjectINSY.java.swing.ComboBoxSuggestion comboCategory;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboUOM;
-    private ProjectINSY.java.swing.Form.FormField fieldCategoryID;
-    private ProjectINSY.java.swing.Form.FormField fieldCategoryName;
     private ProjectINSY.java.swing.Form.FormField fieldItemID;
     private ProjectINSY.java.swing.Form.FormField fieldName;
-    private javax.swing.JLabel imageCategory;
-    private javax.swing.JLabel imageCategoryName;
+    private ProjectINSY.java.swing.Form.FormField fieldPrice;
     private javax.swing.JLabel imageName;
+    private javax.swing.JLabel imagePrice;
     private javax.swing.JLabel imageUOM;
-    private javax.swing.JLabel labelAddCategory;
+    private javax.swing.JLabel imgBarcode;
     private javax.swing.JLabel labelAddItem;
-    private javax.swing.JLabel labelCatalogCategory;
     private javax.swing.JLabel labelCatalogItem;
-    private javax.swing.JLabel labelCategory;
-    private javax.swing.JLabel labelCategoryName;
-    private javax.swing.JLabel labelClearCategory;
     private javax.swing.JLabel labelClearItem;
-    private javax.swing.JLabel labelDeleteCategory;
     private javax.swing.JLabel labelDeleteItem;
     private javax.swing.JLabel labelName;
+    private javax.swing.JLabel labelPrice;
+    private javax.swing.JLabel labelPrint;
     private javax.swing.JLabel labelUOM;
-    private javax.swing.JLabel labelUpdateCategory;
     private javax.swing.JLabel labelUpdateItem;
-    private javax.swing.JPanel panelCategory;
-    private javax.swing.JPanel panelFields;
+    private javax.swing.JPanel panelBarcode;
     private javax.swing.JPanel panelItem;
     private javax.swing.JPanel panelItemFields;
-    private javax.swing.JScrollPane scrollCategory;
-    private ProjectINSY.java.swing.Table tableCategory;
     private ProjectINSY.java.swing.Table tableItem;
     private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables

@@ -68,14 +68,14 @@ public class ItemStock extends ItemPanel {
                 + "GROUP BY stock_category, stock_name HAVING 1 "
                 + filterHAVING;
 
-        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DISTINCT);
+//        TableUtil.refreshTable(tableInventory, currentSearchQuery, TableUtil.TableEnum.STOCK_DISTINCT);
     }
 
     @Override
     public void repopulateFilterComboBox() {
         disableUpdatingComboBoxes();
-        searchCategory.repopulateComboBox("SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
-        searchName.repopulateComboBox("SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
+//        searchCategory.repopulateComboBox("SELECT stock_category FROM " + Main.TB_ITEM_STOCK);
+//        searchName.repopulateComboBox("SELECT stock_name FROM " + Main.TB_ITEM_STOCK);
         enableUpdatingComboBoxes();
 
         refreshItemTable();

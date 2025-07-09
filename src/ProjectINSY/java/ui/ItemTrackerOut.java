@@ -76,7 +76,7 @@ public class ItemTrackerOut extends ItemPanel {
             paneDatabaseError(e);
         }
         
-        TableUtil.refreshTable(tableLocation, currentSearchQuery, TableUtil.TableEnum.STOCK_LOCATION);
+//        TableUtil.refreshTable(tableLocation, currentSearchQuery, TableUtil.TableEnum.STOCK_LOCATION);
     }
     
     @Override

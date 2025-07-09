@@ -100,7 +100,7 @@ public class ItemReport extends ItemPanel {
                 + " ORDER BY report_timestamp DESC";
 
 //        System.out.println(currentSearchQuery);
-        TableUtil.refreshTable(tableRequest, currentSearchQuery, TableUtil.TableEnum.ITEM_REPORT);
+//        TableUtil.refreshTable(tableRequest, currentSearchQuery, TableUtil.TableEnum.ITEM_REPORT);
 
         for (int i = 0; i < tableRequest.getColumnCount(); i++) {
             tableRequest.getColumnModel().getColumn(i).setCellRenderer(TableHighlighter);
@@ -674,8 +674,6 @@ public class ItemReport extends ItemPanel {
 
         tabRequest.addTab("tab2", panelFilter);
 
-        tabRequest.setSelectedIndex(1);
-
         panelTab.add(tabRequest, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 22, 550, 850));
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
@@ -710,14 +708,6 @@ public class ItemReport extends ItemPanel {
             .addComponent(panelMain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnCreateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateReportActionPerformed
-        switchReportForm(btnCreateReport);
-    }//GEN-LAST:event_btnCreateReportActionPerformed
-
-    private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
-        switchReportForm(btnFilter);
-    }//GEN-LAST:event_btnFilterActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         String report_code = fieldSelectedCode.getText();
@@ -868,6 +858,14 @@ public class ItemReport extends ItemPanel {
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         searchItem();
     }//GEN-LAST:event_btnSearchActionPerformed
+
+    private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
+        switchReportForm(btnFilter);
+    }//GEN-LAST:event_btnFilterActionPerformed
+
+    private void btnCreateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateReportActionPerformed
+        switchReportForm(btnCreateReport);
+    }//GEN-LAST:event_btnCreateReportActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

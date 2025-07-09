@@ -82,7 +82,7 @@ public class ItemTransaction extends ItemPanel {
                 + filterWHERE
                 + "ORDER BY out_timestamp DESC";
 
-        TableUtil.refreshTable(tableTransaction, currentSearchQuery, TableUtil.TableEnum.TRANSACTION);
+//        TableUtil.refreshTable(tableTransaction, currentSearchQuery, TableUtil.TableEnum.TRANSACTION);
     }
 
     @Override

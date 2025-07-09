@@ -10,6 +10,7 @@ package ProjectINSY.java.util;
  */
 import ProjectINSY.java.Main;
 import ProjectINSY.java.ui.ItemManagement;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
 import com.mysql.cj.jdbc.Blob;
 import java.awt.Color;
 import java.awt.Component;
@@ -26,14 +27,11 @@ import java.util.Date;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 public class TableUtil {
@@ -49,6 +47,8 @@ public class TableUtil {
         ITEM_REQUEST,
         ITEM_REPORT,
         TRANSACTION,
+        INVENTORY_BALANCE,
+        INVENTORY_TRANSACTION,
     };
 
     public static ImageIcon blobToImage(ResultSet rs, String column_name) throws SQLException {
@@ -97,141 +97,149 @@ public class TableUtil {
                 try {
                     if (null != tableEnum) {
                         switch (tableEnum) {
-                            //<editor-fold defaultstate="collapsed" desc="TRANSACTION">
-                            case TRANSACTION: {
-                                String timestamp = rs.getString("out_timestamp");
-                                String name = rs.getString("out_name");
-                                int quantity = rs.getInt("out_quantity");
-                                float price = rs.getFloat("out_price");
-                                String channel = rs.getString("out_channel");
-                                String customer = rs.getString("out_customer");
-                                model.addRow(new Object[]{
-                                    timestamp, name, quantity, price, channel, customer
-                                });
-                                break;
-                            }
-                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="ITEM REQUEST">
-                            case ITEM_REQUEST: {
-                                String timestamp = rs.getString("request_timestamp");
-                                String name = rs.getString("request_name");
-                                String item = rs.getString("request_item");
-                                String desc = rs.getString("request_desc");
-                                int quantity = rs.getInt("request_quantity");
-                                String status = rs.getString("request_status");
-                                model.addRow(new Object[]{
-                                    timestamp, item, desc, name, quantity, status
-                                });
-                                break;
-                            }
-                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="ITEM REPORT">
-                            case ITEM_REPORT: {
-                                String code = rs.getString("report_code");
-                                String name = rs.getString("stock_name");
-                                String desc = rs.getString("stock_desc");
-                                String condition = rs.getString("report_condition");
-                                model.addRow(new Object[]{
-                                    code, name, desc, condition
-                                });
-                                break;
-                            }
-                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="STOCK DISTINCT">
-                            case STOCK_DISTINCT: {
-                                String category = rs.getString("stock_category");
-                                String name = rs.getString("stock_name");
-                                int quantity = rs.getInt("stock_quantity");
-                                model.addRow(new Object[]{
-                                    category, name, quantity
-                                });
-                                break;
-                            }
-                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="STOCK DELIVERY">
-                            case STOCK_DELIVERY: {
-                                String code = rs.getString("stock_code");
-//                                String category = rs.getString("stock_category");
-                                String name = rs.getString("stock_name");
-                                String desc = rs.getString("stock_desc");
-                                int quantity = 1;
-                                String price = floatRoundOff(rs.getFloat("stock_price"));
-                                if (ItemManagement.isGroupedByBatches()) {
-                                    if (rs.getFloat("stock_price") != rs.getFloat("stock_price_batch")) {
-                                        price = price + " / " + floatRoundOff(rs.getFloat("stock_price_batch"));
-                                    }
-                                }
-                                Date deliveryDate = rs.getDate("stock_dod");
-                                String benefactor = rs.getString("stock_benefactor");
-
-                                if (ItemManagement.isGroupedByBatches()) {
-                                    String[] parts = code.split("-");
-                                    code = String.join("-", Arrays.copyOfRange(parts, 1, parts.length));
-                                    quantity = rs.getInt("stock_quantity");
-                                }
-
-                                model.addRow(new Object[]{
-                                    code, name, desc, price, quantity, deliveryDate, benefactor
-                                });
-                                break;
-                            }
-                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="STOCK LOCATION">
-                            case STOCK_LOCATION: {
-                                String code = rs.getString("stock_code");
-                                String name = rs.getString("stock_name");
-                                String desc = rs.getString("stock_desc");
-                                String location = rs.getString("stock_location");
-                                String holder = rs.getString("stock_holder");
-
-                                model.addRow(new Object[]{
-                                    code, name, desc, location, holder
-                                });
-                                break;
-                            }
-                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="CATALOG CATEGORY">
-                            case CATALOG_CATEGORY: {
-                                String category_name = rs.getString("category_name");
-                                if (!category_name.equals("N/A")) {
-                                    model.addRow(new Object[]{
-                                        category_name
-                                    });
-                                }
-                                break;
-                            }
-                            //</editor-fold>
                             //<editor-fold defaultstate="collapsed" desc="CATALOG ITEM">
-                            case CATALOG_ITEM: {
-                                String item_name = rs.getString("item_name");
-                                String item_category = rs.getString("item_category");
-                                String item_uom = rs.getString("item_uom");
-                                model.addRow(new Object[]{
-                                    item_name, item_category, item_uom
-                                });
-                                break;
-                            }
-                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="ITEM HISTORY">
-                            case ITEM_HISTORY: {
-                                String timestamp = rs.getString("history_timestamp");
-                                String type = rs.getString("history_frame") + "-" + rs.getString("history_type");
-                                String code = rs.getString("history_item_code_start");
-                                if (!code.equals(rs.getString("history_item_code_end"))) {
-                                    String[] parts = rs.getString("history_item_code_end").split("-");
-                                    code += "-" + parts[2];
-                                }
-                                String desc = rs.getString("history_desc");
-                                String user = rs.getString("history_user");
+                            case CATALOG_ITEM -> {
+                                String name = rs.getString("name");
+                                Float price = rs.getFloat("price");
+                                String uom = rs.getString("uom");
+                                String updated_at = rs.getString("updated_at");
+//                                System.out.println(name);
+//                                System.out.println(uom);
+//                                System.out.println(price);
 
                                 model.addRow(new Object[]{
-                                    timestamp, type, code, desc, user
+                                    name, price, uom, updated_at
                                 });
-                                break;
                             }
-                            //</editor-fold>
-                            default:
-                                break;
+//                            //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="CATALOG ITEM">
+                            case INVENTORY_BALANCE -> {
+                                int id = rs.getInt("inventory_id");
+                                String name = rs.getString("name");
+                                String location = rs.getString("location");
+                                int quantity = rs.getInt("quantity");
+                                String updated_at = rs.getString("updated_at");
+                                model.addRow(new Object[]{
+                                    id, name, location, quantity, updated_at
+                                });
+                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="TRANSACCTION">
+//                            case TRANSACTION -> {
+//                                String timestamp = rs.getString("out_timestamp");
+//                                String name = rs.getString("out_name");
+//                                int quantity = rs.getInt("out_quantity");
+//                                float price = rs.getFloat("out_price");
+//                                String channel = rs.getString("out_channel");
+//                                String customer = rs.getString("out_customer");
+//                                model.addRow(new Object[]{
+//                                    timestamp, name, quantity, price, channel, customer
+//                                });
+//                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="ITEM REQUEST">
+//                            case ITEM_REQUEST -> {
+//                                String timestamp = rs.getString("request_timestamp");
+//                                String name = rs.getString("request_name");
+//                                String item = rs.getString("request_item");
+//                                String desc = rs.getString("request_desc");
+//                                int quantity = rs.getInt("request_quantity");
+//                                String status = rs.getString("request_status");
+//                                model.addRow(new Object[]{
+//                                    timestamp, item, desc, name, quantity, status
+//                                });
+//                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="ITEM REPORT">
+//                            case ITEM_REPORT -> {
+//                                String code = rs.getString("report_code");
+//                                String name = rs.getString("stock_name");
+//                                String desc = rs.getString("stock_desc");
+//                                String condition = rs.getString("report_condition");
+//                                model.addRow(new Object[]{
+//                                    code, name, desc, condition
+//                                });
+//                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="STOCK DISTINCT">
+//                            case STOCK_DISTINCT -> {
+//                                String category = rs.getString("stock_category");
+//                                String name = rs.getString("stock_name");
+//                                int quantity = rs.getInt("stock_quantity");
+//                                model.addRow(new Object[]{
+//                                    category, name, quantity
+//                                });
+//                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="STOCK DELIVERY">
+//                            case STOCK_DELIVERY -> {
+//                                String code = rs.getString("stock_code");
+                            ////                                String category = rs.getString("stock_category");
+//                                String name = rs.getString("stock_name");
+//                                String desc = rs.getString("stock_desc");
+//                                int quantity = 1;
+//                                String price = floatRoundOff(rs.getFloat("stock_price"));
+//                                if (ItemManagement.isGroupedByBatches()) {
+//                                    if (rs.getFloat("stock_price") != rs.getFloat("stock_price_batch")) {
+//                                        price = price + " / " + floatRoundOff(rs.getFloat("stock_price_batch"));
+//                                    }
+//                                }
+//                                Date deliveryDate = rs.getDate("stock_dod");
+//                                String benefactor = rs.getString("stock_benefactor");
+//
+//                                if (ItemManagement.isGroupedByBatches()) {
+//                                    String[] parts = code.split("-");
+//                                    code = String.join("-", Arrays.copyOfRange(parts, 1, parts.length));
+//                                    quantity = rs.getInt("stock_quantity");
+//                                }
+//
+//                                model.addRow(new Object[]{
+//                                    code, name, desc, price, quantity, deliveryDate, benefactor
+//                                });
+//                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="STOCK LOCATION">
+//                            case STOCK_LOCATION -> {
+//                                String code = rs.getString("stock_code");
+//                                String name = rs.getString("stock_name");
+//                                String desc = rs.getString("stock_desc");
+//                                String location = rs.getString("stock_location");
+//                                String holder = rs.getString("stock_holder");
+//
+//                                model.addRow(new Object[]{
+//                                    code, name, desc, location, holder
+//                                });
+//                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="CATALOG CATEGORY">
+//                            case CATALOG_CATEGORY -> {
+//                                String category_name = rs.getString("category_name");
+//                                if (!category_name.equals("N/A")) {
+//                                    model.addRow(new Object[]{
+//                                        category_name
+//                                    });
+//                                }
+//                            }
+//                            //</editor-fold>
+//                            //<editor-fold defaultstate="collapsed" desc="ITEM HISTORY">
+//                            case ITEM_HISTORY -> {
+//                                String timestamp = rs.getString("history_timestamp");
+//                                String type = rs.getString("history_frame") + "-" + rs.getString("history_type");
+//                                String code = rs.getString("history_item_code_start");
+//                                if (!code.equals(rs.getString("history_item_code_end"))) {
+//                                    String[] parts = rs.getString("history_item_code_end").split("-");
+//                                    code += "-" + parts[2];
+//                                }
+//                                String desc = rs.getString("history_desc");
+//                                String user = rs.getString("history_user");
+//
+//                                model.addRow(new Object[]{
+//                                    timestamp, type, code, desc, user
+//                                });
+//                            }
+//                            //</editor-fold>
+                            default -> {
+                            }
                         }
                     }
                 } catch (SQLException e) {
@@ -307,7 +315,7 @@ public class TableUtil {
                 }
             }
         }
-        
+
         // image cell renderers should always be the last column, and not included in the list of components!
 //        for (int i = 0; i < components.length; i++) {
 //            JComponent component = components[i];

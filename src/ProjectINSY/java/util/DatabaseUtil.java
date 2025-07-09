@@ -15,6 +15,8 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,7 +87,7 @@ public class DatabaseUtil {
         try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, update);
             ps.setString(2, id);
-            
+
             ps.executeUpdate();
         } catch (SQLException e) {
             paneDatabaseError(e);
@@ -98,7 +100,7 @@ public class DatabaseUtil {
         try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, update);
             ps.setInt(2, id);
-            
+
             ps.executeUpdate();
         } catch (SQLException e) {
             paneDatabaseError(e);
@@ -244,7 +246,7 @@ public class DatabaseUtil {
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             PreparedStatement pst = conn.prepareStatement("""
                                                           UPDATE tb_catalog_category 
@@ -308,8 +310,14 @@ public class DatabaseUtil {
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         resetObjectCode();
+    }
+
+    public static String getTimestampNow() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(formatter);
     }
 
 //    public void DisplayData() {
