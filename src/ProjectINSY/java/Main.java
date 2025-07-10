@@ -51,7 +51,9 @@ public class Main extends javax.swing.JFrame {
     public static String TB_CATALOG_ITEM = "tb_catalog_item";
     public static String TB_INVENTORY_BALANCE = "tb_inventory_balance";
     public static String TB_INVENTORY_TRANSACTION = "tb_inventory_transaction";
-    
+    public static String TB_SALES = "tb_sales";
+    public static String TB_SALES_ITEM = "tb_sales_items";
+
     public static String TB_CATALOG_CATEGORY = "tb_catalog_category";
 //    public static String TB_CATALOG_ITEM = "tb_catalog_item";
     public static String TB_ITEM_BATCH = "tb_item_batch";
@@ -173,7 +175,6 @@ public class Main extends javax.swing.JFrame {
 //        System.out.println(PREF_DEFAULT_PAGE_VIEW + ": " + ACTIVE_PREF_DEFAULT_PAGE_VIEW);
 //    }
     //</editor-fold>
-
     /**
      * Creates new form Dashboard
      */
@@ -284,6 +285,7 @@ public class Main extends javax.swing.JFrame {
             case ItemManagement form -> {
                 form.repopulateComboBox();
                 form.repopulateFilterComboBox();
+                form.focusFieldCode();
             }
             case ItemCatalog form -> {
                 form.repopulateComboBox();

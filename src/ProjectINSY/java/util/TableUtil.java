@@ -11,6 +11,7 @@ package ProjectINSY.java.util;
 import ProjectINSY.java.Main;
 import ProjectINSY.java.ui.ItemManagement;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import com.mysql.cj.jdbc.Blob;
 import java.awt.Color;
 import java.awt.Component;
@@ -27,6 +28,7 @@ import java.util.Date;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -112,15 +114,35 @@ public class TableUtil {
                                 });
                             }
 //                            //</editor-fold>
-                            //<editor-fold defaultstate="collapsed" desc="CATALOG ITEM">
-                            case INVENTORY_BALANCE -> {
-                                int id = rs.getInt("inventory_id");
+                            //<editor-fold defaultstate="collapsed" desc="STOCK DISTINCT">
+                            case STOCK_DISTINCT -> {
+                                String code = rs.getString("code");
                                 String name = rs.getString("name");
-                                String location = rs.getString("location");
+                                int quantity = rs.getInt("total_quantity");
+                                model.addRow(new Object[]{
+                                    code, name, quantity
+                                });
+                            }
+                            //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="INVENTORY BALANCE">
+                            case INVENTORY_BALANCE -> {
+                                String name = rs.getString("name");
                                 int quantity = rs.getInt("quantity");
                                 String updated_at = rs.getString("updated_at");
                                 model.addRow(new Object[]{
-                                    id, name, location, quantity, updated_at
+                                    name, quantity, updated_at
+                                });
+                            }
+//                            //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="INVENTORY TRANSACTION">
+                            case INVENTORY_TRANSACTION -> {
+                                String name = rs.getString("name");
+                                String type = rs.getString("type");
+                                int quantity = rs.getInt("quantity_change");
+                                String timestamp = rs.getString("timestamp");
+                                String created_by = rs.getString("user_email");
+                                model.addRow(new Object[]{
+                                    timestamp, type, name, quantity, created_by
                                 });
                             }
 //                            //</editor-fold>
@@ -158,16 +180,6 @@ public class TableUtil {
 //                                String condition = rs.getString("report_condition");
 //                                model.addRow(new Object[]{
 //                                    code, name, desc, condition
-//                                });
-//                            }
-//                            //</editor-fold>
-//                            //<editor-fold defaultstate="collapsed" desc="STOCK DISTINCT">
-//                            case STOCK_DISTINCT -> {
-//                                String category = rs.getString("stock_category");
-//                                String name = rs.getString("stock_name");
-//                                int quantity = rs.getInt("stock_quantity");
-//                                model.addRow(new Object[]{
-//                                    category, name, quantity
 //                                });
 //                            }
 //                            //</editor-fold>
@@ -309,6 +321,23 @@ public class TableUtil {
                 case JComboBox jComboBox -> {
                     // Set the selected item from the tableRow values
                     jComboBox.setSelectedItem(cellValue);
+                }
+                case JLabel jLabel -> {
+                    if (isFloat(cellValue)) {
+                        try {
+                            float value = Float.parseFloat(cellValue);
+                            if (getDecimalPlaces(value) <= 2) {
+                                jLabel.setText(df.format(value));
+                            } else {
+                                jLabel.setText(String.valueOf(value));
+                            }
+                        } catch (NumberFormatException e) {
+                            jLabel.setText(cellValue);
+                        }
+                    } else {
+                        jLabel.setText(cellValue);
+                    }
+                    jLabel.setForeground(new Color(0, 0, 0));
                 }
                 default -> {
                     // Handle other cases if needed

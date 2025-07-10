@@ -46,10 +46,31 @@ public class DatabaseUtil {
         String query = "SELECT COUNT(*) FROM " + table + " WHERE " + column + " = ?";
 
         try (PreparedStatement pst = prepareQueryWithParameters(conn, query, params); ResultSet rs = pst.executeQuery()) {
-//            if (rs.next() && rs.getInt(1) > 0) {
-//                JOptionPane.showMessageDialog(null, "Value already exists: " + params[0], "Error", JOptionPane.ERROR_MESSAGE);
-//            }
             return rs.next() && rs.getInt(1) > 0;
+        }
+    }
+
+    public static boolean recordExists(Connection conn, String table, String[] columns, Object[] params) throws SQLException {
+        if (columns.length != params.length) {
+            throw new IllegalArgumentException("Number of columns and parameters must match");
+        }
+
+        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(*) FROM ").append(table).append(" WHERE ");
+        for (int i = 0; i < columns.length; i++) {
+            queryBuilder.append(columns[i]).append(" = ?");
+            if (i < columns.length - 1) {
+                queryBuilder.append(" AND ");
+            }
+        }
+
+        try (PreparedStatement pst = conn.prepareStatement(queryBuilder.toString())) {
+            for (int i = 0; i < params.length; i++) {
+                pst.setObject(i + 1, params[i]);
+            }
+
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
         }
     }
 

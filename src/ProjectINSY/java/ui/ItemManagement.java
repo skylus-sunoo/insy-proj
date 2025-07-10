@@ -7,60 +7,36 @@ package ProjectINSY.java.ui;
 import ProjectINSY.java.Main;
 import ProjectINSY.java.model.ItemPanel;
 import ProjectINSY.java.swing.Form.FormField.FieldType;
-import ProjectINSY.java.swing.Table.EnumAlignment;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
-import static ProjectINSY.java.util.DatabaseUtil.createHistoryDesc;
-import static ProjectINSY.java.util.DatabaseUtil.generateNewBatch;
-import static ProjectINSY.java.util.DatabaseUtil.getColumnFromLastRow;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
+import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
 import static ProjectINSY.java.util.DatabaseUtil.getConnection;
-import static ProjectINSY.java.util.DatabaseUtil.insertHistory;
-import ProjectINSY.java.util.GuiUtil;
+import static ProjectINSY.java.util.DatabaseUtil.prepareQueryWithParameters;
+import java.sql.Timestamp;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.cleanSpaces;
-import static ProjectINSY.java.util.GuiUtil.enforceDigits;
-import static ProjectINSY.java.util.GuiUtil.resetBtnEnability;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
-import static ProjectINSY.java.util.TableUtil.floatFormatDecimal;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
 import static ProjectINSY.java.util.GuiUtil.setScrollBarCustom;
-import static ProjectINSY.java.util.GuiUtil.fieldHasValue;
-import static ProjectINSY.java.util.TableUtil.floatRoundOff;
-import static ProjectINSY.java.util.GuiUtil.getComboSelected;
-import static ProjectINSY.java.util.GuiUtil.getFieldString;
-import com.itextpdf.kernel.geom.PageSize;
-import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import javax.swing.ImageIcon;
-import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -72,6 +48,8 @@ public class ItemManagement extends ItemPanel {
     private ImageIcon barcodeIcon;
     private int batchQuantity = -1;
 
+    private boolean isUpdating = false;
+
     /**
      * Creates new form LogIn
      */
@@ -81,28 +59,35 @@ public class ItemManagement extends ItemPanel {
         setScrollBarCustom(scrollStock);
         setScrollBarCustom(scrollAudit);
 
-        setTransparentFrame(ItemManagement.this, fieldLocation, fieldDOD, fieldQuantity, fieldLocation);
-        setTransparentFrame(btnAdd, btnClear, btnDOD, btnStock, btnAudit);
+        setTransparentFrame(ItemManagement.this, fieldLocation, fieldQuantity, fieldLocation);
+        setTransparentFrame(btnAdd, btnClear, btnStock, btnAudit);
 
 //        tableStock.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        comboType.addItem("RECEIPT");
-        comboType.addItem("SALE");
-        comboType.addItem("RETURN");
-        comboType.addItem("ADJUSTMENT");
+        comboType.addItem("RECEIPT (IN)");
+        comboType.addItem("SALE (OUT)");
+        comboType.addItem("RETURN (IN)");
+        comboType.addItem("LOST (OUT)");
+        comboType.addItem("TRANSFER (IN)");
+        comboType.addItem("TRANSFER (OUT)");
+        comboType.addItem("ADJUSTMENT (IN)");
+        comboType.addItem("ADJUSTMENT (OUT)");
+        fieldCode.setForm("0000000000000", FieldType.INT);
         fieldQuantity.setForm(PLACEHOLDER_QTY, FieldType.INT);
-        fieldLocation.setForm(PLACEHOLDER_LOCATION, FieldType.STRING);
+//        fieldLocation.setForm(PLACEHOLDER_LOCATION, FieldType.STRING);
 
         fieldID.setForm(null, FieldType.INT);
 
+        fieldCode.getDocument().addDocumentListener(new FieldChangeListener());
         fieldQuantity.getDocument().addDocumentListener(new FieldChangeListener());
-        fieldLocation.getDocument().addDocumentListener(new FieldChangeListener());
-        tableStock.setDefaultTable();
-        tableAudit.setDefaultTable();
+//        fieldLocation.getDocument().addDocumentListener(new FieldChangeListener());
 
-        tableStock.setColumnHorizontalAligment(3, EnumAlignment.LEFT);
-        floatFormatDecimal(tableStock, 3);
-        tableStock.setIntegerColumn(4);
+        tableStock.setDefaultTable();
+        tableStock.setIntegerColumn(1);
+
+        tableAudit.setDefaultTable();
+        tableAudit.setIntegerColumn(3);
+        tableAudit.setColumnWidth(3, 1);
+        switchTable(0);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Item Panel">
@@ -142,7 +127,7 @@ public class ItemManagement extends ItemPanel {
 //            filterHAVING += "AND stock_quantity <= '" + getFieldString(searchQuantityEnd) + "' ";
 //        }
 
-        currentSearchQuery = "SELECT c.item_id AS catalog_item_id, c.name, s.* FROM "
+        currentSearchQuery = "SELECT c.item_id, c.name, s.* FROM "
                 + Main.TB_CATALOG_ITEM
                 + " c JOIN "
                 + Main.TB_INVENTORY_BALANCE
@@ -152,22 +137,23 @@ public class ItemManagement extends ItemPanel {
                 + " ORDER BY s.updated_at DESC";
 
         currentSearchQuery = cleanSpaces(currentSearchQuery);
-        TableUtil.refreshTable(tableStock, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
+        TableUtil.refreshTable(tableStock, currentSearchQuery, TableUtil.TableEnum.INVENTORY_BALANCE);
 
-        TableUtil.refreshTable(tableStock, currentSearchQuery, TableUtil.TableEnum.STOCK_DELIVERY);
+        DefaultTableModel model = (DefaultTableModel) tableAudit.getModel();
+        model.setRowCount(0);
 
-        String query = "SELECT DISTINCT location FROM " + Main.TB_INVENTORY_BALANCE;
+        TableUtil.refreshTable(tableAudit, "SELECT c.name, t.type, t.quantity_change, t.timestamp, u.user_email FROM "
+                + Main.TB_INVENTORY_TRANSACTION
+                + " t JOIN "
+                + Main.TB_CATALOG_ITEM
+                + " c on t.item_id = c.item_id JOIN "
+                + Main.TB_INVENTORY_BALANCE
+                + " s ON t.item_id = s.item_id AND t.location = s.location JOIN "
+                + Main.TB_USER
+                + " u ON u.user_id = t.created_by"
+                + " ORDER BY t.timestamp DESC", TableUtil.TableEnum.INVENTORY_TRANSACTION);
 
-        fieldLocation.clearItemSuggestion();
-        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement ps = conn.prepareStatement(query)) {
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                fieldLocation.addItemSuggestion(rs.getString("location"));
-            }
-        } catch (SQLException e) {
-            paneDatabaseError(e);
-        }
+//        fieldLocation.repopulateSuggestions("location", "SELECT DISTINCT location FROM " + Main.TB_INVENTORY_BALANCE);
     }
 
     @Override
@@ -188,9 +174,20 @@ public class ItemManagement extends ItemPanel {
     }
     //</editor-fold>
 
+    public void switchTable(int tab) {
+        tabInventory.setSelectedIndex(tab);
+        if (tab == 0) {
+            btnStock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
+            btnAudit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png")));
+        } else {
+            btnStock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png")));
+            btnAudit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
+        }
+    }
+
     public void selectTableStock(int selectedRow) {
         String[] tableRow = TableUtil.selectTableRow(tableStock, selectedRow);
-        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldLocation, comboType, fieldQuantity, fieldDOD);
+        TableUtil.linkFieldsToTable(tableRow, fieldID, comboName, fieldLocation, comboType, fieldQuantity);
 
         fieldQuantity.resetToPlaceholder();
 
@@ -224,6 +221,24 @@ public class ItemManagement extends ItemPanel {
         }
 
         private void checkFields() {
+            if (isUpdating) {
+                return;
+            }
+
+            try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+                if (DatabaseUtil.recordExists(conn, Main.TB_CATALOG_ITEM, "code", fieldCode.getText())) {
+                    isUpdating = true;
+
+                    SwingUtilities.invokeLater(() -> {
+                        searchItem();
+
+                        isUpdating = false;
+                    });
+                }
+            } catch (SQLException e) {
+                paneDatabaseError(e);
+            }
+
             btnAdd.setEnabled(!comboName.isDefaultComboItem() && !fieldQuantity.getText().trim().isEmpty() && fieldLocation.isValidText());
 
             refreshItemTable();
@@ -238,12 +253,35 @@ public class ItemManagement extends ItemPanel {
         fieldID.resetToPlaceholder();
         comboName.clearComboBox();
 
-        comboType.setSelectedIndex(0);
-        fieldQuantity.resetToPlaceholder();
-        fieldLocation.resetToPlaceholder();
-        fieldDOD.resetToPlaceholder();
+//        comboType.setSelectedIndex(0);
+//        fieldQuantity.resetToPlaceholder();
+//        fieldLocation.resetToPlaceholder();
 
         tableStock.clearSelectedRow();
+    }
+
+    public void searchItem() {
+        String codeText = fieldCode.getText();
+
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
+            if (codeText.isEmpty() || !DatabaseUtil.recordExists(conn, Main.TB_CATALOG_ITEM, "code", codeText)) {
+                return;
+            }
+        } catch (SQLException e) {
+            paneDatabaseError(e);
+        }
+
+        if (!codeText.isEmpty()) {
+            comboName.setSelectedItem(getColumnValueByString(Main.TB_CATALOG_ITEM, "name", "code", codeText));
+            fieldCode.resetToPlaceholder();
+            fieldCode.setText("");
+            fieldCode.requestFocusInWindow();
+            fieldCode.setForeground(Color.black);
+        }
+    }
+
+    public void focusFieldCode() {
+        fieldCode.requestFocusInWindow();
     }
 
     /**
@@ -258,25 +296,24 @@ public class ItemManagement extends ItemPanel {
         btnExport = new javax.swing.JButton();
         fieldID = new ProjectINSY.java.swing.Form.FormField();
         dateDOD = new ProjectINSY.java.swing.Date.DateChooser();
+        imageLocation = new javax.swing.JLabel();
+        fieldLocation = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
+        labelLocation = new javax.swing.JLabel();
         panelMain = new javax.swing.JPanel();
         panelFields = new javax.swing.JPanel();
         panelInformation = new javax.swing.JPanel();
+        labelCode = new javax.swing.JLabel();
+        fieldCode = new ProjectINSY.java.swing.Form.FormField();
+        imageCode = new javax.swing.JLabel();
+        comboName = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        imageName = new javax.swing.JLabel();
+        labelName = new javax.swing.JLabel();
         labelType = new javax.swing.JLabel();
         comboType = new ProjectINSY.java.swing.ComboBoxSuggestion();
         imageType = new javax.swing.JLabel();
         fieldQuantity = new ProjectINSY.java.swing.Form.FormField();
         labelQuantity = new javax.swing.JLabel();
         imageQuantity = new javax.swing.JLabel();
-        labelLocation = new javax.swing.JLabel();
-        fieldLocation = new ProjectINSY.java.swing.Form.FormFieldSuggestion();
-        imageLocation = new javax.swing.JLabel();
-        comboName = new ProjectINSY.java.swing.ComboBoxSuggestion();
-        imageName = new javax.swing.JLabel();
-        labelName = new javax.swing.JLabel();
-        fieldDOD = new ProjectINSY.java.swing.Form.FormField();
-        imageDOD = new javax.swing.JLabel();
-        btnDOD = new javax.swing.JButton();
-        labelDOD = new javax.swing.JLabel();
         panelCRUD = new javax.swing.JPanel();
         labelAdd = new javax.swing.JLabel();
         btnAdd = new javax.swing.JButton();
@@ -312,7 +349,16 @@ public class ItemManagement extends ItemPanel {
 
         dateDOD.setForeground(new java.awt.Color(25, 102, 24));
         dateDOD.setDateFormat("yyyy-MM-dd");
-        dateDOD.setTextRefernce(fieldDOD);
+
+        imageLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
+
+        fieldLocation.setBorder(null);
+        fieldLocation.setForeground(new java.awt.Color(153, 153, 153));
+        fieldLocation.setText("Enter Location");
+        fieldLocation.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+
+        labelLocation.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
+        labelLocation.setText("Location");
 
         setMaximumSize(new java.awt.Dimension(1840, 900));
         setMinimumSize(new java.awt.Dimension(1840, 900));
@@ -329,19 +375,53 @@ public class ItemManagement extends ItemPanel {
         panelInformation.setBackground(new java.awt.Color(255, 255, 255));
         panelInformation.setLayout(null);
 
+        labelCode.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 64)); // NOI18N
+        labelCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelCode.setText("Scan Code:");
+        panelInformation.add(labelCode);
+        labelCode.setBounds(10, 0, 670, 90);
+
+        fieldCode.setBorder(null);
+        fieldCode.setForeground(new java.awt.Color(0, 0, 0));
+        fieldCode.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        fieldCode.setText("formField");
+        fieldCode.setFont(new java.awt.Font("Bahnschrift", 1, 64)); // NOI18N
+        fieldCode.setPlaceholderColor(new java.awt.Color(153, 153, 153));
+        fieldCode.setSelectionColor(new java.awt.Color(25, 102, 24));
+        panelInformation.add(fieldCode);
+        fieldCode.setBounds(20, 120, 640, 80);
+
+        imageCode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldTextArea.png"))); // NOI18N
+        panelInformation.add(imageCode);
+        imageCode.setBounds(10, 90, 665, 130);
+
+        comboName.setBorder(null);
+        comboName.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        panelInformation.add(comboName);
+        comboName.setBounds(20, 310, 640, 50);
+
+        imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldFull.png"))); // NOI18N
+        panelInformation.add(imageName);
+        imageName.setBounds(10, 300, 665, 70);
+
+        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
+        labelName.setText("Name");
+        panelInformation.add(labelName);
+        labelName.setBounds(10, 240, 100, 60);
+
         labelType.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelType.setText("Type");
         panelInformation.add(labelType);
-        labelType.setBounds(10, 140, 180, 40);
+        labelType.setBounds(10, 430, 180, 40);
 
         comboType.setBorder(null);
         comboType.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         panelInformation.add(comboType);
-        comboType.setBounds(20, 200, 310, 50);
+        comboType.setBounds(20, 490, 310, 50);
 
         imageType.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelInformation.add(imageType);
-        imageType.setBounds(10, 190, 333, 70);
+        imageType.setBounds(10, 480, 333, 70);
 
         fieldQuantity.setBorder(null);
         fieldQuantity.setForeground(new java.awt.Color(0, 0, 0));
@@ -350,77 +430,19 @@ public class ItemManagement extends ItemPanel {
         fieldQuantity.setPlaceholderColor(new java.awt.Color(153, 153, 153));
         fieldQuantity.setSelectionColor(new java.awt.Color(25, 102, 24));
         panelInformation.add(fieldQuantity);
-        fieldQuantity.setBounds(360, 340, 310, 30);
+        fieldQuantity.setBounds(360, 490, 310, 50);
 
         labelQuantity.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
         labelQuantity.setText("Quantity Change");
         panelInformation.add(labelQuantity);
-        labelQuantity.setBounds(350, 270, 260, 50);
+        labelQuantity.setBounds(350, 430, 260, 50);
 
         imageQuantity.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
         panelInformation.add(imageQuantity);
-        imageQuantity.setBounds(350, 320, 333, 70);
-
-        labelLocation.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
-        labelLocation.setText("Location");
-        panelInformation.add(labelLocation);
-        labelLocation.setBounds(10, 270, 173, 50);
-
-        fieldLocation.setBorder(null);
-        fieldLocation.setForeground(new java.awt.Color(153, 153, 153));
-        fieldLocation.setText("Enter Location");
-        fieldLocation.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        panelInformation.add(fieldLocation);
-        fieldLocation.setBounds(20, 330, 310, 50);
-
-        imageLocation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelInformation.add(imageLocation);
-        imageLocation.setBounds(10, 320, 340, 70);
-
-        comboName.setBorder(null);
-        comboName.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        panelInformation.add(comboName);
-        comboName.setBounds(20, 70, 640, 50);
-
-        imageName.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldFull.png"))); // NOI18N
-        panelInformation.add(imageName);
-        imageName.setBounds(10, 60, 665, 70);
-
-        labelName.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
-        labelName.setText("Name");
-        panelInformation.add(labelName);
-        labelName.setBounds(10, 0, 100, 60);
-
-        fieldDOD.setBorder(null);
-        fieldDOD.setForeground(new java.awt.Color(0, 0, 0));
-        fieldDOD.setText("formField");
-        fieldDOD.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        fieldDOD.setPlaceholderColor(new java.awt.Color(153, 153, 153));
-        fieldDOD.setSelectionColor(new java.awt.Color(25, 102, 24));
-        panelInformation.add(fieldDOD);
-        fieldDOD.setBounds(360, 210, 270, 30);
-
-        imageDOD.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/fieldHalf.png"))); // NOI18N
-        panelInformation.add(imageDOD);
-        imageDOD.setBounds(350, 190, 333, 70);
-
-        btnDOD.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnDateSelect.png"))); // NOI18N
-        btnDOD.setBorder(null);
-        btnDOD.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDODActionPerformed(evt);
-            }
-        });
-        panelInformation.add(btnDOD);
-        btnDOD.setBounds(640, 200, 30, 50);
-
-        labelDOD.setFont(new java.awt.Font("Aaux ProThin OSF", 1, 36)); // NOI18N
-        labelDOD.setText("Delivery Date");
-        panelInformation.add(labelDOD);
-        labelDOD.setBounds(350, 130, 210, 60);
+        imageQuantity.setBounds(350, 480, 333, 70);
 
         panelFields.add(panelInformation);
-        panelInformation.setBounds(10, 180, 690, 440);
+        panelInformation.setBounds(10, 20, 690, 550);
 
         panelCRUD.setBackground(new java.awt.Color(255, 255, 255));
         panelCRUD.setLayout(null);
@@ -467,7 +489,7 @@ public class ItemManagement extends ItemPanel {
         btnClear.setBounds(360, 0, 310, 50);
 
         panelFields.add(panelCRUD);
-        panelCRUD.setBounds(20, 730, 670, 50);
+        panelCRUD.setBounds(20, 650, 670, 50);
 
         panelTable.setBackground(new java.awt.Color(255, 255, 255));
         panelTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(25, 102, 24), 2));
@@ -521,20 +543,20 @@ public class ItemManagement extends ItemPanel {
 
         tableStock.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "", "Name", "Location", "Quantity", "Last Updated"
+                "Name", "Quantity", "Last Updated"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class
+                java.lang.String.class, java.lang.Integer.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -578,20 +600,20 @@ public class ItemManagement extends ItemPanel {
 
         tableAudit.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "", "Name", "Location", "Type", "Quantity Change", "Date", "Created by"
+                "Timestamp", "Type", "Name", "Quantity Change", "Created by"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Object.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
+                false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -674,46 +696,53 @@ public class ItemManagement extends ItemPanel {
         String stock_name = comboName.getSelectedItem().toString();
         String stock_type = comboType.getSelectedItem().toString();
         int stock_quantity = Integer.parseInt(fieldQuantity.getText());
-        String stock_deliveryDate = fieldDOD.getText();
-        String stock_location = fieldLocation.getText();
-
-        if (stock_deliveryDate.matches(Main.validDatePattern)) {
-            try {
-                LocalDate.parse(stock_deliveryDate);
-            } catch (DateTimeParseException e) {
-                JOptionPane.showMessageDialog(this, "Invalid date. The date is not valid.", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Invalid date format. Please use YYYY-MM-DD.", "Add Stock Failed", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        String stock_location = "MAIN SUPPLY ROOM";
 
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            String query = "INSERT INTO " + Main.TB_INVENTORY_TRANSACTION + " (item_id, location, type, quality_change, date, created_by)\n"
-                    + "VALUES (?, ?, ?, ?, ?, ?)";
-            PreparedStatement pst = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-            for (int i = 0; i < stock_quantity; i++) {
-                pst.setString(1, stock_name);
-                pst.setString(2, stock_location);
-                pst.setString(3, stock_type);
-                pst.setInt(4, stock_quantity);
-                pst.setString(5, stock_deliveryDate);
-                pst.setInt(6, Main.getUserSessionID());
+            // Get item_id based on stock_name
+            int item_id = Integer.parseInt(getColumnValueByString(Main.TB_CATALOG_ITEM, "item_id", "name", stock_name));
+
+            // Get current timestamp
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+
+            // 1. Insert into tb_inventory_transaction
+            String query = "INSERT INTO " + Main.TB_INVENTORY_TRANSACTION + " (item_id, location, type, quantity_change, created_by)\n"
+                    + "VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement pst = conn.prepareStatement(query);
+
+            if (comboType.getSelectedItem().toString().contains("(OUT)")) {
+                stock_quantity *= -1;
+            }
+
+            pst.setInt(1, item_id);
+            pst.setString(2, stock_location);
+            pst.setString(3, stock_type);
+            pst.setInt(4, stock_quantity);
+            pst.setInt(5, Main.getUserSessionID());
+            pst.executeUpdate();
+
+            // 2. Update or insert into tb_inventory_balance
+            if (DatabaseUtil.recordExists(conn, Main.TB_INVENTORY_BALANCE, new String[]{"item_id", "location"}, new Object[]{item_id, stock_location})) {
+                query = "UPDATE " + Main.TB_INVENTORY_BALANCE + " "
+                        + "SET quantity = quantity + ?, updated_at = ? "
+                        + "WHERE item_id = ? AND location = ?";
+                pst = conn.prepareStatement(query);
+
+                pst.setInt(1, stock_quantity);       // Increment quantity
+                pst.setTimestamp(2, now); // New update time
+                pst.setInt(3, item_id);              // item_id condition
+                pst.setString(4, stock_location);    // location condition
                 pst.executeUpdate();
+            } else {
+                query = "INSERT INTO " + Main.TB_INVENTORY_BALANCE + " (item_id, location, quantity, updated_at)\n"
+                        + "VALUES (?, ?, ?, ?)";
+                pst = conn.prepareStatement(query);
 
-                ResultSet rs = pst.getGeneratedKeys();
-                if (rs.next()) {
-                    int stock_id = rs.getInt(1);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    Date parsedDate = dateFormat.parse(stock_deliveryDate);
-
-                    String stock_code = "Silang-" + (new SimpleDateFormat("yy").format(parsedDate)) + "-" + stock_id;
-                    PreparedStatement codePst = conn.prepareStatement("UPDATE " + Main.TB_ITEM_STOCK + " SET stock_code = ? WHERE stock_id = ?");
-                    codePst.setString(1, stock_code);
-                    codePst.setInt(2, stock_id);
-                    codePst.executeUpdate();
-                }
+                pst.setInt(1, item_id);
+                pst.setString(2, stock_location);
+                pst.setInt(3, stock_quantity);
+                pst.setTimestamp(4, now);
+                pst.executeUpdate();
             }
 
             // HISTORY : MANAGEMENT-ADD
@@ -739,15 +768,12 @@ public class ItemManagement extends ItemPanel {
 //            history_desc += createHistoryDesc(stock_benefactor, "Benefactor");
 //
 //            insertHistory(DatabaseUtil.HistoryFrame.MANAGEMENT, DatabaseUtil.HistoryType.ADD, stock_code, stock_code_end, history_desc, "N/A");
-
             JOptionPane.showMessageDialog(this, "(" + stock_quantity + ") Stock/s Added!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearFields();
             refreshItemTable();
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
-        } catch (ParseException ex) {
-            Logger.getLogger(ItemManagement.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
@@ -756,36 +782,27 @@ public class ItemManagement extends ItemPanel {
     }//GEN-LAST:event_btnExportActionPerformed
 
     private void btnStockActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStockActionPerformed
-        tabInventory.setSelectedIndex(0);
-        btnStock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
-        btnAudit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png")));
+        switchTable(0);
     }//GEN-LAST:event_btnStockActionPerformed
 
     private void btnAuditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAuditActionPerformed
-        tabInventory.setSelectedIndex(1);
-        btnStock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png")));
-        btnAudit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest_active.png")));
+        switchTable(1);
     }//GEN-LAST:event_btnAuditActionPerformed
-
-    private void btnDODActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDODActionPerformed
-        dateDOD.showPopup();
-    }//GEN-LAST:event_btnDODActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnAudit;
     private javax.swing.JButton btnClear;
-    private javax.swing.JButton btnDOD;
     private javax.swing.JButton btnExport;
     private javax.swing.JButton btnStock;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboName;
     private ProjectINSY.java.swing.ComboBoxSuggestion comboType;
     private ProjectINSY.java.swing.Date.DateChooser dateDOD;
-    private ProjectINSY.java.swing.Form.FormField fieldDOD;
+    private ProjectINSY.java.swing.Form.FormField fieldCode;
     private ProjectINSY.java.swing.Form.FormField fieldID;
     private ProjectINSY.java.swing.Form.FormFieldSuggestion fieldLocation;
     private ProjectINSY.java.swing.Form.FormField fieldQuantity;
-    private javax.swing.JLabel imageDOD;
+    private javax.swing.JLabel imageCode;
     private javax.swing.JLabel imageLocation;
     private javax.swing.JLabel imageName;
     private javax.swing.JLabel imageQuantity;
@@ -793,7 +810,7 @@ public class ItemManagement extends ItemPanel {
     private javax.swing.JLabel labelAdd;
     private javax.swing.JLabel labelAudit;
     private javax.swing.JLabel labelClear;
-    private javax.swing.JLabel labelDOD;
+    private javax.swing.JLabel labelCode;
     private javax.swing.JLabel labelLocation;
     private javax.swing.JLabel labelName;
     private javax.swing.JLabel labelQuantity;

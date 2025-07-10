@@ -4,19 +4,11 @@
  */
 package ProjectINSY.java;
 
-import ProjectINSY.java.ui.ItemManagement;
 import ProjectINSY.java.util.BarcodeUtil;
-import ProjectINSY.java.util.DatabaseUtil;
-import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
-import ProjectINSY.java.util.MessageUtil;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 
 /**
@@ -26,28 +18,22 @@ import javax.swing.ImageIcon;
 public class test {
 
     public static void main(String args[]) {
+        String barcodeCode = "2507109472029";
+        int amount = 50;
+
         List<BufferedImage> barcodeImages = new ArrayList<>();
 
-        for (int i = 1; i < 25; i++) {
-            try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-                if (DatabaseUtil.recordExists(conn, Main.TB_CATALOG_ITEM, "item_id", String.valueOf(i))) {
-                    String code = getColumnValueByInt(Main.TB_CATALOG_ITEM, "item_code", "item_id", i);
-                    ImageIcon barcode = BarcodeUtil.generateBarcode(code);
-
-                    BufferedImage bufferedImage = (BufferedImage) barcode.getImage();
-                    barcodeImages.add(bufferedImage);
-
-//                    System.out.println(code);
-                }
-            } catch (SQLException e) {
-                MessageUtil.paneDatabaseError(e);
-            }
+        for (int i = 0; i < amount; i++) {
+            ImageIcon barcodeIcon = BarcodeUtil.generateBarcode(barcodeCode);
+            BufferedImage bufferedImage = (BufferedImage) barcodeIcon.getImage();
+            barcodeImages.add(bufferedImage);
         }
 
+        String fileName = "barcode_test";
+
         try {
-            BarcodeUtil.generateFileFromBarcodes(barcodeImages, BarcodeUtil.FileType.PDF, "output2");
+            BarcodeUtil.generateFileFromBarcodes(barcodeImages, BarcodeUtil.FileType.PDF, fileName);
         } catch (IOException ex) {
-            Logger.getLogger(ItemManagement.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

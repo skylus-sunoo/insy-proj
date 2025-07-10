@@ -73,6 +73,10 @@ public class Menu extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnItemReport = new javax.swing.JButton();
+        pointerItemReport = new javax.swing.JLabel();
+        btnItemHistory = new javax.swing.JButton();
+        pointerItemHistory = new javax.swing.JLabel();
         panelBody = new javax.swing.JPanel();
         imageLogo = new javax.swing.JLabel();
         separatorLogo = new javax.swing.JSeparator();
@@ -80,19 +84,45 @@ public class Menu extends javax.swing.JPanel {
         btnItemManagement = new javax.swing.JButton();
         btnItemCatalog = new javax.swing.JButton();
         btnItemOut = new javax.swing.JButton();
-        btnItemHistory = new javax.swing.JButton();
         pointerItemStock = new javax.swing.JLabel();
         pointerItemManagement = new javax.swing.JLabel();
         pointerItemCatalog = new javax.swing.JLabel();
         pointerItemOut = new javax.swing.JLabel();
-        pointerItemHistory = new javax.swing.JLabel();
         btnLogOut = new javax.swing.JButton();
-        btnItemReport = new javax.swing.JButton();
-        pointerItemReport = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         btnItemTransaction = new javax.swing.JButton();
         pointerItemTransaction = new javax.swing.JLabel();
+
+        btnItemReport.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
+        btnItemReport.setForeground(new java.awt.Color(25, 102, 24));
+        btnItemReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemReport.png"))); // NOI18N
+        btnItemReport.setText("ITEM Report");
+        btnItemReport.setBorder(null);
+        btnItemReport.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnItemReport.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnItemReport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnItemReportActionPerformed(evt);
+            }
+        });
+
+        pointerItemReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
+
+        btnItemHistory.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
+        btnItemHistory.setForeground(new java.awt.Color(25, 102, 24));
+        btnItemHistory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemHistory.png"))); // NOI18N
+        btnItemHistory.setText("STOCK history");
+        btnItemHistory.setBorder(null);
+        btnItemHistory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnItemHistory.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnItemHistory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnItemHistoryActionPerformed(evt);
+            }
+        });
+
+        pointerItemHistory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
 
         setBackground(new java.awt.Color(249, 215, 30));
 
@@ -157,19 +187,6 @@ public class Menu extends javax.swing.JPanel {
             }
         });
 
-        btnItemHistory.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
-        btnItemHistory.setForeground(new java.awt.Color(25, 102, 24));
-        btnItemHistory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemHistory.png"))); // NOI18N
-        btnItemHistory.setText("STOCK history");
-        btnItemHistory.setBorder(null);
-        btnItemHistory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnItemHistory.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        btnItemHistory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnItemHistoryActionPerformed(evt);
-            }
-        });
-
         pointerItemStock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
 
         pointerItemManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
@@ -177,8 +194,6 @@ public class Menu extends javax.swing.JPanel {
         pointerItemCatalog.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
 
         pointerItemOut.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
-
-        pointerItemHistory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
 
         btnLogOut.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
         btnLogOut.setForeground(new java.awt.Color(25, 102, 24));
@@ -192,21 +207,6 @@ public class Menu extends javax.swing.JPanel {
                 btnLogOutActionPerformed(evt);
             }
         });
-
-        btnItemReport.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
-        btnItemReport.setForeground(new java.awt.Color(25, 102, 24));
-        btnItemReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemReport.png"))); // NOI18N
-        btnItemReport.setText("ITEM Report");
-        btnItemReport.setBorder(null);
-        btnItemReport.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnItemReport.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        btnItemReport.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnItemReportActionPerformed(evt);
-            }
-        });
-
-        pointerItemReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/menuPointer.png"))); // NOI18N
 
         jLabel1.setFont(new java.awt.Font("Bebas", 0, 42)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -252,9 +252,6 @@ public class Menu extends javax.swing.JPanel {
                         .addComponent(btnItemStock)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(pointerItemStock))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBodyLayout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(pointerItemReport))
                     .addGroup(panelBodyLayout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -263,16 +260,9 @@ public class Menu extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(pointerItemCatalog))
                             .addGroup(panelBodyLayout.createSequentialGroup()
-                                .addComponent(btnItemHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(pointerItemHistory))
-                            .addGroup(panelBodyLayout.createSequentialGroup()
-                                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(panelBodyLayout.createSequentialGroup()
-                                        .addComponent(btnItemManagement)
-                                        .addGap(111, 111, 111)
-                                        .addComponent(pointerItemManagement))
-                                    .addComponent(btnItemReport))
+                                .addComponent(btnItemManagement)
+                                .addGap(111, 111, 111)
+                                .addComponent(pointerItemManagement)
                                 .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(panelBodyLayout.createSequentialGroup()
                         .addContainerGap()
@@ -316,15 +306,7 @@ public class Menu extends javax.swing.JPanel {
                 .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnItemCatalog, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(pointerItemCatalog, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pointerItemReport, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnItemReport, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnItemHistory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pointerItemHistory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(55, 55, 55)
+                .addGap(85, 85, 85)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -334,7 +316,7 @@ public class Menu extends javax.swing.JPanel {
                 .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(pointerItemTransaction, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnItemTransaction))
-                .addGap(68, 68, 68)
+                .addGap(150, 150, 150)
                 .addComponent(btnLogOut)
                 .addContainerGap(75, Short.MAX_VALUE))
         );

@@ -16,9 +16,13 @@ import com.google.zxing.common.BitMatrix;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.PdfException;
+import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import java.awt.Color;
@@ -43,7 +47,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 public class BarcodeUtil {
-    
+
     public static String generateCode() {
         // Step 1: Get current date in yyMMdd format
         LocalDate today = LocalDate.now();
@@ -233,52 +237,58 @@ public class BarcodeUtil {
 
             try (Document document = new Document(pdf, pageSize)) {
                 if (pageSizeSTR.equals("A4")) {
-                    float x = 50;
-                    float y = 750;
-                    for (BufferedImage bufferedImage : bufferedImages) {
+                    float margin = 1f;
+                    float barcodeWidthPDF = 147.5f;
+                    float barcodeHeightPDF = 60f;
+                    float columnSpacing = 1f;
+                    float rowSpacing = 1f;
+
+                    float pageWidth = pageSize.getWidth();
+                    float pageHeight = pageSize.getHeight();
+
+                    float usableWidth = pageWidth - 2 * margin;
+                    float usableHeight = pageHeight - 2 * margin;
+
+                    int columnsPerPage = (int) ((usableWidth + columnSpacing) / (barcodeWidthPDF + columnSpacing));
+                    int rowsPerColumn = (int) ((usableHeight + rowSpacing) / (barcodeHeightPDF + rowSpacing));
+
+                    int barcodesPerPage = columnsPerPage * rowsPerColumn;
+
+                    for (int i = 0; i < bufferedImages.size(); i++) {
+                        int pageIndex = i / barcodesPerPage + 1;
+                        if (pdf.getNumberOfPages() < pageIndex) {
+                            pdf.addNewPage();
+                        }
+
+                        int indexOnPage = i % barcodesPerPage;
+                        int column = indexOnPage / rowsPerColumn;
+                        int row = indexOnPage % rowsPerColumn;
+
+                        float x = margin + column * (barcodeWidthPDF + columnSpacing);
+                        float y = pageHeight - margin - row * (barcodeHeightPDF + rowSpacing);
+
+                        BufferedImage bufferedImage = bufferedImages.get(i);
                         ImageData imageData = ImageDataFactory.create(bufferedImage, null);
                         Image image = new Image(imageData);
 
-                        image.scaleToFit(150, 150);
-                        image.setFixedPosition(x, y);
-                        document.add(image);
+                        image.scaleToFit(barcodeWidthPDF, barcodeHeightPDF);
 
-                        y -= 77;
+                        PdfPage currentPage = pdf.getPage(pageIndex);
+                        PdfCanvas pdfCanvas = new PdfCanvas(currentPage);
+                        try (Canvas canvas = new Canvas(pdfCanvas, pdf, pageSize)) {
+                            image.setFixedPosition(x, y - barcodeHeightPDF);
+                            canvas.add(image);
 
-                        if (y < 50) {
-                            y = 750;
-                            x += 180;
-                            if (x > 500) {
-                                pdf.addNewPage();
-                                x = 50;
-                            }
+                            // Draw border rectangle
+                            pdfCanvas
+                                    .setStrokeColor(ColorConstants.BLACK)
+                                    .setLineWidth(1f)
+                                    .rectangle(x, y - barcodeHeightPDF, barcodeWidthPDF, barcodeHeightPDF)
+                                    .stroke();
                         }
                     }
                 } else if (pageSizeSTR.equals("B9")) {
-                    float pageHeight = pageSize.getHeight();
-                    float x = 10;
-                    float y = pageHeight - 50;
 
-                    int barcodeCount = 0;
-
-                    for (BufferedImage bufferedImage : bufferedImages) {
-                        ImageData imageData = ImageDataFactory.create(bufferedImage, null);
-                        Image image = new Image(imageData);
-
-                        image.scaleToFit(106, 106);
-                        image.setFixedPosition(x, y);
-                        document.add(image);
-
-                        barcodeCount++;
-
-                        y -= 50;
-
-                        if (barcodeCount % 3 == 0) {
-                            pdf.addNewPage();
-                            y = pageHeight - 50;
-                            x = 10;
-                        }
-                    }
                 }
             }
         }
