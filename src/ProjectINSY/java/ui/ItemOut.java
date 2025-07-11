@@ -17,6 +17,7 @@ import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
 import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
+import com.mysql.cj.xdevapi.Statement;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -37,6 +38,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
+import java.sql.Timestamp;
 
 /**
  *
@@ -146,8 +148,8 @@ public class ItemOut extends javax.swing.JPanel {
                 paneDatabaseError(e);
             }
 
-            btnRelease.setEnabled(fieldCustomer.isValidText());
             DefaultTableModel model = (DefaultTableModel) tablePending.getModel();
+            btnRelease.setEnabled(fieldCustomer.isValidText() && model.getRowCount() > 0);
             btnClear.setEnabled(model.getRowCount() > 0);
 
             btnSave.setEnabled(fieldQuantity.isValidText() && selectedRow != -1);
@@ -156,7 +158,7 @@ public class ItemOut extends javax.swing.JPanel {
     }
 
     public void repopulateSuggestions() {
-        fieldCustomer.repopulateSuggestions("out_customer", "SELECT DISTINCT customer_name FROM " + Main.TB_SALES);
+        fieldCustomer.repopulateSuggestions("customer_name", "SELECT DISTINCT customer_name FROM " + Main.TB_SALES);
     }
 
     public void setScannerFocus() {
@@ -253,7 +255,7 @@ public class ItemOut extends javax.swing.JPanel {
         fieldCustomer.resetToPlaceholder();
         fieldTotal.setText("0.00");
         setUpdateDeleteEnable();
-        
+
         selectedRow = -1;
         fieldItem.setText("No Item Selected");
         fieldQuantity.resetToPlaceholder();
@@ -537,7 +539,7 @@ public class ItemOut extends javax.swing.JPanel {
         scrollPending.setViewportView(tablePending);
 
         panelFields.add(scrollPending);
-        scrollPending.setBounds(10, 100, 880, 710);
+        scrollPending.setBounds(20, 110, 880, 700);
 
         labelRelease.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         labelRelease.setForeground(new java.awt.Color(255, 255, 255));
@@ -603,8 +605,8 @@ public class ItemOut extends javax.swing.JPanel {
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(panelCode, javax.swing.GroupLayout.DEFAULT_SIZE, 901, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 905, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelFields, javax.swing.GroupLayout.PREFERRED_SIZE, 917, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         panelMainLayout.setVerticalGroup(
@@ -647,28 +649,107 @@ public class ItemOut extends javax.swing.JPanel {
 
     private void btnReleaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReleaseActionPerformed
         DefaultTableModel model = (DefaultTableModel) tablePending.getModel();
-
         int rowCount = model.getRowCount();
 
         String channel = comboChannel.getSelectedItem().toString();
         String customer = fieldCustomer.getText();
 
-        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
-            String query = "INSERT INTO " + Main.TB_ITEM_TRANSACTION + " (out_name, out_quantity, out_price, out_channel, out_customer) "
-                    + "VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement pst = conn.prepareStatement(query);
+        final String INVENTORY_TYPE_SALE = "SALE";
+        final String INVENTORY_LOCATION = "MAIN SUPPLY ROOM";
 
-            for (int row = 0; row < rowCount; row++) {
-                pst.setString(1, (String) model.getValueAt(row, 1));
-                pst.setInt(2, (Integer) model.getValueAt(row, 2));
-                pst.setFloat(3, (Float) model.getValueAt(row, 5));
-                pst.setString(4, channel);
-                pst.setString(5, customer);
-                pst.executeUpdate();
+        try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME)) {
+            conn.setAutoCommit(false);  // Start transaction
+
+            // Insert into tb_sales
+            String saleQuery = "INSERT INTO " + Main.TB_SALES + " (customer_name, channel, created_by) VALUES (?, ?, ?)";
+            String checkQuantityQuery = "SELECT quantity FROM " + Main.TB_INVENTORY_BALANCE + " WHERE item_id = ? AND location = ?";
+
+            try (PreparedStatement pstSale = conn.prepareStatement(saleQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+                pstSale.setString(1, customer);
+                pstSale.setString(2, channel);
+                pstSale.setInt(3, Main.getUserSessionID());
+                pstSale.executeUpdate();
+
+                ResultSet rs = pstSale.getGeneratedKeys();
+                int saleId = -1;
+                if (rs.next()) {
+                    saleId = rs.getInt(1);
+                }
+                rs.close();
+
+                if (saleId == -1) {
+                    throw new SQLException("Failed to retrieve generated sale ID.");
+                }
+
+                // Prepare insert statements for sales items and inventory transactions
+                String saleItemQuery = "INSERT INTO " + Main.TB_SALES_ITEMS
+                        + " (sale_id, item_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
+                String transactionQuery = "INSERT INTO " + Main.TB_INVENTORY_TRANSACTION
+                        + " (item_id, location, type, quantity_change, created_by) VALUES (?, ?, ?, ?, ?)";
+                String updateQuery = "UPDATE " + Main.TB_INVENTORY_BALANCE + " "
+                        + "SET quantity = quantity - ?, updated_at = ? "
+                        + "WHERE item_id = ? AND location = ?";
+
+                try (PreparedStatement pstCheckQty = conn.prepareStatement(checkQuantityQuery); PreparedStatement pstSaleItem = conn.prepareStatement(saleItemQuery); PreparedStatement pstInventory = conn.prepareStatement(transactionQuery); PreparedStatement pstUpdateBalance = conn.prepareStatement(updateQuery)) {
+                    for (int row = 0; row < rowCount; row++) {
+                        String itemName = (String) model.getValueAt(row, 1);
+                        int itemId = Integer.parseInt(getColumnValueByString(Main.TB_CATALOG_ITEM, "item_id", "name", itemName));
+                        int quantity = Integer.parseInt(model.getValueAt(row, 2).toString());
+                        float unitPrice = Float.parseFloat(model.getValueAt(row, 4).toString());
+                        float totalPrice = Float.parseFloat(model.getValueAt(row, 5).toString());
+
+                        // Check current quantity before proceeding
+                        pstCheckQty.setInt(1, itemId);
+                        pstCheckQty.setString(2, INVENTORY_LOCATION);
+                        try (ResultSet rsCheck = pstCheckQty.executeQuery()) {
+                            if (rsCheck.next()) {
+                                int currentQuantity = rsCheck.getInt("quantity");
+                                if (currentQuantity < quantity) {
+                                    throw new SQLException("Insufficient inventory for item '" + itemName
+                                            + "'. Available: " + currentQuantity + ", Requested: " + quantity);
+                                }
+                            } else {
+                                throw new SQLException("No inventory record found for item '" + itemName
+                                        + "' at location " + INVENTORY_LOCATION);
+                            }
+                        }
+
+                        // Insert into tb_sales_items
+                        pstSaleItem.setInt(1, saleId);
+                        pstSaleItem.setInt(2, itemId);
+                        pstSaleItem.setInt(3, quantity);
+                        pstSaleItem.setFloat(4, unitPrice);
+                        pstSaleItem.setFloat(5, totalPrice);
+                        pstSaleItem.executeUpdate();
+
+                        // Insert into tb_inventory_transaction
+                        pstInventory.setInt(1, itemId);
+                        pstInventory.setString(2, INVENTORY_LOCATION);
+                        pstInventory.setString(3, INVENTORY_TYPE_SALE);
+                        pstInventory.setInt(4, -quantity);  // SALE is an outbound transaction
+                        pstInventory.setInt(5, Main.getUserSessionID());
+                        pstInventory.executeUpdate();
+
+                        // Update inventory balance
+                        pstUpdateBalance.setInt(1, quantity); // subtracting this
+                        pstUpdateBalance.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                        pstUpdateBalance.setInt(3, itemId);
+                        pstUpdateBalance.setString(4, INVENTORY_LOCATION);
+                        pstUpdateBalance.executeUpdate();
+                    }
+                }
+
+                // Commit if all successful
+                conn.commit();
+                model.setRowCount(0);
+                clearFields();
+                JOptionPane.showMessageDialog(this, "Sale Complete!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (SQLException e) {
+                conn.rollback();  // Rollback all changes on error
+                throw e;          // Re-throw to be caught by outer catch
             }
 
-            model.setRowCount(0);
-            clearFields();
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
         }

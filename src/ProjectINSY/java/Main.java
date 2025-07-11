@@ -52,7 +52,7 @@ public class Main extends javax.swing.JFrame {
     public static String TB_INVENTORY_BALANCE = "tb_inventory_balance";
     public static String TB_INVENTORY_TRANSACTION = "tb_inventory_transaction";
     public static String TB_SALES = "tb_sales";
-    public static String TB_SALES_ITEM = "tb_sales_items";
+    public static String TB_SALES_ITEMS = "tb_sales_items";
 
     public static String TB_CATALOG_CATEGORY = "tb_catalog_category";
 //    public static String TB_CATALOG_ITEM = "tb_catalog_item";

@@ -10,24 +10,19 @@ import ProjectINSY.java.swing.Form.FormField.FieldType;
 import ProjectINSY.java.util.BarcodeUtil;
 import static ProjectINSY.java.util.BarcodeUtil.validateBarcode;
 import ProjectINSY.java.util.DatabaseUtil;
-import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByInt;
 import static ProjectINSY.java.util.DatabaseUtil.getColumnValueByString;
-import static ProjectINSY.java.util.DatabaseUtil.getConnection;
-import static ProjectINSY.java.util.DatabaseUtil.prepareQueryWithParameters;
 import java.sql.Timestamp;
 import ProjectINSY.java.util.GuiUtil.FieldFocus;
 import static ProjectINSY.java.util.GuiUtil.cleanSpaces;
 import static ProjectINSY.java.util.GuiUtil.setDefaultField;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import ProjectINSY.java.util.MessageUtil;
-import static ProjectINSY.java.util.MessageUtil.paneDatabaseError;
 import ProjectINSY.java.util.TableUtil;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
@@ -256,7 +251,6 @@ public class ItemManagement extends ItemPanel {
 //        comboType.setSelectedIndex(0);
 //        fieldQuantity.resetToPlaceholder();
 //        fieldLocation.resetToPlaceholder();
-
         tableStock.clearSelectedRow();
     }
 
@@ -277,6 +271,8 @@ public class ItemManagement extends ItemPanel {
             fieldCode.setText("");
             fieldCode.requestFocusInWindow();
             fieldCode.setForeground(Color.black);
+
+            btnAdd.setEnabled(!comboName.isDefaultComboItem() && !fieldQuantity.getText().trim().isEmpty() && fieldLocation.isValidText());
         }
     }
 
@@ -772,6 +768,7 @@ public class ItemManagement extends ItemPanel {
 
             clearFields();
             refreshItemTable();
+            fieldCode.requestFocusInWindow();
         } catch (SQLException e) {
             MessageUtil.paneDatabaseError(e);
         }

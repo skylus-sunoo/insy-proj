@@ -1,9 +1,6 @@
 package ProjectINSY.java.ui.component;
 
 import ProjectINSY.java.Main;
-import ProjectINSY.java.event.EventMenuSelected;
-import ProjectINSY.java.model.Model_Menu;
-import ProjectINSY.java.ui.ItemTransaction;
 import static ProjectINSY.java.util.GuiUtil.setTransparentFrame;
 import static ProjectINSY.java.util.SessionUtil.removeUserSession;
 import java.awt.Color;
@@ -138,7 +135,7 @@ public class Menu extends javax.swing.JPanel {
         btnItemStock.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
         btnItemStock.setForeground(new java.awt.Color(25, 102, 24));
         btnItemStock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemStock.png"))); // NOI18N
-        btnItemStock.setText("browse Stock");
+        btnItemStock.setText("OVERVIEW");
         btnItemStock.setBorder(null);
         btnItemStock.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnItemStock.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -151,7 +148,7 @@ public class Menu extends javax.swing.JPanel {
         btnItemManagement.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
         btnItemManagement.setForeground(new java.awt.Color(25, 102, 24));
         btnItemManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemManagement.png"))); // NOI18N
-        btnItemManagement.setText("Add Stock");
+        btnItemManagement.setText("MANAGEMENT");
         btnItemManagement.setBorder(null);
         btnItemManagement.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnItemManagement.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -177,7 +174,7 @@ public class Menu extends javax.swing.JPanel {
         btnItemOut.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
         btnItemOut.setForeground(new java.awt.Color(25, 102, 24));
         btnItemOut.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemOut.png"))); // NOI18N
-        btnItemOut.setText("Out");
+        btnItemOut.setText("CHECKOUT");
         btnItemOut.setBorder(null);
         btnItemOut.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnItemOut.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -219,7 +216,7 @@ public class Menu extends javax.swing.JPanel {
         btnItemTransaction.setFont(new java.awt.Font("Bebas", 0, 36)); // NOI18N
         btnItemTransaction.setForeground(new java.awt.Color(25, 102, 24));
         btnItemTransaction.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconItemRequest.png"))); // NOI18N
-        btnItemTransaction.setText("transactions");
+        btnItemTransaction.setText("SALES HISTORY");
         btnItemTransaction.setBorder(null);
         btnItemTransaction.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnItemTransaction.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -261,9 +258,8 @@ public class Menu extends javax.swing.JPanel {
                                 .addComponent(pointerItemCatalog))
                             .addGroup(panelBodyLayout.createSequentialGroup()
                                 .addComponent(btnItemManagement)
-                                .addGap(111, 111, 111)
-                                .addComponent(pointerItemManagement)
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(pointerItemManagement))))
                     .addGroup(panelBodyLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -277,13 +273,13 @@ public class Menu extends javax.swing.JPanel {
                                         .addComponent(btnLogOut, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(0, 0, Short.MAX_VALUE))
                                     .addGroup(panelBodyLayout.createSequentialGroup()
-                                        .addComponent(btnItemTransaction)
+                                        .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(btnItemOut)
+                                            .addComponent(btnItemTransaction))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(pointerItemTransaction))
-                                    .addGroup(panelBodyLayout.createSequentialGroup()
-                                        .addComponent(btnItemOut, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(pointerItemOut)))))))
+                                        .addGroup(panelBodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(pointerItemTransaction, javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(pointerItemOut, javax.swing.GroupLayout.Alignment.TRAILING))))))))
                 .addContainerGap())
         );
         panelBodyLayout.setVerticalGroup(

@@ -51,6 +51,8 @@ public class TableUtil {
         TRANSACTION,
         INVENTORY_BALANCE,
         INVENTORY_TRANSACTION,
+        SALES_TRANSACTION,
+        SALES_ITEMS,
     };
 
     public static ImageIcon blobToImage(ResultSet rs, String column_name) throws SQLException {
@@ -143,6 +145,28 @@ public class TableUtil {
                                 String created_by = rs.getString("user_email");
                                 model.addRow(new Object[]{
                                     timestamp, type, name, quantity, created_by
+                                });
+                            }
+//                            //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="SALES TRANSACTION">
+                            case SALES_TRANSACTION -> {
+                                String created_at = rs.getString("created_at");
+                                String customer_name = rs.getString("customer_name");
+                                String channel = rs.getString("channel");
+                                float total_amount = rs.getFloat("total_amount");
+                                model.addRow(new Object[]{
+                                    created_at, customer_name, channel, total_amount
+                                });
+                            }
+//                            //</editor-fold>
+                            //<editor-fold defaultstate="collapsed" desc="SALES TRANSACTION">
+                            case SALES_ITEMS -> {
+                                String name = rs.getString("name");
+                                int quantity = rs.getInt("quantity");
+                                float unit_price = rs.getFloat("unit_price");
+                                float total_price = rs.getFloat("total_price");
+                                model.addRow(new Object[]{
+                                    name, quantity, unit_price, total_price
                                 });
                             }
 //                            //</editor-fold>

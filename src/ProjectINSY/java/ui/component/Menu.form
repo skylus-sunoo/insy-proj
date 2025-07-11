@@ -133,16 +133,15 @@
                       <Group type="102" attributes="0">
                           <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Component id="btnItemCatalog" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="32767" attributes="0"/>
                                   <Component id="pointerItemCatalog" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" attributes="0">
                                   <Component id="btnItemManagement" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="111" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                                   <Component id="pointerItemManagement" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -160,15 +159,16 @@
                                           <Component id="btnLogOut" min="-2" pref="148" max="-2" attributes="0"/>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="btnItemTransaction" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="btnItemOut" min="-2" max="-2" attributes="0"/>
+                                              <Component id="btnItemTransaction" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                           <EmptySpace max="32767" attributes="0"/>
-                                          <Component id="pointerItemTransaction" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="btnItemOut" min="-2" pref="240" max="-2" attributes="0"/>
-                                          <EmptySpace min="55" max="32767" attributes="0"/>
-                                          <Component id="pointerItemOut" min="-2" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="pointerItemTransaction" alignment="1" min="-2" max="-2" attributes="0"/>
+                                              <Component id="pointerItemOut" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
                                   </Group>
                               </Group>
@@ -251,7 +251,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/ProjectINSY/resources/interface/iconItemStock.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="browse Stock"/>
+            <Property name="text" type="java.lang.String" value="OVERVIEW"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
             </Property>
@@ -275,7 +275,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/ProjectINSY/resources/interface/iconItemManagement.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Add Stock"/>
+            <Property name="text" type="java.lang.String" value="MANAGEMENT"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
             </Property>
@@ -323,7 +323,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/ProjectINSY/resources/interface/iconItemOut.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Out"/>
+            <Property name="text" type="java.lang.String" value="CHECKOUT"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
             </Property>
@@ -421,7 +421,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/ProjectINSY/resources/interface/iconItemRequest.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="transactions"/>
+            <Property name="text" type="java.lang.String" value="SALES HISTORY"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
             </Property>

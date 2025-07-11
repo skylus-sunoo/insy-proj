@@ -131,7 +131,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="panelItemFields" max="32767" attributes="0"/>
-                          <Component id="tableScroll" pref="1192" max="32767" attributes="0"/>
+                          <Component id="scrollItem" pref="1192" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -145,7 +145,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="panelItemFields" pref="217" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="tableScroll" min="-2" pref="562" max="-2" attributes="0"/>
+                      <Component id="scrollItem" min="-2" pref="562" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -168,7 +168,7 @@
                 <Property name="opaque" type="boolean" value="true"/>
               </Properties>
             </Component>
-            <Container class="javax.swing.JScrollPane" name="tableScroll">
+            <Container class="javax.swing.JScrollPane" name="scrollItem">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="null"/>

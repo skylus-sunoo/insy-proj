@@ -54,7 +54,8 @@ public class ItemCatalog extends ItemPanel {
     public ItemCatalog() {
         initComponents();
 
-        setScrollBarCustom(tableScroll);
+        setScrollBarCustom(scrollItem);
+        setScrollBarCustom(scrollQueue);
 
         setTransparentFrame(ItemCatalog.this, fieldName, fieldAmount);
         setTransparentFrame(btnAddItem, btnUpdateItem, btnClearItem, btnDeleteItem,
@@ -83,7 +84,7 @@ public class ItemCatalog extends ItemPanel {
         comboUOM.addItem("SET");
         comboUOM.addItem("UNIT");
 
-        fieldAmount.setForm("0", FieldType.INT);
+        fieldAmount.setForm("1", FieldType.INT);
         fieldAmount.getDocument().addDocumentListener(new FieldChangeListener());
 
         tableQueue.setDefaultTable();
@@ -211,7 +212,7 @@ public class ItemCatalog extends ItemPanel {
         panelBody = new javax.swing.JPanel();
         panelItem = new javax.swing.JPanel();
         labelCatalogItem = new javax.swing.JLabel();
-        tableScroll = new javax.swing.JScrollPane();
+        scrollItem = new javax.swing.JScrollPane();
         tableItem = new ProjectINSY.java.swing.Table();
         panelItemFields = new javax.swing.JPanel();
         labelName = new javax.swing.JLabel();
@@ -273,7 +274,7 @@ public class ItemCatalog extends ItemPanel {
         labelCatalogItem.setText("ITEMS CATALOG");
         labelCatalogItem.setOpaque(true);
 
-        tableScroll.setBorder(null);
+        scrollItem.setBorder(null);
 
         tableItem.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -304,7 +305,7 @@ public class ItemCatalog extends ItemPanel {
         tableItem.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableItem.setGridColor(new java.awt.Color(255, 255, 255));
         tableItem.setSelectionBackground(new java.awt.Color(25, 102, 24));
-        tableScroll.setViewportView(tableItem);
+        scrollItem.setViewportView(tableItem);
 
         panelItemFields.setBackground(new java.awt.Color(255, 255, 255));
         panelItemFields.setLayout(null);
@@ -457,7 +458,7 @@ public class ItemCatalog extends ItemPanel {
                 .addContainerGap()
                 .addGroup(panelItemLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(panelItemFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 1192, Short.MAX_VALUE))
+                    .addComponent(scrollItem, javax.swing.GroupLayout.DEFAULT_SIZE, 1192, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelItemLayout.setVerticalGroup(
@@ -468,7 +469,7 @@ public class ItemCatalog extends ItemPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelItemFields, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 562, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(scrollItem, javax.swing.GroupLayout.PREFERRED_SIZE, 562, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -778,7 +779,7 @@ public class ItemCatalog extends ItemPanel {
         try (Connection conn = DatabaseUtil.getConnection(Main.DB_NAME);) {
             int warnUser = JOptionPane.showConfirmDialog(
                     null,
-                    "Confirm Delete?",
+                    "Are you sure you want to delete '" + fieldName.getText() + "'?",
                     "Warning: Delete",
                     JOptionPane.YES_NO_OPTION
             );
@@ -929,10 +930,10 @@ public class ItemCatalog extends ItemPanel {
     private javax.swing.JPanel panelItem;
     private javax.swing.JPanel panelItemFields;
     private javax.swing.JPanel panelPrint;
+    private javax.swing.JScrollPane scrollItem;
     private javax.swing.JScrollPane scrollQueue;
     private javax.swing.JSeparator separatorItem;
     private ProjectINSY.java.swing.Table tableItem;
     private ProjectINSY.java.swing.Table tableQueue;
-    private javax.swing.JScrollPane tableScroll;
     // End of variables declaration//GEN-END:variables
 }
