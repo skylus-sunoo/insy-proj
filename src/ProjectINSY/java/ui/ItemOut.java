@@ -781,7 +781,12 @@ public class ItemOut extends javax.swing.JPanel {
     }//GEN-LAST:event_btnRemoveActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        ((DefaultTableModel) tablePending.getModel()).setValueAt(fieldQuantity.getText(), selectedRow, 2);
+        DefaultTableModel model = (DefaultTableModel) tablePending.getModel();
+        int newQty = Integer.parseInt(fieldQuantity.getText());
+        float rate = (Float) model.getValueAt(selectedRow, 4);
+        float newAmount = newQty * rate;
+        model.setValueAt(newQty, selectedRow, 2);
+        model.setValueAt(newAmount, selectedRow, 5);
 
         selectedRow = -1;
         fieldItem.setText("No Item Selected");
