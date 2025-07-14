@@ -198,6 +198,9 @@ public class ItemTransaction extends ItemPanel {
         labelFilterTimestampTo = new javax.swing.JLabel();
         labelFilterCustomer = new javax.swing.JLabel();
         searchCustomer = new ProjectINSY.java.swing.ComboBoxSuggestion();
+        panelExport = new javax.swing.JPanel();
+        labelExport = new javax.swing.JLabel();
+        btnExport = new javax.swing.JButton();
         panelSalesInfo = new javax.swing.JPanel();
         panelScan = new javax.swing.JPanel();
         labelScan = new javax.swing.JLabel();
@@ -386,11 +389,38 @@ public class ItemTransaction extends ItemPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        panelExport.setBackground(new java.awt.Color(255, 255, 255));
+        panelExport.setLayout(null);
+
+        labelExport.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelExport.setForeground(new java.awt.Color(255, 255, 255));
+        labelExport.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelExport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconPrint.png"))); // NOI18N
+        labelExport.setText("Export");
+        labelExport.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        panelExport.add(labelExport);
+        labelExport.setBounds(0, 0, 140, 50);
+
+        btnExport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint.png"))); // NOI18N
+        btnExport.setBorder(null);
+        btnExport.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnExport.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint_pressed.png"))); // NOI18N
+        btnExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExportActionPerformed(evt);
+            }
+        });
+        panelExport.add(btnExport);
+        btnExport.setBounds(0, 0, 150, 49);
+
         javax.swing.GroupLayout panelSalesLayout = new javax.swing.GroupLayout(panelSales);
         panelSales.setLayout(panelSalesLayout);
         panelSalesLayout.setHorizontalGroup(
             panelSalesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1038, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelSalesLayout.createSequentialGroup()
+                .addContainerGap(874, Short.MAX_VALUE)
+                .addComponent(panelExport, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
             .addGroup(panelSalesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelSalesLayout.createSequentialGroup()
                     .addContainerGap()
@@ -401,14 +431,17 @@ public class ItemTransaction extends ItemPanel {
         );
         panelSalesLayout.setVerticalGroup(
             panelSalesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelSalesLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(panelExport, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
             .addGroup(panelSalesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelSalesLayout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(panelSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(scrollTransaction, javax.swing.GroupLayout.DEFAULT_SIZE, 785, Short.MAX_VALUE)
-                    .addContainerGap()))
+                    .addComponent(scrollTransaction, javax.swing.GroupLayout.PREFERRED_SIZE, 706, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(85, Short.MAX_VALUE)))
         );
 
         panelSalesInfo.setBackground(new java.awt.Color(255, 255, 255));
@@ -479,7 +512,7 @@ public class ItemTransaction extends ItemPanel {
             .addComponent(panelScan, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelSalesInfoLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(scrollBreakdown)
+                .addComponent(scrollBreakdown, javax.swing.GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelSalesInfoLayout.setVerticalGroup(
@@ -541,8 +574,13 @@ public class ItemTransaction extends ItemPanel {
         refreshItemTable();
     }//GEN-LAST:event_searchChannelItemStateChanged
 
+    private void btnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportActionPerformed
+        exportSQLToCSV(getCurrentSearchQuery(), "ItemSales");
+    }//GEN-LAST:event_btnExportActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnExport;
     private ProjectINSY.java.swing.Date.DateChooser dateEnd;
     private ProjectINSY.java.swing.Date.DateChooser dateStart;
     private javax.swing.JLabel fieldChannel;
@@ -551,6 +589,7 @@ public class ItemTransaction extends ItemPanel {
     private javax.swing.JLabel fieldTotal;
     private javax.swing.JLabel labelChannel;
     private javax.swing.JLabel labelCustomer;
+    private javax.swing.JLabel labelExport;
     private javax.swing.JLabel labelFilterChannel;
     private javax.swing.JLabel labelFilterCustomer;
     private javax.swing.JLabel labelFilterTimestamp;
@@ -559,6 +598,7 @@ public class ItemTransaction extends ItemPanel {
     private javax.swing.JLabel labelScan;
     private javax.swing.JLabel labelTimestamp;
     private javax.swing.JLabel labelTotal;
+    private javax.swing.JPanel panelExport;
     private javax.swing.JPanel panelMain;
     private javax.swing.JPanel panelSales;
     private javax.swing.JPanel panelSalesInfo;

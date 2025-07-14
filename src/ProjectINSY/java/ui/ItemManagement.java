@@ -43,6 +43,17 @@ public class ItemManagement extends ItemPanel {
     private ImageIcon barcodeIcon;
     private int batchQuantity = -1;
 
+    private String auditQuery = "SELECT c.name, t.type, t.quantity_change, t.timestamp, u.user_email FROM "
+            + Main.TB_INVENTORY_TRANSACTION
+            + " t JOIN "
+            + Main.TB_CATALOG_ITEM
+            + " c on t.item_id = c.item_id JOIN "
+            + Main.TB_INVENTORY_BALANCE
+            + " s ON t.item_id = s.item_id AND t.location = s.location JOIN "
+            + Main.TB_USER
+            + " u ON u.user_id = t.created_by"
+            + " ORDER BY t.timestamp DESC";
+
     private boolean isUpdating = false;
 
     /**
@@ -137,16 +148,7 @@ public class ItemManagement extends ItemPanel {
         DefaultTableModel model = (DefaultTableModel) tableAudit.getModel();
         model.setRowCount(0);
 
-        TableUtil.refreshTable(tableAudit, "SELECT c.name, t.type, t.quantity_change, t.timestamp, u.user_email FROM "
-                + Main.TB_INVENTORY_TRANSACTION
-                + " t JOIN "
-                + Main.TB_CATALOG_ITEM
-                + " c on t.item_id = c.item_id JOIN "
-                + Main.TB_INVENTORY_BALANCE
-                + " s ON t.item_id = s.item_id AND t.location = s.location JOIN "
-                + Main.TB_USER
-                + " u ON u.user_id = t.created_by"
-                + " ORDER BY t.timestamp DESC", TableUtil.TableEnum.INVENTORY_TRANSACTION);
+        TableUtil.refreshTable(tableAudit, auditQuery, TableUtil.TableEnum.INVENTORY_TRANSACTION);
 
 //        fieldLocation.repopulateSuggestions("location", "SELECT DISTINCT location FROM " + Main.TB_INVENTORY_BALANCE);
     }
@@ -289,7 +291,6 @@ public class ItemManagement extends ItemPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        btnExport = new javax.swing.JButton();
         fieldID = new ProjectINSY.java.swing.Form.FormField();
         dateDOD = new ProjectINSY.java.swing.Date.DateChooser();
         imageLocation = new javax.swing.JLabel();
@@ -317,6 +318,8 @@ public class ItemManagement extends ItemPanel {
         btnClear = new javax.swing.JButton();
         panelTable = new javax.swing.JPanel();
         tabButtons = new javax.swing.JPanel();
+        labelExport = new javax.swing.JLabel();
+        btnExport = new javax.swing.JButton();
         labelStock = new javax.swing.JLabel();
         btnStock = new javax.swing.JButton();
         labelAudit = new javax.swing.JLabel();
@@ -328,13 +331,6 @@ public class ItemManagement extends ItemPanel {
         panelAudit = new javax.swing.JPanel();
         scrollAudit = new javax.swing.JScrollPane();
         tableAudit = new ProjectINSY.java.swing.Table();
-
-        btnExport.setText("Print");
-        btnExport.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExportActionPerformed(evt);
-            }
-        });
 
         fieldID.setBorder(null);
         fieldID.setForeground(new java.awt.Color(0, 0, 0));
@@ -494,6 +490,25 @@ public class ItemManagement extends ItemPanel {
         tabButtons.setBackground(new java.awt.Color(255, 255, 255));
         tabButtons.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        labelExport.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        labelExport.setForeground(new java.awt.Color(255, 255, 255));
+        labelExport.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelExport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/iconPrint.png"))); // NOI18N
+        labelExport.setText("Export");
+        labelExport.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tabButtons.add(labelExport, new org.netbeans.lib.awtextra.AbsoluteConstraints(930, 0, 150, 50));
+
+        btnExport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint.png"))); // NOI18N
+        btnExport.setBorder(null);
+        btnExport.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnExport.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnPrint_pressed.png"))); // NOI18N
+        btnExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExportActionPerformed(evt);
+            }
+        });
+        tabButtons.add(btnExport, new org.netbeans.lib.awtextra.AbsoluteConstraints(930, 0, -1, -1));
+
         labelStock.setFont(new java.awt.Font("Bebas", 0, 24)); // NOI18N
         labelStock.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelStock.setText("stock quantities");
@@ -516,7 +531,7 @@ public class ItemManagement extends ItemPanel {
         labelAudit.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelAudit.setText("view Audit trail");
         labelAudit.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        tabButtons.add(labelAudit, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, -1, 550, 40));
+        tabButtons.add(labelAudit, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, -1, 340, 40));
 
         btnAudit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectINSY/resources/interface/btnRequest.png"))); // NOI18N
         btnAudit.setBorder(null);
@@ -528,10 +543,10 @@ public class ItemManagement extends ItemPanel {
                 btnAuditActionPerformed(evt);
             }
         });
-        tabButtons.add(btnAudit, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, -4, 560, 50));
+        tabButtons.add(btnAudit, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, -4, 350, 50));
 
         panelTable.add(tabButtons);
-        tabButtons.setBounds(10, 10, 1080, 46);
+        tabButtons.setBounds(10, 10, 1080, 50);
 
         panelStock.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -574,7 +589,7 @@ public class ItemManagement extends ItemPanel {
             panelStockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 1080, Short.MAX_VALUE)
             .addGroup(panelStockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(panelStockLayout.createSequentialGroup()
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelStockLayout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(scrollStock, javax.swing.GroupLayout.DEFAULT_SIZE, 1074, Short.MAX_VALUE)))
         );
@@ -582,9 +597,9 @@ public class ItemManagement extends ItemPanel {
             panelStockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 825, Short.MAX_VALUE)
             .addGroup(panelStockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(panelStockLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(scrollStock, javax.swing.GroupLayout.DEFAULT_SIZE, 813, Short.MAX_VALUE)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelStockLayout.createSequentialGroup()
+                    .addContainerGap(22, Short.MAX_VALUE)
+                    .addComponent(scrollStock, javax.swing.GroupLayout.PREFERRED_SIZE, 797, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addContainerGap()))
         );
 
@@ -774,10 +789,6 @@ public class ItemManagement extends ItemPanel {
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
-    private void btnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportActionPerformed
-        exportSQLToCSV(currentSearchQuery);
-    }//GEN-LAST:event_btnExportActionPerformed
-
     private void btnStockActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStockActionPerformed
         switchTable(0);
     }//GEN-LAST:event_btnStockActionPerformed
@@ -785,6 +796,14 @@ public class ItemManagement extends ItemPanel {
     private void btnAuditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAuditActionPerformed
         switchTable(1);
     }//GEN-LAST:event_btnAuditActionPerformed
+
+    private void btnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportActionPerformed
+        if (tabInventory.getSelectedIndex() == 0) {
+            exportSQLToCSV(getCurrentSearchQuery(), "ItemStock");
+        } else {
+            exportSQLToCSV(auditQuery, "AuditTrail");
+        }
+    }//GEN-LAST:event_btnExportActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
@@ -808,6 +827,7 @@ public class ItemManagement extends ItemPanel {
     private javax.swing.JLabel labelAudit;
     private javax.swing.JLabel labelClear;
     private javax.swing.JLabel labelCode;
+    private javax.swing.JLabel labelExport;
     private javax.swing.JLabel labelLocation;
     private javax.swing.JLabel labelName;
     private javax.swing.JLabel labelQuantity;

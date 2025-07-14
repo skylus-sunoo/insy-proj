@@ -35,8 +35,10 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,7 +202,12 @@ public class BarcodeUtil {
     }
 
     public static void generateFileFromBarcodes(List<BufferedImage> bufferedImages, FileType FileType, String fileName) throws IOException {
-        String outputFilePath = "C:\\Users\\admin\\Documents\\" + fileName + ".";
+        // Get timestamp
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        // Construct file name with timestamp
+        String fileNameWithTime = fileName + "_" + timestamp;
+        String userHome = System.getProperty("user.home");
+        String outputFilePath = userHome + File.separator + "Documents" + File.separator + fileNameWithTime + ".";
         int barcodeWidth = 615;
         int barcodeHeight = 213;
         int spacing = 20;

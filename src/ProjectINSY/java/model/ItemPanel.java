@@ -14,6 +14,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JOptionPane;
 
 /**
@@ -57,10 +59,18 @@ public abstract class ItemPanel extends javax.swing.JPanel {
         isUpdatingComboBoxes = true;
     }
 
-    protected static void exportSQLToCSV(String query) {
+    public String getCurrentSearchQuery() {
+        return currentSearchQuery;
+    }
+
+    protected static void exportSQLToCSV(String query, String fileName) {
         String userHome = System.getProperty("user.home");
-        String documentsPath = userHome + File.separator + "Documents" + File.separator + "ItemTable.csv";
-        
+        // Get timestamp
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        // Construct file name with timestamp
+        String fileNameWithTime = fileName + "_" + timestamp + ".csv";
+        String documentsPath = userHome + File.separator + "Documents" + File.separator + fileNameWithTime + ".csv";
+
         try (Connection conn = getConnection(Main.DB_NAME); Statement pst = conn.createStatement(); ResultSet rs = pst.executeQuery(query); BufferedWriter writer = new BufferedWriter(new FileWriter(documentsPath))) {
             if (!rs.isBeforeFirst()) {
                 System.out.println("No data found for the query: \n" + query);
