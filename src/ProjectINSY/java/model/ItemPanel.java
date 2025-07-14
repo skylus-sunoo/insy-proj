@@ -68,7 +68,7 @@ public abstract class ItemPanel extends javax.swing.JPanel {
         // Get timestamp
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         // Construct file name with timestamp
-        String fileNameWithTime = fileName + "_" + timestamp + ".csv";
+        String fileNameWithTime = fileName + "_" + timestamp;
         String documentsPath = userHome + File.separator + "Documents" + File.separator + fileNameWithTime + ".csv";
 
         try (Connection conn = getConnection(Main.DB_NAME); Statement pst = conn.createStatement(); ResultSet rs = pst.executeQuery(query); BufferedWriter writer = new BufferedWriter(new FileWriter(documentsPath))) {
