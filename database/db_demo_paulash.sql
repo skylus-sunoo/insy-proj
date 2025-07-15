@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 11, 2025 at 12:36 PM
+-- Generation Time: Jul 15, 2025 at 03:41 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -55,7 +55,7 @@ INSERT INTO `tb_catalog_item` (`item_id`, `code`, `name`, `uom`, `price`, `creat
 (11, '2507115287727', 'Lash Curler', 'PIECE', 399, '2025-07-11 10:08:35', '2025-07-11 10:08:35'),
 (12, '2507114726296', 'Makeup Tweezers', 'PIECE', 149, '2025-07-11 10:09:19', '2025-07-11 10:09:19'),
 (13, '2507119028599', 'Makeup Scissors', 'PIECE', 249, '2025-07-11 10:09:29', '2025-07-11 10:09:29'),
-(14, '2507117120714', 'Pro', 'SET', 399, '2025-07-11 10:10:04', '2025-07-11 10:10:19'),
+(14, '2507117120714', 'Pro', 'SET', 399, '2025-07-11 10:10:04', '2025-07-15 00:02:40'),
 (15, '2507111224061', 'Pro Mini', 'SET', 279, '2025-07-11 10:10:13', '2025-07-11 10:10:13');
 
 -- --------------------------------------------------------
@@ -76,21 +76,21 @@ CREATE TABLE `tb_inventory_balance` (
 --
 
 INSERT INTO `tb_inventory_balance` (`item_id`, `location`, `quantity`, `updated_at`) VALUES
-(1, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:22'),
-(2, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:26'),
-(3, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:40'),
-(4, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:44'),
-(5, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:48'),
-(6, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:36:02'),
-(7, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:36:05'),
+(1, 'MAIN SUPPLY ROOM', 99, '2025-07-15 01:33:58'),
+(2, 'MAIN SUPPLY ROOM', 96, '2025-07-15 01:33:58'),
+(3, 'MAIN SUPPLY ROOM', 97, '2025-07-15 00:10:15'),
+(4, 'MAIN SUPPLY ROOM', 93, '2025-07-15 00:10:15'),
+(5, 'MAIN SUPPLY ROOM', 116, '2025-07-15 00:10:15'),
+(6, 'MAIN SUPPLY ROOM', 97, '2025-07-15 00:10:15'),
+(7, 'MAIN SUPPLY ROOM', 98, '2025-07-15 00:10:15'),
 (8, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:32'),
 (9, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:30'),
-(10, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:36'),
-(11, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:51'),
-(12, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:59'),
-(13, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:35:54'),
-(14, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:36:21'),
-(15, 'MAIN SUPPLY ROOM', 100, '2025-07-11 10:36:25');
+(10, 'MAIN SUPPLY ROOM', 75, '2025-07-14 14:07:18'),
+(11, 'MAIN SUPPLY ROOM', 84, '2025-07-15 00:10:15'),
+(12, 'MAIN SUPPLY ROOM', 99, '2025-07-11 10:38:59'),
+(13, 'MAIN SUPPLY ROOM', 97, '2025-07-15 00:10:15'),
+(14, 'MAIN SUPPLY ROOM', 100, '2025-07-15 01:36:09'),
+(15, 'MAIN SUPPLY ROOM', 98, '2025-07-15 00:10:15');
 
 -- --------------------------------------------------------
 
@@ -127,7 +127,38 @@ INSERT INTO `tb_inventory_transaction` (`transaction_id`, `timestamp`, `item_id`
 (15, '2025-07-11 10:36:02', 6, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 100, 1),
 (16, '2025-07-11 10:36:05', 7, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 100, 1),
 (17, '2025-07-11 10:36:21', 14, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 100, 1),
-(18, '2025-07-11 10:36:25', 15, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 100, 1);
+(18, '2025-07-11 10:36:25', 15, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 100, 1),
+(19, '2025-07-11 10:38:59', 11, 'MAIN SUPPLY ROOM', 'SALE', -3, 1),
+(20, '2025-07-11 10:38:59', 5, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(21, '2025-07-11 10:38:59', 4, 'MAIN SUPPLY ROOM', 'SALE', -2, 1),
+(22, '2025-07-11 10:38:59', 3, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(23, '2025-07-11 10:38:59', 10, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(24, '2025-07-11 10:38:59', 12, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(25, '2025-07-11 10:38:59', 15, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(26, '2025-07-11 10:38:59', 2, 'MAIN SUPPLY ROOM', 'SALE', -3, 1),
+(27, '2025-07-11 10:44:55', 13, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(28, '2025-07-11 10:44:55', 11, 'MAIN SUPPLY ROOM', 'SALE', -3, 1),
+(29, '2025-07-11 10:44:55', 5, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(30, '2025-07-11 10:44:55', 4, 'MAIN SUPPLY ROOM', 'SALE', -3, 1),
+(31, '2025-07-11 11:37:16', 10, 'MAIN SUPPLY ROOM', 'SALE', -24, 1),
+(32, '2025-07-14 14:05:12', 10, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 15, 1),
+(33, '2025-07-14 14:05:32', 10, 'MAIN SUPPLY ROOM', 'LOST (OUT)', -5, 1),
+(34, '2025-07-14 14:07:18', 10, 'MAIN SUPPLY ROOM', 'SALE', -10, 1),
+(35, '2025-07-15 00:04:50', 5, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 20, 1),
+(36, '2025-07-15 00:10:15', 3, 'MAIN SUPPLY ROOM', 'SALE', -2, 1),
+(37, '2025-07-15 00:10:15', 4, 'MAIN SUPPLY ROOM', 'SALE', -2, 1),
+(38, '2025-07-15 00:10:15', 5, 'MAIN SUPPLY ROOM', 'SALE', -2, 1),
+(39, '2025-07-15 00:10:15', 11, 'MAIN SUPPLY ROOM', 'SALE', -10, 1),
+(40, '2025-07-15 00:10:15', 13, 'MAIN SUPPLY ROOM', 'SALE', -2, 1),
+(41, '2025-07-15 00:10:15', 6, 'MAIN SUPPLY ROOM', 'SALE', -3, 1),
+(42, '2025-07-15 00:10:15', 7, 'MAIN SUPPLY ROOM', 'SALE', -2, 1),
+(43, '2025-07-15 00:10:15', 15, 'MAIN SUPPLY ROOM', 'SALE', -1, 1),
+(44, '2025-07-15 01:25:36', 14, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 60, 2),
+(45, '2025-07-15 01:29:50', 14, 'MAIN SUPPLY ROOM', 'LOST (OUT)', -60, 2),
+(46, '2025-07-15 01:33:58', 14, 'MAIN SUPPLY ROOM', 'SALE', -20, 2),
+(47, '2025-07-15 01:33:58', 1, 'MAIN SUPPLY ROOM', 'SALE', -1, 2),
+(48, '2025-07-15 01:33:58', 2, 'MAIN SUPPLY ROOM', 'SALE', -1, 2),
+(49, '2025-07-15 01:36:09', 14, 'MAIN SUPPLY ROOM', 'RECEIPT (IN)', 20, 2);
 
 -- --------------------------------------------------------
 
@@ -144,6 +175,18 @@ CREATE TABLE `tb_sales` (
   `created_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tb_sales`
+--
+
+INSERT INTO `tb_sales` (`sale_id`, `customer_name`, `channel`, `created_at`, `total_amount`, `created_by`) VALUES
+(1, 'John Patrick Skidmore', 'Lazada', '2025-07-11 10:38:59', 5377.00, 1),
+(2, 'Danel Dave Barbuco', 'Lazada', '2025-07-11 10:44:55', 4107.00, 1),
+(4, 'Danel Dave Barbuco', 'Lazada', '2025-07-11 11:37:16', 5976.00, 1),
+(5, 'Kenny Guilaran', 'Shopee', '2025-07-14 14:07:18', 2490.00, 1),
+(6, 'Danel Dave Barbuco', 'Lazada', '2025-07-15 00:10:15', 10646.00, 1),
+(7, 'Tyrone', 'Lazada', '2025-07-15 01:33:58', 8798.00, 2);
+
 -- --------------------------------------------------------
 
 --
@@ -158,6 +201,37 @@ CREATE TABLE `tb_sales_items` (
   `unit_price` decimal(10,2) DEFAULT NULL,
   `total_price` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_sales_items`
+--
+
+INSERT INTO `tb_sales_items` (`sale_item_id`, `sale_id`, `item_id`, `quantity`, `unit_price`, `total_price`) VALUES
+(1, 1, 11, 3, 399.00, 1197.00),
+(2, 1, 5, 1, 909.00, 909.00),
+(3, 1, 4, 2, 584.00, 1168.00),
+(4, 1, 3, 1, 649.00, 649.00),
+(5, 1, 10, 1, 249.00, 249.00),
+(6, 1, 12, 1, 149.00, 149.00),
+(7, 1, 15, 1, 279.00, 279.00),
+(8, 1, 2, 3, 259.00, 777.00),
+(9, 2, 13, 1, 249.00, 249.00),
+(10, 2, 11, 3, 399.00, 1197.00),
+(11, 2, 5, 1, 909.00, 909.00),
+(12, 2, 4, 3, 584.00, 1752.00),
+(13, 4, 10, 24, 249.00, 5976.00),
+(14, 5, 10, 10, 249.00, 2490.00),
+(15, 6, 3, 2, 649.00, 1298.00),
+(16, 6, 4, 2, 584.00, 1168.00),
+(17, 6, 5, 2, 909.00, 1818.00),
+(18, 6, 11, 10, 399.00, 3990.00),
+(19, 6, 13, 2, 249.00, 498.00),
+(20, 6, 6, 3, 399.00, 1197.00),
+(21, 6, 7, 2, 199.00, 398.00),
+(22, 6, 15, 1, 279.00, 279.00),
+(23, 7, 14, 20, 399.00, 7980.00),
+(24, 7, 1, 1, 559.00, 559.00),
+(25, 7, 2, 1, 259.00, 259.00);
 
 --
 -- Triggers `tb_sales_items`
@@ -219,7 +293,8 @@ CREATE TABLE `tb_user` (
 --
 
 INSERT INTO `tb_user` (`user_id`, `user_email`, `user_salt`, `user_password`, `user_fname`, `user_lname`) VALUES
-(1, 'johnpatrick.skidmore@cvsu.edu.ph', 'BYjzi3wsD+ut2HBZawXVXg==', 'e4eba840eddfe58491f744d223fc289fcd4b416c72d4f375cd81cc889dcec53d', 'John Patrick', 'Skidmore');
+(1, 'johnpatrick.skidmore@cvsu.edu.ph', 'BYjzi3wsD+ut2HBZawXVXg==', 'e4eba840eddfe58491f744d223fc289fcd4b416c72d4f375cd81cc889dcec53d', 'John Patrick', 'Skidmore'),
+(2, 'admin@gmail.com', 'JBbFC6bPltKPm22572udrg==', 'fff47ef7cb1226df67a4a36e67486792cb62ce9a2baafe7fc6ca526a2a1a61b3', 'John Patrick', 'Skidmore');
 
 --
 -- Indexes for dumped tables
@@ -275,31 +350,31 @@ ALTER TABLE `tb_user`
 -- AUTO_INCREMENT for table `tb_catalog_item`
 --
 ALTER TABLE `tb_catalog_item`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `tb_inventory_transaction`
 --
 ALTER TABLE `tb_inventory_transaction`
-  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `tb_sales`
 --
 ALTER TABLE `tb_sales`
-  MODIFY `sale_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `sale_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `tb_sales_items`
 --
 ALTER TABLE `tb_sales_items`
-  MODIFY `sale_item_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `sale_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `tb_user`
 --
 ALTER TABLE `tb_user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
