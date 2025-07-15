@@ -292,7 +292,7 @@ public class ItemTransaction extends ItemPanel {
                 return canEdit [columnIndex];
             }
         });
-        tableTransaction.setFont(new java.awt.Font("Bahnschrift", 0, 14)); // NOI18N
+        tableTransaction.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableTransaction.setGridColor(new java.awt.Color(255, 255, 255));
         tableTransaction.setSelectionBackground(new java.awt.Color(25, 102, 24));
         scrollTransaction.setViewportView(tableTransaction);
@@ -502,6 +502,7 @@ public class ItemTransaction extends ItemPanel {
                 return canEdit [columnIndex];
             }
         });
+        tableBreakdown.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tableBreakdown.setSelectionBackground(new java.awt.Color(25, 102, 24));
         scrollBreakdown.setViewportView(tableBreakdown);
 

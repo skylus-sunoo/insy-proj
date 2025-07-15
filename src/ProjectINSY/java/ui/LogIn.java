@@ -35,15 +35,16 @@ public class LogIn extends javax.swing.JPanel {
             = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@(cvsu\\.edu\\.ph|cvsu-silang\\.edu\\.ph)$";
 
     public static boolean isValidEmail(String email) {
-        Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+//        Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+//        Matcher matcher = pattern.matcher(email);
+//        return matcher.matches();
+        return true;
     }
 
     public void autoCompleteEmail(JTextField field) {
-        if (!field.getText().trim().equals(PLACEHOLDER_EMAIL) && !field.getText().trim().contains("@")) {
-            fieldEmail.setText(field.getText().trim() + "@cvsu.edu.ph");
-        }
+//        if (!field.getText().trim().equals(PLACEHOLDER_EMAIL) && !field.getText().trim().contains("@")) {
+//            fieldEmail.setText(field.getText().trim() + "@cvsu.edu.ph");
+//        }
     }
 
     private final String PLACEHOLDER_EMAIL = "Enter Email Address";
@@ -118,73 +119,78 @@ public class LogIn extends javax.swing.JPanel {
 
     private void logInAccount(String log_email, String log_password) {
 
-//        byte[] employee_salt = generateSalt(16);
-//        String user_email = "johnpatrick.skidmore@cvsu.edu.ph";
-//        String user_password = toHash("123", employee_salt);
-//        String confirm_password = toHash("123", employee_salt);
-//
-//        if (!user_password.equals(confirm_password)) {
-//            JOptionPane.showMessageDialog(this, "Passwords do not match.", "Error", JOptionPane.ERROR_MESSAGE);
-//        } else {
-//            String user_saltString = bytetoString(employee_salt);
-//            String query = "INSERT INTO " + Main.TB_USER + " (user_email, user_salt, user_password, user_fname, user_lname)\n"
-//                        + "VALUES (?, ?, ?, ?, ?)";
-//
-//            try (Connection conn = getConnection(Main.DB_NAME)) {
-//                executeUpdate(conn, query, user_email, user_saltString, user_password, "John Patrick", "Skidmore");
-//                JOptionPane.showMessageDialog(this, "Account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-//
-//            } catch (SQLException e) {
-//                JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//                e.printStackTrace(System.out);
-//            }
-//        }
-        byte[] user_salt;
+        boolean signup = false;
 
-        String saltQuery = "SELECT user_salt FROM " + Main.TB_USER + " WHERE user_email = ?";
-        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement pst = conn.prepareStatement(saltQuery)) {
-            pst.setString(1, log_email);
-            try (ResultSet rs = pst.executeQuery()) {
-                if (rs.next()) {
-                    user_salt = stringToByte(rs.getString("user_salt"));
-                } else {
-                    JOptionPane.showMessageDialog(this, "Wrong Email or Password!", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+        if (signup) {
+            byte[] employee_salt = generateSalt(16);
+            String user_email = "admin@gmail.com";
+            String user_password = toHash("123456", employee_salt);
+            String confirm_password = toHash("123456", employee_salt);
+
+            if (!user_password.equals(confirm_password)) {
+                JOptionPane.showMessageDialog(this, "Passwords do not match.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                String user_saltString = bytetoString(employee_salt);
+                String query = "INSERT INTO " + Main.TB_USER + " (user_email, user_salt, user_password, user_fname, user_lname)\n"
+                        + "VALUES (?, ?, ?, ?, ?)";
+
+                try (Connection conn = getConnection(Main.DB_NAME)) {
+                    executeUpdate(conn, query, user_email, user_saltString, user_password, "John Patrick", "Skidmore");
+                    JOptionPane.showMessageDialog(this, "Account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace(System.out);
                 }
             }
-        } catch (SQLException e) {
-            paneDatabaseError(e);
-            return;
-        }
+        } else {
+            byte[] user_salt;
 
-        String userPassword = toHash(log_password, user_salt);
-
-        String query = "SELECT * FROM " + Main.TB_USER + " WHERE user_email = ? AND user_password = ?";
-
-        try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement pst = prepareQueryWithParameters(conn, query, log_email, userPassword); ResultSet rs = pst.executeQuery()) {
-            if (rs.next()) {
-                int userID = rs.getInt("user_ID");
-                String userEmail = rs.getString("user_email");
-                updateUserSession(userID, userEmail);
-
-                fieldEmail.setText("");
-                fieldPassword.setText("");
-                setDefaultField(fieldEmail, PLACEHOLDER_EMAIL, FieldFocus.LOST, Color.BLACK);
-                setDefaultField(fieldPassword, PLACEHOLDER_PASSWORD, FieldFocus.LOST, Color.BLACK);
-
-                fieldPassword.setEchoChar('*');
-                setBtnIcon(btnPasswordViewer, "/ProjectINSY/resources/interface/btnPasswordView_remove.png");
-                setDefaultField(fieldPassword, PLACEHOLDER_PASSWORD, FieldFocus.LOST, Color.BLACK);
-
-                main.showMenu();
-                main.showHeaderMenu(true);
-                main.setDefaultForm();
-            } else {
-                JOptionPane.showMessageDialog(this, "Wrong Email or Password!", "Error", JOptionPane.ERROR_MESSAGE);
+            String saltQuery = "SELECT user_salt FROM " + Main.TB_USER + " WHERE user_email = ?";
+            try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement pst = conn.prepareStatement(saltQuery)) {
+                pst.setString(1, log_email);
+                try (ResultSet rs = pst.executeQuery()) {
+                    if (rs.next()) {
+                        user_salt = stringToByte(rs.getString("user_salt"));
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Wrong Email or Password!", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+            } catch (SQLException e) {
+                paneDatabaseError(e);
+                return;
             }
 
-        } catch (SQLException e) {
-            paneDatabaseError(e);
+            String userPassword = toHash(log_password, user_salt);
+
+            String query = "SELECT * FROM " + Main.TB_USER + " WHERE user_email = ? AND user_password = ?";
+
+            try (Connection conn = getConnection(Main.DB_NAME); PreparedStatement pst = prepareQueryWithParameters(conn, query, log_email, userPassword); ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    int userID = rs.getInt("user_ID");
+                    String userEmail = rs.getString("user_email");
+                    updateUserSession(userID, userEmail);
+
+                    fieldEmail.setText("");
+                    fieldPassword.setText("");
+                    setDefaultField(fieldEmail, PLACEHOLDER_EMAIL, FieldFocus.LOST, Color.BLACK);
+                    setDefaultField(fieldPassword, PLACEHOLDER_PASSWORD, FieldFocus.LOST, Color.BLACK);
+
+                    fieldPassword.setEchoChar('*');
+                    setBtnIcon(btnPasswordViewer, "/ProjectINSY/resources/interface/btnPasswordView_remove.png");
+                    setDefaultField(fieldPassword, PLACEHOLDER_PASSWORD, FieldFocus.LOST, Color.BLACK);
+
+                    main.showMenu();
+                    main.showHeaderMenu(true);
+                    main.setDefaultForm();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Wrong Email or Password!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+            } catch (SQLException e) {
+                paneDatabaseError(e);
+            }
         }
     }
 

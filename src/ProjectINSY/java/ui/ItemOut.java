@@ -535,6 +535,7 @@ public class ItemOut extends javax.swing.JPanel {
                 return canEdit [columnIndex];
             }
         });
+        tablePending.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         tablePending.setSelectionBackground(new java.awt.Color(25, 102, 24));
         scrollPending.setViewportView(tablePending);
 
